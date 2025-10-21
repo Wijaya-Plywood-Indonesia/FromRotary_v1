@@ -12,8 +12,14 @@ return new class extends Migration {
     {
         Schema::create('pegawai_rotaries', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_produksi')->constrained('produksi_rotary')->cascadeOnDelete();
-            $table->foreignId('id_pegawai')->constrained('pegawais')->cascadeOnDelete();
+            $table->foreignId('id_produksi')
+                ->constrained('produksi_rotaries')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->foreignId('id_pegawai')
+                ->constrained('pegawais')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->string('role')->nullable();
             $table->time('jam_masuk');
             $table->time('jam_pulang');

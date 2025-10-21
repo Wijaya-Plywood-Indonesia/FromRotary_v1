@@ -12,9 +12,15 @@ return new class extends Migration {
     {
         Schema::create('detail_hasil_palet_rotaries', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_produksi')->constrained('produksi_rotary')->cascadeOnDelete();
+            $table->foreignId('id_produksi')
+                ->constrained('produksi_rotaries')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->dateTime('timestamp_laporan');
-            $table->foreignId('id_ukuran')->constrained('ukurans')->cascadeOnDelete();
+            $table->foreignId('id_ukuran')
+                ->constrained('ukurans')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->string('kw');
             $table->integer('total_lembar')->default(0);
             $table->timestamps();

@@ -17,7 +17,7 @@ return new class extends Migration {
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->foreignId('id_produksi')
-                ->constrained('produksi_rotary')
+                ->constrained('produksi_rotaries')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->integer('jumlah_batang')->default(0);
