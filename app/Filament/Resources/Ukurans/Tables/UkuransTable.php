@@ -16,11 +16,23 @@ class UkuransTable
         return $table
             ->columns([
                 TextColumn::make('panjang')
+                    ->label('Panjang')
+                    ->formatStateUsing(fn($state) => $state ? "{$state} cm" : '-')
+                    ->sortable()
                     ->searchable(),
+
                 TextColumn::make('lebar')
+                    ->label('Lebar')
+                    ->formatStateUsing(fn($state) => $state ? "{$state} cm" : '-')
+                    ->sortable()
                     ->searchable(),
+
                 TextColumn::make('tebal')
+                    ->label('Tebal')
+                    ->formatStateUsing(fn($state) => $state ? "{$state} cm" : '-')
+                    ->sortable()
                     ->searchable(),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

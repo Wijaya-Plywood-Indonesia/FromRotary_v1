@@ -12,10 +12,13 @@ class UkuranForm
         return $schema
             ->components([
                 TextInput::make('panjang')
+                    ->label('Panjang (cm)')
                     ->required(),
                 TextInput::make('lebar')
+                    ->label('Lebar (cm)')
                     ->required(),
                 TextInput::make('tebal')
+                    ->label('Tebal (cm)')
                     ->required(),
             ]);
     }
