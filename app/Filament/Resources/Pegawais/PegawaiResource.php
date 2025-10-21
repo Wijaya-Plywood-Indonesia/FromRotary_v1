@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class PegawaiResource extends Resource
 {
@@ -42,6 +43,11 @@ class PegawaiResource extends Resource
         return [
             //
         ];
+    }
+    //ngurutin
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->latest('created_at');
     }
 
     public static function getPages(): array

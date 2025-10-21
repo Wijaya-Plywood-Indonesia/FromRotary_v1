@@ -11,8 +11,8 @@ class MesinInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('kategori_mesin_id')
-                    ->numeric(),
+                TextEntry::make('kategoriMesin.nama_kategori_mesin')
+                    ->label('Kategori Mesin'),
                 TextEntry::make('nama_mesin'),
                 TextEntry::make('ongkos_mesin')
                     ->numeric(),

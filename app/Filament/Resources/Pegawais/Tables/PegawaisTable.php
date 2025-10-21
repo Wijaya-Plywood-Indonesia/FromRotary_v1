@@ -22,13 +22,23 @@ class PegawaisTable
                     ->searchable(),
                 TextColumn::make('no_telepon_pegawai')
                     ->searchable(),
-                IconColumn::make('jenis_kelamin_pegawai')
-                    ->boolean(),
+                TextColumn::make('jenis_kelamin_pegawai')
+                    ->formatStateUsing(fn(string $state): string => $state == '1' ? 'Laki-laki' : 'Perempuan')
+                    ->badge()
+                    ->color(fn(string $state): string => $state == '1' ? 'blue' : 'pink'),
+
                 TextColumn::make('tanggal_masuk')
                     ->date()
                     ->sortable(),
-                TextColumn::make('foto')
-                    ->searchable(),
+                IconColumn::make('foto')
+                    ->label('Foto')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->tooltip(fn($state) => $state ? 'Foto sudah diupload' : 'Belum ada foto'),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

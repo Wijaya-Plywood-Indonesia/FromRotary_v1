@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class MesinResource extends Resource
 {
@@ -35,6 +36,11 @@ class MesinResource extends Resource
     public static function table(Table $table): Table
     {
         return MesinsTable::configure($table);
+    }
+    //ngurutin
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->latest('created_at');
     }
 
     public static function getRelations(): array
