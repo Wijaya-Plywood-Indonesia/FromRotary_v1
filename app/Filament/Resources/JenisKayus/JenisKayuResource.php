@@ -16,12 +16,15 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class JenisKayuResource extends Resource
 {
     protected static ?string $model = JenisKayu::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCubeTransparent;
+    //Ngelompokin.
+    protected static string|UnitEnum|null $navigationGroup = 'Master';
     //nampilkan data descending
     public static function getEloquentQuery(): Builder
     {

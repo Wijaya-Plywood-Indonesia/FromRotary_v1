@@ -16,12 +16,15 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class MesinResource extends Resource
 {
     protected static ?string $model = Mesin::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
+    //Ngelompokin.
+    protected static string|UnitEnum|null $navigationGroup = 'Master';
 
     public static function form(Schema $schema): Schema
     {

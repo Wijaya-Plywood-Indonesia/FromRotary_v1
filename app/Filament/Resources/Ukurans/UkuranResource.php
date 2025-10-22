@@ -16,13 +16,15 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class UkuranResource extends Resource
 {
     protected static ?string $model = Ukuran::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowsPointingOut;
-
+    //Ngelompokin.
+    protected static string|UnitEnum|null $navigationGroup = 'Master';
     public static function form(Schema $schema): Schema
     {
         return UkuranForm::configure($schema);

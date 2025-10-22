@@ -16,12 +16,15 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class LahanResource extends Resource
 {
     protected static ?string $model = Lahan::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
+    //Ngelompokin.
+    protected static string|UnitEnum|null $navigationGroup = 'Master';
 
     public static function form(Schema $schema): Schema
     {

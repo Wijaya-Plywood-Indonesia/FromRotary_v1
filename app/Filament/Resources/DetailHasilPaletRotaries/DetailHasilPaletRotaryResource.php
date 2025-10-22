@@ -20,9 +20,10 @@ class DetailHasilPaletRotaryResource extends Resource
 
     protected static ?string $model = DetailHasilPaletRotary::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArchiveBoxArrowDown;
     //grubping
     protected static string|UnitEnum|null $navigationGroup = 'Rotary';
+    protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema
     {

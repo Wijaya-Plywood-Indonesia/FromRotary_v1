@@ -17,12 +17,13 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-
+use UnitEnum;
 
 class KategoriMesinResource extends Resource
 {
     protected static ?string $model = KategoriMesin::class;
-
+    //Ngelompokin.
+    protected static string|UnitEnum|null $navigationGroup = 'Master';
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;
 
     public static function form(Schema $schema): Schema

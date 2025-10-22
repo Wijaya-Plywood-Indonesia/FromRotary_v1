@@ -22,6 +22,7 @@ class ProduksiRotaryResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     //grubping
     protected static string|UnitEnum|null $navigationGroup = 'Rotary';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {

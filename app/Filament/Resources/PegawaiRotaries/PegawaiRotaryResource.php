@@ -19,9 +19,10 @@ class PegawaiRotaryResource extends Resource
 {
     protected static ?string $model = PegawaiRotary::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
     //grubping
     protected static string|UnitEnum|null $navigationGroup = 'Rotary';
+    protected static ?int $navigationSort = 2;
     public static function form(Schema $schema): Schema
     {
         return PegawaiRotaryForm::configure($schema);

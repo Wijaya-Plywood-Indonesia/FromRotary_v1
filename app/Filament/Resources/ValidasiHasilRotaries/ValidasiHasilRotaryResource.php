@@ -22,6 +22,7 @@ class ValidasiHasilRotaryResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     //grubping
     protected static string|UnitEnum|null $navigationGroup = 'Rotary';
+    protected static ?int $navigationSort = 6;
 
     public static function form(Schema $schema): Schema
     {

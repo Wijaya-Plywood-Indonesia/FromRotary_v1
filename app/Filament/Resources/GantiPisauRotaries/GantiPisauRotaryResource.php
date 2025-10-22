@@ -19,9 +19,10 @@ class GantiPisauRotaryResource extends Resource
 {
     protected static ?string $model = GantiPisauRotary::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInbox;
     //grubping
     protected static string|UnitEnum|null $navigationGroup = 'Rotary';
+    protected static ?int $navigationSort = 5;
     public static function form(Schema $schema): Schema
     {
         return GantiPisauRotaryForm::configure($schema);
