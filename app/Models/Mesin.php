@@ -19,5 +19,9 @@ class Mesin extends Model
     {
         return $this->belongsTo(KategoriMesin::class, 'kategori_mesin_id');
     }
+    public function mesins()
+    {
+        return $this->hasMany(Mesin::class, 'id_mesin');
+    }
 
 }
