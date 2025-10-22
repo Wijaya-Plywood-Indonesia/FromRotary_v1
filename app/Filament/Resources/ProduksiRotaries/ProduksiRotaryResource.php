@@ -19,7 +19,7 @@ class ProduksiRotaryResource extends Resource
 {
     protected static ?string $model = ProduksiRotary::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
     //grubping
     protected static string|UnitEnum|null $navigationGroup = 'Rotary';
     protected static ?int $navigationSort = 1;

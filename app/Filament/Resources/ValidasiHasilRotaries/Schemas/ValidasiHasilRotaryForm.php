@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ValidasiHasilRotaries\Schemas;
 
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -11,13 +12,17 @@ class ValidasiHasilRotaryForm
     {
         return $schema
             ->components([
-                TextInput::make('id_lahan')
-                    ->required()
-                    ->numeric(),
                 TextInput::make('id_produksi')
                     ->required()
                     ->numeric(),
-                TextInput::make('jumlah_batang')
+                DateTimePicker::make('timestamp_laporan')
+                    ->required(),
+                TextInput::make('id_ukuran')
+                    ->required()
+                    ->numeric(),
+                TextInput::make('kw')
+                    ->required(),
+                TextInput::make('total_lembar')
                     ->required()
                     ->numeric()
                     ->default(0),

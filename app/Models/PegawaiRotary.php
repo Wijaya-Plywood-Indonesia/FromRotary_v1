@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PegawaiRotary extends Model
 {
+    protected $table = 'pegawai_rotaries';
+    protected $primaryKey = 'id';
     //isian
     protected $fillable = [
         'id_produksi',
@@ -14,4 +16,12 @@ class PegawaiRotary extends Model
         'jam_masuk',
         'jam_pulang',
     ];
+    public function pegawai()
+    {
+        return $this->belongsTo(Pegawai::class, 'id_pegawai', 'id');
+    }
+    public function produksi_rotary()
+    {
+        return $this->belongsTo(ProduksiRotary::class, 'id_produksi');
+    }
 }

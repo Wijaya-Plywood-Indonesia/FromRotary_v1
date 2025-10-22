@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pegawai extends Model
 {
-
+    protected $table = 'pegawais';
+    protected $primaryKey = 'id';
     // Kolom yang boleh diisi mass-assignment
     protected $fillable = [
         'kode_pegawai',
@@ -17,4 +18,8 @@ class Pegawai extends Model
         'tanggal_masuk',
         'foto',
     ];
+    public function pegawaiRotaries()
+    {
+        return $this->hasMany(PegawaiRotary::class, 'id_pegawai');
+    }
 }

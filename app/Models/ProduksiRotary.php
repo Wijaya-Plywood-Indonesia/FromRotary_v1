@@ -17,4 +17,9 @@ class ProduksiRotary extends Model
     {
         return $this->belongsTo(Mesin::class, 'id_mesin');
     }
+    public function produksi_rotaries()
+    {
+        return $this->hasMany(ProduksiRotary::class, 'id_produksi');
+    }
+
 }

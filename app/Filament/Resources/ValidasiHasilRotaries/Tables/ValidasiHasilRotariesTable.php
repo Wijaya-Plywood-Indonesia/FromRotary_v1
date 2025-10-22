@@ -14,13 +14,18 @@ class ValidasiHasilRotariesTable
     {
         return $table
             ->columns([
-                TextColumn::make('id_lahan')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('id_produksi')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('jumlah_batang')
+                TextColumn::make('timestamp_laporan')
+                    ->dateTime()
+                    ->sortable(),
+                TextColumn::make('id_ukuran')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('kw')
+                    ->searchable(),
+                TextColumn::make('total_lembar')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('created_at')
