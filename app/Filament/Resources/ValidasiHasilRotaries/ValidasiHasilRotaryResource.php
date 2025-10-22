@@ -13,12 +13,15 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class ValidasiHasilRotaryResource extends Resource
 {
     protected static ?string $model = ValidasiHasilRotary::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    //grubping
+    protected static string|UnitEnum|null $navigationGroup = 'Rotary';
 
     public static function form(Schema $schema): Schema
     {
