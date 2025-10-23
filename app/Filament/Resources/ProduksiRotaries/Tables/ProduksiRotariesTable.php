@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ProduksiRotaries\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -14,14 +15,12 @@ class ProduksiRotariesTable
     {
         return $table
             ->columns([
-
+                TextColumn::make('id_mesin')
+                    ->numeric()
+                    ->sortable(),
                 TextColumn::make('tgl_produksi')
                     ->date()
                     ->sortable(),
-                TextColumn::make('mesin.nama_mesin')
-                    ->label('Mesin')
-                    ->sortable()
-                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -35,6 +34,7 @@ class ProduksiRotariesTable
                 //
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

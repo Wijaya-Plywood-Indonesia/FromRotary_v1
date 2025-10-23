@@ -7,10 +7,9 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 
-class EditProduksiRotary extends EditRecord
+class EditProduksiRotaryForm extends EditRecord
 {
     protected static string $resource = ProduksiRotaryResource::class;
-
 
     protected function getHeaderActions(): array
     {

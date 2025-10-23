@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ValidasiHasilRotaries\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -17,17 +18,10 @@ class ValidasiHasilRotariesTable
                 TextColumn::make('id_produksi')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('timestamp_laporan')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('id_ukuran')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('kw')
+                TextColumn::make('role')
                     ->searchable(),
-                TextColumn::make('total_lembar')
-                    ->numeric()
-                    ->sortable(),
+                TextColumn::make('status')
+                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -39,6 +33,9 @@ class ValidasiHasilRotariesTable
             ])
             ->filters([
                 //
+            ])
+            ->headerActions([
+                CreateAction::make(), // 👈 ini yang munculkan tombol "Tambah"
             ])
             ->recordActions([
                 EditAction::make(),

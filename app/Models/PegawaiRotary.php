@@ -16,12 +16,14 @@ class PegawaiRotary extends Model
         'jam_masuk',
         'jam_pulang',
     ];
-    public function pegawai()
-    {
-        return $this->belongsTo(Pegawai::class, 'id_pegawai', 'id');
-    }
-    public function produksi_rotary()
+    public function produksi()
     {
         return $this->belongsTo(ProduksiRotary::class, 'id_produksi');
     }
+
+    public function pegawai()
+    {
+        return $this->belongsTo(Pegawai::class, 'id_pegawai');
+    }
+
 }

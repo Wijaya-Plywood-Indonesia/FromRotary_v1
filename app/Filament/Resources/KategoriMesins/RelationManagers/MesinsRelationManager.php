@@ -20,7 +20,7 @@ class MesinsRelationManager extends RelationManager
                 CreateAction::make(),
             ]);
     }
-    protected static bool $isLazy = false;
+    //    protected static bool $isLazy = false;
 
     public static function canViewForRecord($ownerRecord, string $pageClass): bool
     {

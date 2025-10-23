@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Filament\Resources\ProduksiRotaries\Schemas;
+
+use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Schema;
+
+class ProduksiRotaryInfolist
+{
+    public static function configure(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                TextEntry::make('id_mesin')
+                    ->numeric(),
+                TextEntry::make('tgl_produksi')
+                    ->date(),
+                TextEntry::make('created_at')
+                    ->dateTime(),
+                TextEntry::make('updated_at')
+                    ->dateTime(),
+            ]);
+    }
+}

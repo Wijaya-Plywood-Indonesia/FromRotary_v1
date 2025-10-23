@@ -21,5 +21,18 @@ class ProduksiRotary extends Model
     {
         return $this->hasMany(ProduksiRotary::class, 'id_produksi');
     }
+    public function detailPegawaiRotary()
+    {
+        return $this->hasMany(PegawaiRotary::class, 'id_produksi');
+    }
+    public function detailLahanRotary()
+    {
+        return $this->hasMany(PenggunaanLahanRotary::class, 'id_produksi');
+    }
+    public function detailValidasiHasilRotary()
+    {
+        return $this->hasMany(ValidasiHasilRotary::class, 'id_produksi');
+    }
+
 
 }

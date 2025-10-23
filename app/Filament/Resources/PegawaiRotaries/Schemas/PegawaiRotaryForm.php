@@ -18,17 +18,6 @@ class PegawaiRotaryForm
     {
         return $schema
             ->components([
-
-
-                // TextEntry::make('tgl_produksi')
-                //     ->label('Tanggal Produksi')
-                //     ->state(function ($get) {
-                //         $produksi = ProduksiRotary::find($get('id_produksi'));
-                //         return $produksi
-                //             ? Carbon::parse($produksi->tgl_produksi)->translatedFormat('d F Y')
-                //             : '-';
-                //     })
-                //     ->reactive(),
                 Select::make('id_produksi')
                     ->label('Mesin Produksi')
                     ->relationship('produksi_rotary', 'id') // nama relasi di model + kolom yang ditampilkan
@@ -42,8 +31,17 @@ class PegawaiRotaryForm
                     ->required(),
 
 
-                TextInput::make('role')
-                    ->label('Peran Di Produksi'),
+                Select::make('role')
+                    ->label('Peran Di Produksi')
+                    ->options([
+                        'operator_mesin' => 'Operator Mesin',
+                        'petugas_pilih' => 'Petugas Pilih',
+                        'operator_lain' => 'Operator Produksi Lain',
+                    ])
+                    ->required()
+                    ->native(false),
+
+
                 Select::make('jam_masuk')
                     ->label('Jam Masuk')
                     ->options(self::timeOptions())

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PenggunaanLahanRotaries\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -14,12 +15,15 @@ class PenggunaanLahanRotariesTable
     {
         return $table
             ->columns([
-                TextColumn::make('id_lahan')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('id_produksi')
-                    ->numeric()
-                    ->sortable(),
+                TextColumn::make('lahan_display')
+                    ->label('Lahan')
+                    ->getStateUsing(
+                        fn($record) =>
+                        "{$record->lahan->kode_lahan} - {$record->lahan->nama_lahan}"
+                    )
+                    ->sortable(['lahan.kode_lahan']) // optional
+                    ->searchable(['lahan.kode_lahan', 'lahan.nama_lahan']),
+
                 TextColumn::make('jumlah_batang')
                     ->numeric()
                     ->sortable(),
@@ -31,6 +35,9 @@ class PenggunaanLahanRotariesTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->headerActions([
+                CreateAction::make(), // 👈 ini yang munculkan tombol "Tambah"
             ])
             ->filters([
                 //

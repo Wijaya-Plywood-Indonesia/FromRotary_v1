@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class GantiPisauRotary extends Model
 {
     //
-    protected $table = 'detail_hasil_palet_rotaries';
+    protected $table = 'ganti_pisau_rotaries';
     protected $primaryKey = 'id';
     //
     protected $fillable = [
