@@ -13,18 +13,6 @@ class ValidasiHasilRotaryForm
     {
         return $schema
             ->components([
-                // Select::make('role')
-                //     ->label('Role')
-                //     ->options([
-                //         'pengawas_produksi_1' => 'Pengawas Produksi 1',
-                //         'pengawas_produksi_2' => 'Pengawas Produksi 2',
-                //         'kepala_produksi' => 'Kepala Produksi',
-                //         'pimpinan' => 'Pimpinan',
-                //     ])
-                //     ->required()
-                //     ->native(false)
-                //     ->searchable(),
-
                 TextInput::make('role')
                     ->label('Role Login')
                     ->default(function () {

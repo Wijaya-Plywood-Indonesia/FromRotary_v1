@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class GantiPisauRotaryResource extends Resource
@@ -23,6 +24,12 @@ class GantiPisauRotaryResource extends Resource
     //grubping
     protected static string|UnitEnum|null $navigationGroup = 'Rotary';
     protected static ?int $navigationSort = 5;
+    //ngurutin
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->latest('created_at');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return GantiPisauRotaryForm::configure($schema);

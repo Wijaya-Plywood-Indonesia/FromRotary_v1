@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PenggunaanLahanRotary extends Model
 {
+    protected $table = 'penggunaan_lahan_rotaries';
+    protected $primaryKey = 'id';
     //
     protected $fillable = [
         'id_lahan',

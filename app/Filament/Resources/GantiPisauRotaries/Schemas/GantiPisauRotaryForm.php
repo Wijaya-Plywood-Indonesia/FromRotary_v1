@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\GantiPisauRotaries\Schemas;
 
+use Carbon\Carbon;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Schemas\Schema;
@@ -12,13 +13,13 @@ class GantiPisauRotaryForm
     {
         return $schema
             ->components([
-                TextInput::make('id_produksi')
-                    ->required()
-                    ->numeric(),
                 TimePicker::make('jam_mulai_ganti_pisau')
-                    ->required(),
+                    ->required()
+                    ->default(fn() => now()->format('H:i')),
+
                 TimePicker::make('jam_selesai_ganti')
-                    ->required(),
+                    ->required()
+                    ->default(fn() => now()->format('H:i')),
             ]);
     }
 }

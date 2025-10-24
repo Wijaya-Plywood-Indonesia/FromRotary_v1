@@ -50,9 +50,13 @@ class ProduksiRotaryResource extends Resource
     {
         return [
                 //
+
             RelationManagers\DetailPegawaiRotaryRelationManager::class,
             RelationManagers\DetailLahanRotaryRelationManager::class,
             RelationManagers\DetailValidasiHasilRotaryRelationManager::class,
+            RelationManagers\DetailPaletRotaryRelationManager::class,
+            RelationManagers\DetailgantiPisauRotaryRelationManager::class,
+
         ];
     }
 

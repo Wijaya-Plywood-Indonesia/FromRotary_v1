@@ -16,5 +16,9 @@ class GantiPisauRotary extends Model
         'jam_mulai_ganti_pisau',
         'jam_selesai_ganti',
     ];
+    public function produksi()
+    {
+        return $this->belongsTo(ProduksiRotary::class, 'id_produksi');
+    }
 
 }

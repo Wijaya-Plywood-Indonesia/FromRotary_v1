@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ValidasiHasilRotaries\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -15,9 +16,6 @@ class ValidasiHasilRotariesTable
     {
         return $table
             ->columns([
-                TextColumn::make('id_produksi')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('role')
                     ->searchable(),
                 TextColumn::make('status')
@@ -39,6 +37,7 @@ class ValidasiHasilRotariesTable
             ])
             ->recordActions([
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

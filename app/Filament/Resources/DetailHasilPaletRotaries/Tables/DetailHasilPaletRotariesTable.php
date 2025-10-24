@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\DetailHasilPaletRotaries\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -23,8 +25,13 @@ class DetailHasilPaletRotariesTable
                 TextColumn::make('id_ukuran')
                     ->numeric()
                     ->sortable(),
+
                 TextColumn::make('kw')
                     ->searchable(),
+
+                TextColumn::make('id_penggunaan_lahan')
+                    ->searchable(),
+
                 TextColumn::make('total_lembar')
                     ->numeric()
                     ->sortable(),
@@ -40,8 +47,12 @@ class DetailHasilPaletRotariesTable
             ->filters([
                 //
             ])
+            ->headerActions([
+                CreateAction::make(), // 👈 ini yang munculkan tombol "Tambah"
+            ])
             ->recordActions([
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

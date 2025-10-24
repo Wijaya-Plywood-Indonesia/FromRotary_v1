@@ -33,6 +33,13 @@ class ProduksiRotary extends Model
     {
         return $this->hasMany(ValidasiHasilRotary::class, 'id_produksi');
     }
-
+    public function detailGantiPisauRotary()
+    {
+        return $this->hasMany(GantiPisauRotary::class, 'id_produksi');
+    }
+    public function detailPaletRotary()
+    {
+        return $this->hasMany(DetailHasilPaletRotary::class, 'id_produksi');
+    }
 
 }
