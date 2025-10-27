@@ -12,7 +12,9 @@ class Lahan extends Model
     protected $fillable = [
         'kode_lahan',
         'nama_lahan',
-        'detail',
+        'panjang',
+        'diameter',
+
 
     ];
     public function penggunaanLahanRotaries()
