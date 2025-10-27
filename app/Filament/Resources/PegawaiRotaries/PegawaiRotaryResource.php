@@ -32,7 +32,10 @@ class PegawaiRotaryResource extends Resource
     {
         return PegawaiRotariesTable::configure($table);
     }
-
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
     public static function getRelations(): array
     {
         return [
