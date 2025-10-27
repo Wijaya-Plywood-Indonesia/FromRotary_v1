@@ -23,6 +23,10 @@ class GantiPisauRotaryResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInbox;
     //grubping
     protected static string|UnitEnum|null $navigationGroup = 'Rotary';
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
     protected static ?int $navigationSort = 5;
     //ngurutin
     public static function getEloquentQuery(): Builder
