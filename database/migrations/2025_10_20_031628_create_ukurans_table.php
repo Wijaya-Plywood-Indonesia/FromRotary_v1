@@ -12,9 +12,9 @@ return new class extends Migration {
     {
         Schema::create('ukurans', function (Blueprint $table) {
             $table->id();
-            $table->string('panjang');
-            $table->string('lebar');
-            $table->string('tebal');
+            $table->decimal('panjang', 10, 2);
+            $table->decimal('lebar', 10, 2);
+            $table->decimal('tebal', 10, 2);
             $table->timestamps();
         });
     }

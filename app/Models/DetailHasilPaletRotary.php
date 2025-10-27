@@ -32,7 +32,18 @@ class DetailHasilPaletRotary extends Model
     }
     public function penggunaanLahan()
     {
-        return $this->belongsTo(\App\Models\PenggunaanLahanRotary::class, 'id_penggunaan_lahan', 'id');
+        return $this->belongsTo(PenggunaanLahanRotary::class, 'id_penggunaan_lahan', 'id');
     }
 
+    public function lahan()
+    {
+        return $this->hasOneThrough(
+            Lahan::class,
+            PenggunaanLahanRotary::class,
+            'id', // foreign key di tabel perantara
+            'id',           // foreign key di tabel lahan
+            'id',                 // primary key di produksi
+            'id_lahan'            // local key di penggunaan_lahan_rotary
+        );
+    }
 }
