@@ -15,10 +15,8 @@ class ProduksiRotaryInfolist
                     ->numeric(),
                 TextEntry::make('tgl_produksi')
                     ->date(),
-                TextEntry::make('created_at')
-                    ->dateTime(),
-                TextEntry::make('updated_at')
-                    ->dateTime(),
+                TextEntry::make('kendala'),
+
             ]);
     }
 }
