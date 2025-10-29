@@ -11,7 +11,7 @@ class ProduksiRotaryInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('id_mesin')
+                TextEntry::make('mesin.nama_mesin')
                     ->numeric(),
                 TextEntry::make('tgl_produksi')
                     ->date(),
