@@ -62,11 +62,15 @@ class SupplierKayuForm
                     }),
                 TextInput::make('no_rekening'),
 
-                Toggle::make('status_supplier')
+                Select::make('status_supplier')
                     ->label('Status Supplier')
-                    ->reactive()            // bikin field reaktif sehingga placeholder update segera
-                    ->default(true)
-                    ->required(),
+                    ->options([
+                        0 => 'Tidak Aktif',
+                        1 => 'Aktif',
+                    ])
+
+                    ->default('0')
+                    ->native(false),
 
 
                 // TextEntry::make('status_supplier_label')

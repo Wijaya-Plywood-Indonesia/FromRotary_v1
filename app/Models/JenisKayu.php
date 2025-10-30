@@ -13,4 +13,12 @@ class JenisKayu extends Model
         'nama_kayu',
         'keterangan',
     ];
+    public function detailPenggunaanJenisDiLahan()
+    {
+        return $this->hasMany(PenggunaanLahanRotary::class, 'id_jenis_kayu');
+    }
+    public function kayuMasuk()
+    {
+        return $this->hasMany(HargaKayu::class, 'id_jenis_kayu', 'id');
+    }
 }

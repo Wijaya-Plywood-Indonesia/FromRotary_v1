@@ -12,6 +12,7 @@ class PenggunaanLahanRotary extends Model
     protected $fillable = [
         'id_lahan',
         'id_produksi',
+        'id_jenis_kayu',
         'jumlah_batang',
 
     ];
@@ -22,6 +23,10 @@ class PenggunaanLahanRotary extends Model
     public function lahan()
     {
         return $this->belongsTo(Lahan::class, 'id_lahan', 'id');
+    }
+    public function jenisKayu()
+    {
+        return $this->belongsTo(JenisKayu::class, 'id_jenis_kayu', 'id');
     }
     public function detailProduksiPalet()
     {

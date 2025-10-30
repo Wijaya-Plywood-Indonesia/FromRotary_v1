@@ -1,32 +1,34 @@
 <?php
 
-namespace App\Filament\Resources\PenggunaanLahanRotaries\Schemas;
+namespace App\Filament\Resources\HargaKayus\Schemas;
 
 use App\Models\JenisKayu;
-use App\Models\Lahan;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
-class PenggunaanLahanRotaryForm
+class HargaKayuForm
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Select::make('id_lahan')
-                    ->label('Lahan')
-                    ->options(
-                        Lahan::query()
-                            ->get()
-                            ->mapWithKeys(function ($lahan) {
-                                return [
-                                    $lahan->id => "{$lahan->kode_lahan} - {$lahan->nama_lahan}",
-                                ];
-                            })
-                    )
-                    ->searchable()
-                    ->required(),
+                TextInput::make('panjang')
+                    ->required()
+                    ->numeric()
+                    ->placeholder('120 / 260')
+                ,
+                TextInput::make('diameter_terkecil')
+                    ->label('Diameter Terkecil (cm)')
+                    ->numeric(),
+                TextInput::make('diameter_terbesar')
+                    ->label('Diameter Terkecil (cm)')
+                    ->numeric(),
+                TextInput::make('harga_beli')
+                    ->label('Harga Beli Per Batang')
+                    ->required()
+                    //    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
+                    ->numeric(),
                 Select::make('id_jenis_kayu')
                     ->label('Jenis Kayu')
                     ->options(
@@ -40,10 +42,6 @@ class PenggunaanLahanRotaryForm
                     )
                     ->searchable()
                     ->required(),
-                TextInput::make('jumlah_batang')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
             ]);
     }
 }

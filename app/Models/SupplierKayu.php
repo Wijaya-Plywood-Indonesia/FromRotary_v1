@@ -15,7 +15,7 @@ class SupplierKayu extends Model
         'nama_supplier',
         'no_telepon',
         'nik',
-        'jenis_kelamin_pegawai',
+        'jenis_kelamin',
         'alamat',
         'jenis_bank',
         'no_rekening',
@@ -26,8 +26,8 @@ class SupplierKayu extends Model
      * Cast kolom tertentu ke tipe data tertentu.
      */
     protected $casts = [
-        'jenis_kelamin_pegawai' => 'boolean',
-        'status_supplier' => 'boolean',
+        'jenis_kelamin_pegawai' => 'integer',
+        'status_supplier' => 'integer',
         'nik' => 'encrypted', // ✅ otomatis enkripsi & dekripsi
     ];
 
