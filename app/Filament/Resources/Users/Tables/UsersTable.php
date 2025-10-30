@@ -21,7 +21,14 @@ class UsersTable
                     ->searchable(),
                 TextColumn::make('email_verified_at')
                     ->dateTime()
-                    ->sortable(),
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('roles.name')
+                    ->label('Roles')
+                    ->sortable()
+                    ->searchable()
+                    ->badge(), // biar tiap role tampil dalam bentuk badge warna-warni
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

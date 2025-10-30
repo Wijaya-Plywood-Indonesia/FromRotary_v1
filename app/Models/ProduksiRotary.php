@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\QueryException;
 
 class ProduksiRotary extends Model
 {
@@ -44,6 +46,24 @@ class ProduksiRotary extends Model
     public function detailKayuPecah()
     {
         return $this->hasMany(KayuPecahRotary::class, 'id_produksi');
+    }
+    protected static function booted()
+    {
+        static::deleting(function ($record) {
+            try {
+                // Coba hapus record anak manual, jika mau
+            } catch (QueryException $e) {
+                if ($e->getCode() == '23000') {
+                    Notification::make()
+                        ->title('Data tidak dapat dihapus')
+                        ->body('Data ini masih digunakan pada tabel lain.')
+                        ->danger()
+                        ->send();
+
+                    return false; // Batalkan penghapusan
+                }
+            }
+        });
     }
 
 }

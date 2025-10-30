@@ -10,14 +10,17 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('ganti_pisau_rotaries', function (Blueprint $table) {
+        Schema::create('harga_kayus', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_produksi')
-                ->constrained('jenis_kayu')
+            $table->integer('panjang')->default('0');
+            $table->decimal('diameter_terkecil', 3, 2)->nullable();
+            $table->decimal('diameter_terbesar', 3, 2)->nullable();
+            $table->integer('harga_beli');
+
+            $table->foreignId('id_jenis_kayu')
+                ->constrained('jenis_kayus')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->time('jam_mulai_ganti_pisau');
-            $table->time('jam_selesai_ganti');
             $table->timestamps();
         });
     }
@@ -27,6 +30,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('ganti_pisau_rotaries');
+        Schema::dropIfExists('harga_kayus');
     }
 };

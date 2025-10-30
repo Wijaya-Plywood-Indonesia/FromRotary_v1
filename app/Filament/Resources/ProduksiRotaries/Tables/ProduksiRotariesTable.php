@@ -43,7 +43,7 @@ class ProduksiRotariesTable
             ])
             ->filters([
                 Filter::make('tgl_produksi')
-                    ->form([
+                    ->schema([
                         DatePicker::make('from')
                             ->label('Dari Tanggal'),
                         DatePicker::make('until')
@@ -112,6 +112,7 @@ class ProduksiRotariesTable
                     ->modalHeading(fn($record) => $record->kendala ? 'Perbarui Kendala' : 'Tambah Kendala')
                     ->modalSubmitActionLabel('Simpan'),
                 EditAction::make(),
+                ViewAction::make(),
                 DeleteAction::make(),
             ])
             ->toolbarActions([
