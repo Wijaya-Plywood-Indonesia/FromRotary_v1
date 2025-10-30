@@ -1,26 +1,22 @@
 <?php
 
-namespace App\Filament\Resources\DetailHasilPaletRotaries\Tables;
+namespace App\Filament\Resources\KayuPecahRotaries\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class DetailHasilPaletRotariesTable
+class KayuPecahRotariesTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
 
-                TextColumn::make('timestamp_laporan')
-                    ->label('Waktu Laporan')
-                    ->dateTime()
-                    ->sortable(),
                 TextColumn::make('lahan_display')
                     ->label('Lahan')
                     ->getStateUsing(
@@ -30,23 +26,26 @@ class DetailHasilPaletRotariesTable
                     ->sortable(['lahan.kode_lahan']) // optional
                     ->searchable(['lahan.kode_lahan', 'lahan.nama_lahan']),
 
-                TextColumn::make('id_ukuran')
+                TextColumn::make('panjang')
                     ->numeric()
                     ->sortable(),
-
-                TextColumn::make('kw')
-                    ->searchable(),
-
-                TextColumn::make('id_penggunaan_lahan')
-                    ->searchable(),
-
-                TextColumn::make('total_lembar')
+                TextColumn::make('diameter')
                     ->numeric()
                     ->sortable(),
+                IconColumn::make('foto')
+                    ->label('Foto')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->tooltip(fn($state) => $state ? 'Foto sudah diupload' : 'Belum ada foto'),
                 TextColumn::make('created_at')
+                    ->label('Waktu Laporan')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                //->toggleable(isToggledHiddenByDefault: true)
+                ,
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -60,7 +59,6 @@ class DetailHasilPaletRotariesTable
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

@@ -22,6 +22,10 @@ class PenggunaanLahanRotaryResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMapPin;
     //grubping
     protected static string|UnitEnum|null $navigationGroup = 'Rotary';
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
     protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema

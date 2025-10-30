@@ -41,5 +41,9 @@ class ProduksiRotary extends Model
     {
         return $this->hasMany(DetailHasilPaletRotary::class, 'id_produksi');
     }
+    public function detailKayuPecah()
+    {
+        return $this->hasMany(KayuPecahRotary::class, 'id_produksi');
+    }
 
 }

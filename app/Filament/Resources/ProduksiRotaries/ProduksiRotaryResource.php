@@ -4,6 +4,8 @@ namespace App\Filament\Resources\ProduksiRotaries;
 
 use App\Filament\Resources\ProduksiRotaries\Pages\CreateProduksiRotary;
 use App\Filament\Resources\ProduksiRotaries\Pages\EditProduksiRotary;
+use App\Filament\Resources\ProduksiRotaries\Pages\LaporanPegawaiRotaries;
+
 use App\Filament\Resources\ProduksiRotaries\Pages\ListProduksiRotaries;
 use App\Filament\Resources\ProduksiRotaries\Pages\ViewProduksiRotary;
 use App\Filament\Resources\ProduksiRotaries\Schemas\ProduksiRotaryForm;
@@ -56,6 +58,7 @@ class ProduksiRotaryResource extends Resource
             RelationManagers\DetailValidasiHasilRotaryRelationManager::class,
             RelationManagers\DetailPaletRotaryRelationManager::class,
             RelationManagers\DetailgantiPisauRotaryRelationManager::class,
+            RelationManagers\DetailKayuPecahRelationManager::class,
 
         ];
     }
@@ -67,6 +70,7 @@ class ProduksiRotaryResource extends Resource
             'create' => CreateProduksiRotary::route('/create'),
             'view' => ViewProduksiRotary::route('/{record}'),
             'edit' => EditProduksiRotary::route('/{record}/edit'),
+            // 'laporan' => LaporanPegawaiRotaries::route('/laporan-pegawai'),
         ];
     }
 }

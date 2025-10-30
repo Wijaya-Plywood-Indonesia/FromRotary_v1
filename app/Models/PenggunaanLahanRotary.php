@@ -23,5 +23,14 @@ class PenggunaanLahanRotary extends Model
     {
         return $this->belongsTo(Lahan::class, 'id_lahan', 'id');
     }
+    public function detailProduksiPalet()
+    {
+        return $this->hasMany(DetailHasilPaletRotary::class, 'id_penggunaan_lahan');
+    }
+    public function detailKayuPecah()
+    {
+        return $this->hasMany(KayuPecahRotary::class, 'id_penggunaan_lahan');
+    }
+
 
 }
