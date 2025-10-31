@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\HargaKayus\Tables;
+namespace App\Filament\Resources\KendaraanSupplierKayus\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -9,27 +9,18 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class HargaKayusTable
+class KendaraanSupplierKayusTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('panjang')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('diameter_terkecil')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('diameter_terbesar')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('harga_beli')
-                    ->label('Harga Beli Per batang')
-                    ->money('IDR', locale: 'id')
-                    ->sortable(),
-                TextColumn::make('jenisKayu.nama_kayu')
-                    ->sortable(),
+                TextColumn::make('nopol_kendaraan')
+                    ->searchable(),
+                TextColumn::make('jenis_kendaraan')
+                    ->searchable(),
+                TextColumn::make('pemilik_kendaraan')
+                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
