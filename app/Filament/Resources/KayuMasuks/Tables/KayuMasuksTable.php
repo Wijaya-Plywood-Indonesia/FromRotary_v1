@@ -15,24 +15,17 @@ class KayuMasuksTable
     {
         return $table
             ->columns([
-                TextColumn::make('jenis_Dokumen_angkut')
+                TextColumn::make('jenis_dokumen_angkut')
                     ->searchable(),
                 TextColumn::make('upload_dokumen_angkut')
-                    ->searchable(),
-                TextColumn::make('tgl_kayu_masuk')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('seri')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Dokumen Legal')
+                    ->badge()
+                    ->formatStateUsing(fn($state) => $state ? 'Ada File' : 'Kosong')
+                    ->color(fn($state) => $state ? 'success' : 'danger'),
+                TextColumn::make('tgl_kayu_masuk')->dateTime()->sortable(),
+                TextColumn::make('seri')->numeric()->sortable(),
+                TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

@@ -14,4 +14,8 @@ class KendaraanSupplierKayu extends Model
         'pemilik_kendaraan',
         'kategori_kendaraan',
     ];
+    public function terdaftarKayuMasuk()
+    {
+        return $this->hasMany(KayuMasuk::class, 'id_kendaraan_supplier_kayus');
+    }
 }

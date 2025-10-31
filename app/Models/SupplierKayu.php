@@ -54,4 +54,9 @@ class SupplierKayu extends Model
     // {
     //     return $this->hasMany(KayuMasuk::class, 'supplier_id');
     // }
+    public function terdaftarKayuMasuk()
+    {
+        return $this->hasMany(KayuMasuk::class, 'id_supplier_kayus', );
+    }
+
 }
