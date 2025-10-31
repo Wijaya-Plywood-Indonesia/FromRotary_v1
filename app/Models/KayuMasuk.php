@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class KayuMasuk extends Model
 {
@@ -17,7 +18,6 @@ class KayuMasuk extends Model
         'id_supplier_kayus',
         'id_kendaraan_supplier_kayus',
         'id_dokumen_kayus',
-
     ];
 
     /**
@@ -53,5 +53,9 @@ class KayuMasuk extends Model
     public function penggunaanDokumenKayu()
     {
         return $this->belongsTo(DokumenKayu::class, 'id_dokumen_kayus');
+    }
+    public function tempatKayu(): HasMany
+    {
+        return $this->hasMany(TempatKayu::class, 'id_tempat_kayu');
     }
 }
