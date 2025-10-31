@@ -34,4 +34,8 @@ class DokumenKayu extends Model
 
         return '-';
     }
+    public function terdaftarKayuMasuk()
+    {
+        return $this->hasMany(KayuMasuk::class, 'id_dokumen_kayus');
+    }
 }

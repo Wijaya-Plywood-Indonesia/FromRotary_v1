@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('kayu_masuks', function (Blueprint $table) {
             $table->id();
-            $table->string('jenis_Dokumen_angkut');
+            $table->string('jenis_dokumen_angkut');
             $table->string('upload_dokumen_angkut');
             $table->dateTime('tgl_kayu_masuk');
             $table->integer('seri');
