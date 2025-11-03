@@ -14,6 +14,7 @@ class DetailKayuMasuk extends Model
         'diameter',
         'panjang',
         'grade',
+        'jumlah_batang',
         'keterangan',
     ];
 
