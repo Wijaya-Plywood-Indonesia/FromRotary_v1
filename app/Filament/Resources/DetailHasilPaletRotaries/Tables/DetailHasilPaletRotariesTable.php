@@ -25,11 +25,10 @@ class DetailHasilPaletRotariesTable
                     ->label('Lahan')
                     ->getStateUsing(
                         fn($record) =>
-                        "{$record->lahan->kode_lahan} - {$record->lahan->nama_lahan}"
-                    )
-                    ->sortable(['lahan.kode_lahan']) // optional
-                    ->searchable(['lahan.kode_lahan', 'lahan.nama_lahan']),
-
+                        $record->penggunaanLahan?->lahan
+                        ? "{$record->penggunaanLahan->lahan->kode_lahan} - {$record->penggunaanLahan->lahan->nama_lahan}"
+                        : '-'
+                    ),
                 TextColumn::make('setoranPaletUkuran.dimensi')
                     ->label('Ukuran')
                     ->sortable()
@@ -38,7 +37,7 @@ class DetailHasilPaletRotariesTable
                 TextColumn::make('kw')
                     ->searchable(),
 
-                TextColumn::make('id_penggunaan_lahan')
+                TextColumn::make('palet')
                     ->searchable(),
 
                 TextColumn::make('total_lembar')
@@ -57,7 +56,7 @@ class DetailHasilPaletRotariesTable
                 //
             ])
             ->headerActions([
-                CreateAction::make(), // 👈 ini yang munculkan tombol "Tambah"
+                CreateAction::make(), // ðŸ‘ˆ ini yang munculkan tombol "Tambah"
             ])
             ->recordActions([
                 EditAction::make(),
