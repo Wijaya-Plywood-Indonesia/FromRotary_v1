@@ -15,13 +15,14 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class KendaraanSupplierKayuResource extends Resource
 {
     protected static ?string $model = KendaraanSupplierKayu::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
+    protected static string|UnitEnum|null $navigationGroup = 'Kayu';
     protected static ?string $recordTitleAttribute = 'nopol_kendaraan';
 
     public static function form(Schema $schema): Schema

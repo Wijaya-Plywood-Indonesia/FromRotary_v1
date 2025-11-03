@@ -10,24 +10,26 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('tempat_kayus', function (Blueprint $table) {
+        Schema::create('detail_kayu_masuks', function (Blueprint $table) {
             $table->id();
-            $table->integer('jumlah_batang');
-            $table->integer('poin');
-
             $table->foreignId('id_kayu_masuk')
-                ->nullable() // tambahkan nullable jika tabel sudah berisi data agar tidak error saat migrasi
-                //->after('poin')
+                ->nullable()
                 ->constrained('kayu_masuks')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-
+            $table->integer('diameter');
+            $table->integer('panjang');
+            $table->integer('grade');
+            $table->text('keterangan');
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('tempat_kayus');
+        Schema::dropIfExists('detail_kayu_masuks');
     }
 };
