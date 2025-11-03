@@ -30,9 +30,10 @@ class DetailHasilPaletRotariesTable
                     ->sortable(['lahan.kode_lahan']) // optional
                     ->searchable(['lahan.kode_lahan', 'lahan.nama_lahan']),
 
-                TextColumn::make('id_ukuran')
-                    ->numeric()
-                    ->sortable(),
+                TextColumn::make('setoranPaletUkuran.dimensi')
+                    ->label('Ukuran')
+                    ->sortable()
+                    ->searchable(),
 
                 TextColumn::make('kw')
                     ->searchable(),
