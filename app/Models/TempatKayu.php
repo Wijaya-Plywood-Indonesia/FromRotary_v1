@@ -14,9 +14,10 @@ class TempatKayu extends Model
     protected $primaryKey = 'id';
 
     protected $fillable = [
-        'jumlah',
+        'jumlah_batang',
         'poin',
-        'id_kayu_masuk'
+        'id_kayu_masuk',
+        'id_lahan'
     ];
 
     public function kayuMasuk(): BelongsTo
@@ -26,6 +27,11 @@ class TempatKayu extends Model
 
     public function riwayatKayu(): HasMany
     {
-        return $this->hasMany(RiwayatKayu::class, 'id_riwayat_kayu');
+        return $this->hasMany(RiwayatKayu::class, 'id_tempat_kayu');
+    }
+
+    public function lahan(): BelongsTo
+    {
+        return $this->belongsTo(Lahan::class, 'id_lahan');
     }
 }

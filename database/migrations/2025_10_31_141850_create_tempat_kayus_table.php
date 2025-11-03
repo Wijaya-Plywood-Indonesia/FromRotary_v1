@@ -25,13 +25,6 @@ return new class extends Migration {
         });
     }
 
-    //     'jumlah',
-    // 'poin',
-    // 'id_kayu_masuk'
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('tempat_kayus');

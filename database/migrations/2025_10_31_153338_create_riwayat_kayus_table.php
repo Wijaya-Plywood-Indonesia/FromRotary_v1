@@ -13,6 +13,7 @@ return new class extends Migration {
         Schema::create('riwayat_kayus', function (Blueprint $table) {
             $table->id();
             $table->date('tanggal_masuk');
+            $table->data('tanggal_digunakan');
             $table->date('tanggal_habis');
             $table->foreignId('id_tempat_kayu')
                 ->nullable() // tambahkan nullable jika tabel sudah berisi data agar tidak error saat migrasi
@@ -25,14 +26,6 @@ return new class extends Migration {
         });
     }
 
-    //     'tanggal_masuk',
-    // 'tanggal_digunakan',
-    // 'tanggal_habis',
-    // 'id_tempat_masuk'
-    /**
-     * 
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('riwayat_kayus');
