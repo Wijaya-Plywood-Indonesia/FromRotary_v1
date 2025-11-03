@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\DetailKayuMasuks\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -37,6 +38,9 @@ class DetailKayuMasuksTable
             ])
             ->filters([
                 //
+            ])
+            ->headerActions([
+                CreateAction::make(), // ðŸ‘ˆ ini yang munculkan tombol "Tambah"
             ])
             ->recordActions([
                 EditAction::make(),

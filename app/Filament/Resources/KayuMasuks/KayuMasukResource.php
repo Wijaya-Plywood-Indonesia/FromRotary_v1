@@ -6,6 +6,7 @@ use App\Filament\Resources\KayuMasuks\Pages\CreateKayuMasuk;
 use App\Filament\Resources\KayuMasuks\Pages\EditKayuMasuk;
 use App\Filament\Resources\KayuMasuks\Pages\ListKayuMasuks;
 use App\Filament\Resources\KayuMasuks\Pages\ViewKayuMasuk;
+use App\Filament\Resources\KayuMasuks\RelationManagers\DetailMasukanKayuRelationManager;
 use App\Filament\Resources\KayuMasuks\Schemas\KayuMasukForm;
 use App\Filament\Resources\KayuMasuks\Schemas\KayuMasukInfolist;
 use App\Filament\Resources\KayuMasuks\Tables\KayuMasuksTable;
@@ -42,7 +43,8 @@ class KayuMasukResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+                //
+            DetailMasukanKayuRelationManager::class,
         ];
     }
 
