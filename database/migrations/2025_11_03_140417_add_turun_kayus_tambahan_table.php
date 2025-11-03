@@ -14,7 +14,7 @@ return new class extends Migration {
             //
             $table->foreignId('id_kendaraan')
                 ->nullable() // tambahkan nullable jika tabel sudah berisi data agar tidak error saat migrasi
-                ->after('tanggal')
+                // ->after('tanggal')
                 ->constrained('kendaraan_supplier_kayus')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();

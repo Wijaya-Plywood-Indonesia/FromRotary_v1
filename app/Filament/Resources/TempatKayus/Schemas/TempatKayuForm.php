@@ -12,7 +12,7 @@ class TempatKayuForm
     {
         return $schema
             ->components([
-                TextInput::make('jumlah')
+                TextInput::make('jumlah_batang')
                     ->required()
                     ->numeric(),
                 TextInput::make('poin')
@@ -22,8 +22,8 @@ class TempatKayuForm
                     ->label('Kayu Masuk')
                     ->relationship('kayuMasuk', 'seri')
                     ->searchable()
-                    ->preload()
-                    ->required(),
+                    ->preload(),
+                // ->required(),
                 Select::make('id_lahan')
                     ->label('Lahan')
                     ->relationship('lahan', 'nama_lahan')

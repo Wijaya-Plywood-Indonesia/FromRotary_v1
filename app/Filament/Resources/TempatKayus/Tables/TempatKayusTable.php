@@ -7,7 +7,6 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Tables\Columns\Summarizers\Sum;
 
 class TempatKayusTable
 {
@@ -15,11 +14,12 @@ class TempatKayusTable
     {
         return $table
             ->columns([
-                TextColumn::make('jumlah')
+                TextColumn::make('jumlah_batang')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('poin')
-                    ->summarize(Sum::make()->money('Rp')),
+                    ->money('Rp')
+                    ->numeric(),
                 TextColumn::make('id_kayu_masuk')
                     ->searchable()
                     ->sortable(),
