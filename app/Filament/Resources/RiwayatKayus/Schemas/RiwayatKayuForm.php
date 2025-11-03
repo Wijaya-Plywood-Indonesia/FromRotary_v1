@@ -29,7 +29,7 @@ class RiwayatKayuForm
                     ->displayFormat('d/m/Y'),
                 Select::make('id_tempat_kayu')
                     ->label('Tempat Kayu')
-                    ->relationship('tempatKayu', 'jumlah_batang')
+                    ->relationship('tempatKayu', 'select_label')
                     ->searchable()
                     ->preload()
                     ->required(),

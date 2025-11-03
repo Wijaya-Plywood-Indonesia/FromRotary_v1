@@ -34,4 +34,10 @@ class TempatKayu extends Model
     {
         return $this->belongsTo(Lahan::class, 'id_lahan');
     }
+
+    public function getSelectLabelAttribute()
+    {
+        return "{$this->lahan->nama_lahan} | {$this->jumlah_batang} batang | {$this->poin} poin";
+
+    }
 }
