@@ -16,7 +16,7 @@ class RiwayatKayu extends Model
         'tanggal_masuk',
         'tanggal_digunakan',
         'tanggal_habis',
-        'id_tempat_masuk'
+        'id_tempat_kayu'
     ];
 
     public function tempatKayu(): BelongsTo
