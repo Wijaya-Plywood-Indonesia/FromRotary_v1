@@ -5,6 +5,7 @@ namespace App\Filament\Resources\KayuMasuks\RelationManagers;
 use App\Filament\Resources\DetailKayuMasuks\Schemas\DetailKayuMasukForm;
 use App\Filament\Resources\DetailKayuMasuks\Tables\DetailKayuMasuksTable;
 use App\Models\DetailKayuMasuk;
+use App\Models\DetailTurunKayu;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
