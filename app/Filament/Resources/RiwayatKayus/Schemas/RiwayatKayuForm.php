@@ -29,10 +29,25 @@ class RiwayatKayuForm
                     ->displayFormat('d/m/Y'),
                 Select::make('id_tempat_kayu')
                     ->label('Tempat Kayu')
+                    ->options(
+                        TempatKayu::with('kayuMasuk.detailMasukanKayu')->get()
+                            ->mapWithKeys(function ($kayu) {
+                                $kodelahan = $kayu->lahan?->kode_lahan ?? '-';
+                                $jumlahBatang = $kayu->jumlah_batang ?? 0;
 
+                                $diameter_cm = $kayu->kayuMasuk?->detailMasukanKayu?->first()?->diameter ?? 0;
 
+                                // Hitung kubikasi
+                                $kubikasi_cm3 = $diameter_cm * $jumlahBatang * 0.785 * 1000000;
+                                $kubikasi_cm3 = round($kubikasi_cm3, 2);
+
+                                return [
+                                    $kayu->id => "{$kodelahan} - {$jumlahBatang} batang - {$kubikasi_cm3} cm³"
+                                ];
+                            })
+                            ->toArray()
+                    )
                     ->searchable()
-                    // ->preload() // <-- Dihapus karena ini berkonflik dengan getSearchResultsUsing
                     ->required(),
             ]);
     }

@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
 class TempatKayu extends Model
 {
     //
@@ -19,7 +18,8 @@ class TempatKayu extends Model
         'jumlah_batang',
         'poin',
         'id_kayu_masuk',
-        'id_lahan'
+        'id_lahan',
+        'id_turun_kayu'
     ];
 
     public function kayuMasuk(): BelongsTo
@@ -37,9 +37,9 @@ class TempatKayu extends Model
         return $this->belongsTo(Lahan::class, 'id_lahan');
     }
 
-    public function getSelectLabelAttribute()
+    public function turunKayu(): BelongsTo
     {
-        return "{$this->lahan->nama_lahan} | {$this->jumlah_batang} batang | {$this->poin} poin";
-
+        return $this->belongsTo(TurunKayu::class, 'id_turun_kayu');
     }
+
 }
