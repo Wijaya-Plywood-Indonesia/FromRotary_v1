@@ -20,7 +20,7 @@ class RiwayatKayusTable
                     ->sortable(),
                 TextColumn::make('tanggal_habis')
                     ->sortable(),
-                TextColumn::make('id_tempat_kayu')
+                TextColumn::make('id_kayu_masuk')
             ])
             ->filters([
                 //

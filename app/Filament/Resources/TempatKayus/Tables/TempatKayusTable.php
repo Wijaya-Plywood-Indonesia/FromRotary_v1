@@ -14,13 +14,16 @@ class TempatKayusTable
     {
         return $table
             ->columns([
-                TextColumn::make('jumlah')
+                TextColumn::make('jumlah_batang')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('poin')
+                    ->money('Rp')
+                    ->numeric(),
+                TextColumn::make('id_kayu_masuk')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('id_kayu_masuk')
+                TextColumn::make('id_lahan')
                     ->searchable()
                     ->sortable()
             ])

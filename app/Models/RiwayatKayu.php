@@ -16,11 +16,12 @@ class RiwayatKayu extends Model
         'tanggal_masuk',
         'tanggal_digunakan',
         'tanggal_habis',
-        'id_tempat_kayu'
+        'id_tempat_kayu',
+        'id_rotary'
     ];
 
     public function tempatKayu(): BelongsTo
     {
-        return $this->belongsTo(TempatKayu::class, 'tempat_kayu_id');
+        return $this->belongsTo(TempatKayu::class, 'id_tempat_kayu');
     }
 }

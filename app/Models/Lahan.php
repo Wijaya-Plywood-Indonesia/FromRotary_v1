@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lahan extends Model
 {
@@ -20,5 +22,10 @@ class Lahan extends Model
     public function penggunaanLahanRotaries()
     {
         return $this->hasMany(PenggunaanLahanRotary::class, 'id_lahan');
+    }
+
+    public function tempatKayu(): HasMany
+    {
+        return $this->hasMany(TempatKayu::class, 'id_lahan');
     }
 }
