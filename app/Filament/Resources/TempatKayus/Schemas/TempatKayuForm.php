@@ -26,7 +26,7 @@ class TempatKayuForm
                 // ->required(),
                 Select::make('id_lahan')
                     ->label('Lahan')
-                    ->relationship('lahan', 'nama_lahan')
+                    ->relationship('lahan', 'kode_lahan')
                     ->searchable()
                     ->preload()
                     ->required()

@@ -29,4 +29,5 @@ class RiwayatKayu extends Model
     {
         return $this->belongsTo(ProduksiRotary::class, 'id_rotary');
     }
+
 }

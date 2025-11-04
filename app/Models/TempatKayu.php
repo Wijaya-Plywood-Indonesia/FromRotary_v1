@@ -13,6 +13,8 @@ class TempatKayu extends Model
     protected $table = 'tempat_kayus';
     protected $primaryKey = 'id';
 
+    protected $with = ['lahan'];
+
     protected $fillable = [
         'jumlah_batang',
         'poin',

@@ -21,10 +21,10 @@ class TempatKayusTable
                     ->label('Poin')
                     ->money('Rp.'),
                 TextColumn::make('id_kayu_masuk')
-                    ->label('Id Kayu Masuk')
+                    ->label('Kode Kayu Masuk')
                     ->sortable(),
                 TextColumn::make('id_lahan')
-                    ->label('Id Lahan')
+                    ->label('Kode Lahan')
                     ->sortable()
             ])
             ->filters([

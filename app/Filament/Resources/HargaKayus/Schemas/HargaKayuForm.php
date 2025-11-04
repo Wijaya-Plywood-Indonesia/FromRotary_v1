@@ -22,7 +22,7 @@ class HargaKayuForm
                     ->label('Diameter Terkecil (cm)')
                     ->numeric(),
                 TextInput::make('diameter_terbesar')
-                    ->label('Diameter Terkecil (cm)')
+                    ->label('Diameter Terbesar (cm)')
                     ->numeric(),
                 TextInput::make('harga_beli')
                     ->label('Harga Beli Per Batang')

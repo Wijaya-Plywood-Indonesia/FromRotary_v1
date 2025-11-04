@@ -28,4 +28,5 @@ class Lahan extends Model
     {
         return $this->hasMany(TempatKayu::class, 'id_lahan');
     }
+
 }
