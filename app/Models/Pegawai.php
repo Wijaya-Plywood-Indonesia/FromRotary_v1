@@ -22,4 +22,9 @@ class Pegawai extends Model
     {
         return $this->hasMany(PegawaiRotary::class, 'id_pegawai');
     }
+
+    public function detailTurunKayu()
+    {
+        return $this->hasMany(DetailTurunKayu::class, 'id_pegawai');
+    }
 }

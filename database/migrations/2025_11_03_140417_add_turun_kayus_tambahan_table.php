@@ -12,10 +12,10 @@ return new class extends Migration {
     {
         Schema::table('turun_kayus', function (Blueprint $table) {
             //
-            $table->foreignId('id_kendaraan')
+            $table->foreignId('id_kayu_masuk')
                 ->nullable() // tambahkan nullable jika tabel sudah berisi data agar tidak error saat migrasi
                 ->after('tanggal')
-                ->constrained('kendaraan_supplier_kayus')
+                ->constrained('kayu_masuks')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
         });
@@ -28,8 +28,8 @@ return new class extends Migration {
     {
         Schema::table('turun_kayus', function (Blueprint $table) {
             //
-            $table->dropForeign(['id_kendaraan']);
-            $table->dropColumn('id_kendaraan');
+            $table->dropForeign(['id_kayu_masuk']);
+            $table->dropColumn('id_kayu_masuk');
         });
     }
 };

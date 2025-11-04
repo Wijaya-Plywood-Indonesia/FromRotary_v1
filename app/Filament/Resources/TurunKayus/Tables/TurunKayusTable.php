@@ -16,7 +16,16 @@ class TurunKayusTable
             ->columns([
                 TextColumn::make('tanggal')
                     ->sortable()
+                    ->searchable(),
+                TextColumn::make('kayuMasuk')
+                    ->label('Kayu & Kendaraan')
+                    ->formatStateUsing(function ($record) {
+                        $kayu = $record->kayuMasuk;
+                        $kendaraan = $kayu?->penggunaanKendaraanSupplier;
+                        return "Kayu Seri {$kayu?->seri} - {$kendaraan?->nopol_kendaraan} ({$kendaraan?->jenis_kendaraan})";
+                    })
                     ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 //
