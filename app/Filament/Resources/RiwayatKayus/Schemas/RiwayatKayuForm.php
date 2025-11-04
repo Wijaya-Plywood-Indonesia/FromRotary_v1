@@ -29,7 +29,16 @@ class RiwayatKayuForm
                     ->displayFormat('d/m/Y'),
                 Select::make('id_tempat_kayu')
                     ->label('Tempat Kayu')
-                    ->relationship('tempatKayu', 'select_label')
+                    ->getSearchResultsUsing(function (string $search) {
+                        return \App\Models\TempatKayu::with('lahan')
+                            ->whereHas('lahan', fn($q) => $q->where('nama_lahan', 'like', "%{$search}%"))
+                            ->orWhere('jumlah_batang', 'like', "%{$search}%")
+                            ->limit(50)
+                            ->get()
+                            ->mapWithKeys(fn($item) => [
+                                $item->id => "{$item->lahan->nama_lahan} | {$item->jumlah_batang} batang | {$item->kubikasi} m³"
+                            ]);
+                    })
                     ->searchable()
                     ->preload()
                     ->required(),

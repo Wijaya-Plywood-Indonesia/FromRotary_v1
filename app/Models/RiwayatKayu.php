@@ -24,4 +24,9 @@ class RiwayatKayu extends Model
     {
         return $this->belongsTo(TempatKayu::class, 'id_tempat_kayu');
     }
+
+    public function riwayatKayu(): BelongsTo
+    {
+        return $this->belongsTo(ProduksiRotary::class, 'id_rotary');
+    }
 }

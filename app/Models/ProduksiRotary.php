@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\QueryException;
 
 class ProduksiRotary extends Model
@@ -46,6 +47,11 @@ class ProduksiRotary extends Model
     public function detailKayuPecah()
     {
         return $this->hasMany(KayuPecahRotary::class, 'id_produksi');
+    }
+
+    public function riwayatKayu(): HasMany
+    {
+        return $this->hasMany(RiwayatKayu::class, 'id_rotary');
     }
     protected static function booted()
     {
