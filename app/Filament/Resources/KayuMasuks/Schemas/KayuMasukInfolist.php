@@ -39,6 +39,12 @@ class KayuMasukInfolist
                             ->numeric()
                             ->badge()
                             ->color('warning'),
+                        TextEntry::make('kubikasi')
+                            ->label('Total Kayu Masuk (m³)')
+                            ->numeric()
+                            ->suffix(' m³')
+                            ->badge()
+                            ->color('gray'),
                     ])
                     ->columns(2),
 
