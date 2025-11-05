@@ -11,6 +11,7 @@ class DetailKayuMasuk extends Model
 
     protected $fillable = [
         'id_kayu_masuk',
+        'id_jenis_kayu',
         'diameter',
         'panjang',
         'grade',
@@ -25,6 +26,10 @@ class DetailKayuMasuk extends Model
     public function kayuMasuk()
     {
         return $this->belongsTo(KayuMasuk::class, 'id_kayu_masuk');
+    }
+    public function jenisKayu()
+    {
+        return $this->belongsTo(JenisKayu::class, 'id_jenis_kayu', 'id');
     }
 
 }

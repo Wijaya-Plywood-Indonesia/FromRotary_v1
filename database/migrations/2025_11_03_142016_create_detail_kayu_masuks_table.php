@@ -17,11 +17,18 @@ return new class extends Migration {
                 ->constrained('kayu_masuks')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
+            $table->foreignId('id_jenis_kayu')
+                ->nullable()
+                ->constrained('jenis_kayus')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->integer('diameter');
             $table->integer('panjang');
             $table->integer('grade');
-            $table->text('keterangan');
+            $table->integer('jumlah_batang');
+            $table->text('keterangan')->nullable();
             $table->timestamps();
+
         });
     }
 
