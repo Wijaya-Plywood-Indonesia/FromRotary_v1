@@ -33,6 +33,27 @@ class LaporanProduksi extends Page implements Tables\Contracts\HasTable
                     ])
             )
             ->columns([
+
+                Tables\Columns\TextColumn::make('lahan_digunakan')
+                    ->label('Lahan')
+                    ->getStateUsing(function ($record) {
+                        return $record->detailLahanRotary
+                            ->pluck('lahan.kode_lahan')
+                            ->unique()
+                            ->implode(', ');
+                    })
+                    ->wrap(),
+
+
+                Tables\Columns\TextColumn::make('total_batang')
+                    ->label('Total Batang')
+                    ->getStateUsing(
+                        fn($record) =>
+                        $record->detailLahanRotary->sum('jumlah_batang')
+                    )
+                    ->sortable()
+                    ->alignEnd(),
+
                 Tables\Columns\TextColumn::make('id_mesin')
                     ->label('ID Mesin')
                     ->searchable()
@@ -48,15 +69,7 @@ class LaporanProduksi extends Page implements Tables\Contracts\HasTable
                     ->date('d/m/Y')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('lahan_digunakan')
-                    ->label('Lahan')
-                    ->getStateUsing(function ($record) {
-                        return $record->detailLahanRotary
-                            ->pluck('lahan.kode_lahan')
-                            ->unique()
-                            ->implode(', ');
-                    })
-                    ->wrap(),
+
 
                 Tables\Columns\TextColumn::make('jenis_kayu_digunakan')
                     ->label('Jenis Kayu')
@@ -68,14 +81,6 @@ class LaporanProduksi extends Page implements Tables\Contracts\HasTable
                     })
                     ->wrap(),
 
-                Tables\Columns\TextColumn::make('total_batang')
-                    ->label('Total Batang')
-                    ->getStateUsing(
-                        fn($record) =>
-                        $record->detailLahanRotary->sum('jumlah_batang')
-                    )
-                    ->sortable()
-                    ->alignEnd(),
 
                 Tables\Columns\TextColumn::make('total_palet')
                     ->label('Total Palet')
