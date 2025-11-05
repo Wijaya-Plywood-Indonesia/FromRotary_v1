@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\HargaKayus\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -63,6 +64,7 @@ class HargaKayusTable
                 //
             ])
             ->recordActions([
+
                 ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),

@@ -20,12 +20,17 @@ class TempatKayusTable
                 TextColumn::make('poin')
                     ->label('Poin')
                     ->money('Rp.'),
-                TextColumn::make('id_kayu_masuk')
-                    ->label('Kode Kayu Masuk')
-                    ->sortable(),
-                TextColumn::make('id_lahan')
+
+                TextColumn::make('kayuMasuk.seri')
+                    ->label('Seri Kayu')
+                    ->formatStateUsing(fn($state) => 'Seri - ' . ($state ?? '-'))
+                    ->sortable()
+                    ->searchable(),
+
+                TextColumn::make('lahan.kode_lahan')
                     ->label('Kode Lahan')
                     ->sortable()
+                    ->searchable(),
             ])
             ->filters([
                 //

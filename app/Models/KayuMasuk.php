@@ -55,6 +55,7 @@ class KayuMasuk extends Model
     {
         return $this->belongsTo(DokumenKayu::class, 'id_dokumen_kayus');
     }
+
     public function tempatKayu(): HasMany
     {
         return $this->hasMany(TempatKayu::class, 'id_tempat_kayu');

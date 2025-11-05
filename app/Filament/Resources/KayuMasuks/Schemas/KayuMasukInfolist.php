@@ -41,10 +41,11 @@ class KayuMasukInfolist
                             ->color('warning'),
                         TextEntry::make('kubikasi')
                             ->label('Total Kayu Masuk (m³)')
-                            ->numeric()
+                            ->formatStateUsing(fn($state) => number_format((float) $state, 6, ',', '.'))
                             ->suffix(' m³')
                             ->badge()
                             ->color('gray'),
+
                     ])
                     ->columns(2),
 

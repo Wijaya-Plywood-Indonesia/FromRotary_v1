@@ -22,6 +22,11 @@ return new class extends Migration {
                 ->constrained('jenis_kayus')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
+            $table->foreignId('id_lahan')
+                ->nullable()
+                ->constrained('lahans')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->integer('diameter');
             $table->integer('panjang');
             $table->integer('grade');

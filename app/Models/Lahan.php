@@ -28,5 +28,9 @@ class Lahan extends Model
     {
         return $this->hasMany(TempatKayu::class, 'id_lahan');
     }
+    public function detailKayuMasuk(): HasMany
+    {
+        return $this->hasMany(DetailKayuMasuk::class, 'id_lahan');
+    }
 
 }

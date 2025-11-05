@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\DetailKayuMasuks\Schemas;
 
 use App\Models\JenisKayu;
+use App\Models\Lahan;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -20,6 +21,19 @@ class DetailKayuMasukForm
             'md' => 3,      // di layar sedang (tablet)
             'xl' => 3,      // di layar besar (desktop)
         ])->components([
+                    Select::make('id_lahan')
+                        ->label('Lahan')
+                        ->options(
+                            Lahan::query()
+                                ->get()
+                                ->mapWithKeys(function ($lahan) {
+                                    return [
+                                        $lahan->id => "{$lahan->kode_lahan} - {$lahan->nama_lahan}",
+                                    ];
+                                })
+                        )
+                        ->searchable()
+                        ->required(),
                     Select::make('grade')
                         ->label('Grade')
                         ->options([

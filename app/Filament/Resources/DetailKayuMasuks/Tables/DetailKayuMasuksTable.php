@@ -23,6 +23,14 @@ class DetailKayuMasuksTable
             ->striped()
 
             ->columns([
+                TextColumn::make('lahan_display')
+                    ->label('Lahan')
+                    ->getStateUsing(
+                        fn($record) =>
+                        "{$record->lahan->kode_lahan}"
+                    )
+                    ->sortable(['lahan.kode_lahan']) // optional
+                    ->searchable(['lahan.kode_lahan']),
                 TextColumn::make('keterangan_kayu')
                     ->label('Kayu')
                     ->getStateUsing(function ($record) {
@@ -92,6 +100,7 @@ class DetailKayuMasuksTable
                     ->button() // Supaya tampil seperti label di header
                     ->outlined()
                     ->icon('heroicon-o-cube'),
+
                 Action::make('sinkron_kubikasi')
                     ->label('Sinkron Total Kubikasi')
                     ->icon('heroicon-o-arrow-path')
