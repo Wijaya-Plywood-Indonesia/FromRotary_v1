@@ -13,6 +13,7 @@ class HargaKayu extends Model
         'diameter_terkecil',
         'diameter_terbesar',
         'harga_beli',
+        'grade',
         'id_jenis_kayu',
     ];
     protected $casts = [
