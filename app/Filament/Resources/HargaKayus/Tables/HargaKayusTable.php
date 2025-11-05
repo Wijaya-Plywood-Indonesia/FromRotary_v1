@@ -16,13 +16,17 @@ class HargaKayusTable
     {
         return $table
             ->columns([
+                TextColumn::make('jenisKayu.nama_kayu')
+                    ->sortable(),
                 TextColumn::make('panjang')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('diameter_terkecil')
+                    ->label('Min')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('diameter_terbesar')
+                    ->label('Max')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('grade')
@@ -42,11 +46,10 @@ class HargaKayusTable
 
 
                 TextColumn::make('harga_beli')
-                    ->label('Harga Beli Per batang')
+                    ->label('Harga Beli')
                     ->money('IDR', locale: 'id')
                     ->sortable(),
-                TextColumn::make('jenisKayu.nama_kayu')
-                    ->sortable(),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

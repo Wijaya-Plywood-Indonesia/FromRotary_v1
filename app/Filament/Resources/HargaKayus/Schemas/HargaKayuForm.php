@@ -20,9 +20,10 @@ class HargaKayuForm
                         260 => '260',
                     ])
                     ->required()
-                    ->default(260)
+                    //->default(260)
                     ->native(false)
                     ->searchable()
+                    ->placeholder('Pilih Panjang Kayu')
                     ->preload(),
                 TextInput::make('diameter_terkecil')
                     ->label('Diameter Terkecil (cm)')
@@ -43,8 +44,9 @@ class HargaKayuForm
                         2 => 'Grade B',
                     ])
                     ->required()
-                    ->default(2)
+                    //  ->default(2)
                     ->native(false)
+                    ->placeholder('Pilih Grade')
                     ->searchable(),
 
                 Select::make('id_jenis_kayu')
@@ -59,7 +61,8 @@ class HargaKayuForm
                             })
                     )
                     ->searchable()
-                    ->default(1)
+                    // ->default(4)
+                    ->placeholder('Pilih Jenis Kayu')
                     ->required(),
             ]);
     }
