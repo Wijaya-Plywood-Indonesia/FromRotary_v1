@@ -13,11 +13,17 @@ class HargaKayuForm
     {
         return $schema
             ->components([
-                TextInput::make('panjang')
+                Select::make('panjang')
+                    ->label('Panjang')
+                    ->options([
+                        130 => '130',
+                        260 => '260',
+                    ])
                     ->required()
-                    ->numeric()
-                    ->placeholder('120 / 260')
-                ,
+                    ->default(260)
+                    ->native(false)
+                    ->searchable()
+                    ->preload(),
                 TextInput::make('diameter_terkecil')
                     ->label('Diameter Terkecil (cm)')
                     ->numeric(),
@@ -29,6 +35,18 @@ class HargaKayuForm
                     ->required()
                     //    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->numeric(),
+
+                Select::make('grade')
+                    ->label('Grade')
+                    ->options([
+                        1 => 'Grade A',
+                        2 => 'Grade B',
+                    ])
+                    ->required()
+                    ->default(2)
+                    ->native(false)
+                    ->searchable(),
+
                 Select::make('id_jenis_kayu')
                     ->label('Jenis Kayu')
                     ->options(
@@ -41,6 +59,7 @@ class HargaKayuForm
                             })
                     )
                     ->searchable()
+                    ->default(1)
                     ->required(),
             ]);
     }

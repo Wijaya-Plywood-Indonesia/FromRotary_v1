@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\HargaKayus\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -24,6 +25,22 @@ class HargaKayusTable
                 TextColumn::make('diameter_terbesar')
                     ->numeric()
                     ->sortable(),
+                TextColumn::make('grade')
+                    ->label('A / B')
+                    ->formatStateUsing(fn($state) => match ($state) {
+                        1 => 'Grade A',
+                        2 => 'Grade B',
+                        default => '-',
+                    })
+                    ->badge()
+                    ->color(fn($state) => match ($state) {
+                        1 => 'success', // hijau untuk Grade A
+                        2 => 'primary', // kuning untuk Grade B
+                        default => 'gray',
+                    })
+                    ->sortable(),
+
+
                 TextColumn::make('harga_beli')
                     ->label('Harga Beli Per batang')
                     ->money('IDR', locale: 'id')
@@ -45,6 +62,8 @@ class HargaKayusTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+                DeleteAction::make(),
+
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
