@@ -4,16 +4,9 @@ namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
 use App\Models\ProduksiRotary;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use BackedEnum;
 use UnitEnum;
-
 use App\Exports\LaporanProduksiExport;
-
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Form;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Actions\Action;
@@ -29,7 +22,6 @@ class LaporanProduksi extends Page implements HasForms
     protected static ?string $title = 'Laporan Produksi Rotary';
 
     public $dataProduksi = [];
-    public $summary = [];
 
     public function mount(): void
     {
@@ -49,149 +41,135 @@ class LaporanProduksi extends Page implements HasForms
 
     public function loadAllData()
     {
-        // Ambil semua data produksi dengan relasi
         $produksiList = ProduksiRotary::with([
             'mesin',
             'detailLahanRotary.lahan',
-            'detailLahanRotary.jenisKayu',
-            'detailPaletRotary.setoranPaletUkuran',
+            'detailPaletRotary.ukuran',
             'detailPegawaiRotary.pegawai',
+            'detailGantiPisauRotary',
         ])
             ->orderBy('tgl_produksi', 'desc')
-            ->limit(10) // Ambil 10 data terakhir
+            ->limit(10)
             ->get();
 
         $this->dataProduksi = [];
 
         foreach ($produksiList as $produksi) {
-            $this->dataProduksi[] = [
-                'tanggal' => \Carbon\Carbon::parse($produksi->tgl_produksi)->format('d/m/Y'),
-                'mesin' => $produksi->mesin->nama_mesin ?? $produksi->id_mesin,
-                'bahan' => $this->getBahanData($produksi),
-                'hasil' => $this->getHasilData($produksi),
-                'pekerja' => $this->getPekerjaData($produksi),
-                'kendala' => $produksi->kendala,
-                'summary' => $this->calculateSummary($produksi),
-            ];
-        }
-
-        // Hitung summary keseluruhan
-        $this->calculateOverallSummary();
-    }
-
-    protected function getBahanData($produksi)
-    {
-        $data = [];
-
-        foreach ($produksi->detailLahanRotary as $detail) {
-            $data[] = [
-                'lahan' => $detail->lahan->kode_lahan ?? '-',
-                'batang' => $detail->jumlah_batang,
-                'jenis_kayu' => $detail->jenisKayu->nama_kayu ?? '-',
-            ];
-        }
-
-        return $data;
-    }
-
-    protected function getHasilData($produksi)
-    {
-        $hasil = [];
-
-        // Group by ukuran dan KW
-        foreach ($produksi->detailPaletRotary as $detail) {
-            $ukuran = $detail->setoranPaletUkuran->ukuran ?? 'Unknown';
-            $kw = $detail->kw ?? 'Unknown';
-
-            if (!isset($hasil[$ukuran])) {
-                $hasil[$ukuran] = [];
+            // ======== BAHAN =========
+            $bahan = [];
+            $totalBatang = 0;
+            foreach ($produksi->detailLahanRotary as $detail) {
+                $batang = $detail->jumlah_batang ?? 0;
+                $bahan[] = [
+                    'lahan' => $detail->lahan->kode_lahan ?? '-',
+                    'batang' => $batang,
+                ];
+                $totalBatang += $batang;
             }
 
-            if (!isset($hasil[$ukuran][$kw])) {
-                $hasil[$ukuran][$kw] = [
-                    'palet' => 0,
-                    'lembar' => 0,
+            // ======== HASIL PRODUKSI =========
+            $hasil = [];
+            $totalPalet = 0;
+            $totalLembar = 0;
+            $totalM3 = 0;
+
+            foreach ($produksi->detailPaletRotary as $detail) {
+                $ukuran = $detail->ukuran->nama_ukuran ?? 'Unknown';
+                $kw = $detail->kw ?? 'Unknown';
+
+                if (!isset($hasil[$ukuran])) {
+                    $hasil[$ukuran] = [];
+                }
+
+                if (!isset($hasil[$ukuran][$kw])) {
+                    $hasil[$ukuran][$kw] = ['palet' => 0, 'lembar' => 0];
+                }
+
+                $palet = $detail->total ?? 0;
+                $lembar = $detail->total_lembar ?? 0;
+
+                $hasil[$ukuran][$kw]['palet'] += $palet;
+                $hasil[$ukuran][$kw]['lembar'] += $lembar;
+
+                $totalPalet += $palet;
+                $totalLembar += $lembar;
+            }
+
+            // Hitung total M3
+            $totalM3 = $totalBatang * 0.5;
+
+            // ======== PEKERJA =========
+            $pekerja = [];
+            $jamKerjaTotal = 0;
+
+            foreach ($produksi->detailPegawaiRotary as $detail) {
+                $jamMasuk = $detail->jam_masuk ? \Carbon\Carbon::parse($detail->jam_masuk) : null;
+                $jamPulang = $detail->jam_pulang ? \Carbon\Carbon::parse($detail->jam_pulang) : null;
+
+                $jamKerja = 0;
+                if ($jamMasuk && $jamPulang) {
+                    $jamKerja = $jamMasuk->diffInHours($jamPulang);
+                    $jamKerjaTotal += $jamKerja;
+                }
+
+                $pekerja[] = [
+                    'id' => $detail->pegawai->id ?? '-',
+                    'nama' => $detail->pegawai->nama ?? '-',
+                    'jam_masuk' => $jamMasuk ? $jamMasuk->format('H:i') : '-',
+                    'jam_pulang' => $jamPulang ? $jamPulang->format('H:i') : '-',
+                    'ijin' => $detail->ijin ?? '-',
+                    'pot_target' => $detail->pot_target ?? 0,
+                    'keterangan' => $detail->keterangan ?? '-',
+                    'jam_kerja' => $jamKerja,
                 ];
             }
 
-            $hasil[$ukuran][$kw]['palet'] += $detail->palet;
-            $hasil[$ukuran][$kw]['lembar'] += $detail->total_lembar;
-        }
+            // Hitung rata-rata jam kerja
+            $jumlahPekerja = count($pekerja);
+            $rataRataJamKerja = $jumlahPekerja > 0 ? round($jamKerjaTotal / $jumlahPekerja, 1) : 0;
 
-        return $hasil;
-    }
+            // ======== GANTI PISAU =========
+            $gantiPisau = [];
+            foreach ($produksi->detailGantiPisauRotary as $detail) {
+                $jamMulai = $detail->jam_mulai ? \Carbon\Carbon::parse($detail->jam_mulai) : null;
+                $jamSelesai = $detail->jam_selesai ? \Carbon\Carbon::parse($detail->jam_selesai) : null;
 
-    protected function getPekerjaData($produksi)
-    {
-        $data = [];
+                $gantiPisau[] = [
+                    'jam_mulai' => $jamMulai ? $jamMulai->format('H:i') : '-',
+                    'jam_selesai' => $jamSelesai ? $jamSelesai->format('H:i') : '-',
+                    'durasi' => ($jamMulai && $jamSelesai) ? $jamMulai->diffInMinutes($jamSelesai) . ' menit' : '-',
+                ];
+            }
 
-        foreach ($produksi->detailPegawaiRotary as $detail) {
-            $data[] = [
-                'id' => $detail->id_pegawai ?? '-',
-                'nama' => $detail->pegawai->nama ?? '-',
-                'jam_masuk' => $detail->jam_masuk ? \Carbon\Carbon::parse($detail->jam_masuk)->format('H:i') : '-',
-                'jam_pulang' => $detail->jam_pulang ? \Carbon\Carbon::parse($detail->jam_pulang)->format('H:i') : '-',
-                'ijin' => $detail->ijin ?? '-',
-                'pot_target' => $detail->pot_target ?? '-',
-                'keterangan' => $detail->keterangan ?? '-',
+            // ======== SUMMARY =========
+            $summary = [
+                'total_batang' => $totalBatang,
+                'total_palet' => $totalPalet,
+                'total_lembar' => $totalLembar,
+                'total_m3' => round($totalM3, 2),
+                'jam_kerja' => $rataRataJamKerja,
+                'jumlah_pekerja' => $jumlahPekerja,
+                'total_pot_target' => collect($pekerja)->sum('pot_target'),
             ];
-        }
 
-        return $data;
-    }
-
-    protected function calculateSummary($produksi)
-    {
-        $totalBatang = $produksi->detailLahanRotary->sum('jumlah_batang');
-        $totalPalet = $produksi->detailPaletRotary->sum('palet');
-        $totalLembar = $produksi->detailPaletRotary->sum('total_lembar');
-        $totalM3 = $totalLembar * 0.001; // Konversi ke m3
-
-        // Hitung jam kerja (asumsi dari pekerja pertama)
-        $pekerjaFirst = $produksi->detailPegawaiRotary->first();
-        $jamKerja = 0;
-        if ($pekerjaFirst && $pekerjaFirst->jam_masuk && $pekerjaFirst->jam_pulang) {
-            $masuk = \Carbon\Carbon::parse($pekerjaFirst->jam_masuk);
-            $pulang = \Carbon\Carbon::parse($pekerjaFirst->jam_pulang);
-            $jamKerja = $pulang->diffInHours($masuk);
-        }
-
-        return [
-            'total_batang' => $totalBatang,
-            'total_palet' => $totalPalet,
-            'total_lembar' => $totalLembar,
-            'total_m3' => $totalM3,
-            'jam_kerja' => $jamKerja,
-            'jumlah_pekerja' => $produksi->detailPegawaiRotary->count(),
-        ];
-    }
-
-    protected function calculateOverallSummary()
-    {
-        $this->summary = [
-            'total_batang' => 0,
-            'total_palet' => 0,
-            'total_lembar' => 0,
-            'total_m3' => 0,
-            'total_pekerja' => 0,
-        ];
-
-        foreach ($this->dataProduksi as $data) {
-            $this->summary['total_batang'] += $data['summary']['total_batang'];
-            $this->summary['total_palet'] += $data['summary']['total_palet'];
-            $this->summary['total_lembar'] += $data['summary']['total_lembar'];
-            $this->summary['total_m3'] += $data['summary']['total_m3'];
-            $this->summary['total_pekerja'] += $data['summary']['jumlah_pekerja'];
+            // ======== Tambahkan ke daftar data produksi =========
+            $this->dataProduksi[] = [
+                'id' => $produksi->id,
+                'tanggal' => \Carbon\Carbon::parse($produksi->tgl_produksi)->format('d/m/Y'),
+                'mesin' => $produksi->mesin->nama_mesin ?? 'Rotary',
+                'bahan' => $bahan,
+                'hasil' => $hasil,
+                'pekerja' => $pekerja,
+                'kendala' => $produksi->kendala ?? 'Tidak ada kendala.',
+                'ganti_pisau' => $gantiPisau,
+                'summary' => $summary,
+            ];
         }
     }
 
     public function exportToExcel()
     {
         $fileName = 'laporan-produksi-' . now()->format('Y-m-d-His') . '.xlsx';
-
-        return Excel::download(
-            new LaporanProduksiExport($this->dataProduksi),
-            $fileName
-        );
+        return Excel::download(new LaporanProduksiExport($this->dataProduksi), $fileName);
     }
 }
