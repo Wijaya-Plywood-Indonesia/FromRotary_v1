@@ -40,6 +40,8 @@ class NotaKayuController extends Controller
         // Tambahkan pembulatan manual jika diperlukan
         $totalAkhir = $hargaBeliAkhirBulat + $pembulatanManual;
 
+        $selisih = $grandTotal - $totalAkhir;
+
         return view('nota-kayu.print', [
             'record' => $record,
             'totalKubikasi' => $totalKubikasi,
@@ -49,6 +51,7 @@ class NotaKayuController extends Controller
             'totalAkhir' => $hargaBeliAkhir,
             'hargaFinal' => $totalAkhir,
             'totalBatang' => $totalBatang,
+            'selisih' => $selisih,
         ]);
     }
 

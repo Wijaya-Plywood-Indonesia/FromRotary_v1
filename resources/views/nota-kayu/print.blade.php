@@ -166,7 +166,7 @@
                     </td>
                     <td></td>
                     <td style="padding: 4px 10px; border: 1px solid #000">
-                        Rp. {{ number_format($biayaTurunKayu, 0, ",", ".") }}
+                        Rp. {{ number_format($selisih, 0, ",", ".") }}
                     </td>
                 </tr>
 
