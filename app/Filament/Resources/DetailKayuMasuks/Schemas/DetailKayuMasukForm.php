@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\DetailKayuMasuks\Schemas;
 
+use App\Models\JenisKayu;
+use App\Models\Lahan;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -13,14 +15,58 @@ class DetailKayuMasukForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema->components([
-            Grid::make()
-                ->columns([
-                    'default' => 2, // 2 kolom di layar besar
-                    'sm' => 2,     // 1 kolom di mobile
-                    'md' => 2,     // 2 kolom di tablet
-                ])
-                ->schema([
+        return $schema->columns([
+            // 💡 Ini kunci untuk layout responsif
+            'default' => 3, // di layar kecil (HP)
+            'md' => 3,      // di layar sedang (tablet)
+            'xl' => 3,      // di layar besar (desktop)
+        ])->components([
+                    Select::make('id_lahan')
+                        ->label('Lahan')
+                        ->options(
+                            Lahan::query()
+                                ->get()
+                                ->mapWithKeys(function ($lahan) {
+                                    return [
+                                        $lahan->id => "{$lahan->kode_lahan} - {$lahan->nama_lahan}",
+                                    ];
+                                })
+                        )
+                        ->searchable()
+                        ->required(),
+                    Select::make('grade')
+                        ->label('Grade')
+                        ->options([
+                            1 => 'Grade A',
+                            2 => 'Grade B',
+                        ])
+                        ->required()
+                        ->default(1)
+                        ->native(false)
+                        ->searchable(),
+
+                    Select::make('panjang')
+                        ->label('Panjang')
+                        ->options([
+                            130 => '130 cm',
+                            260 => '260 cm',
+                        ])
+                        ->required()
+                        ->default(130)
+                        ->native(false),
+
+                    Select::make('id_jenis_kayu')
+                        ->label('Jenis Kayu')
+                        ->options(
+                            JenisKayu::query()
+                                ->get()
+                                ->mapWithKeys(fn($JenisKayu) => [
+                                    $JenisKayu->id => "{$JenisKayu->kode_kayu} - {$JenisKayu->nama_kayu}",
+                                ])
+                        )
+                        ->searchable()
+                        ->placeholder('Pilih Jenis Kayu')
+                        ->required(),
 
                     TextInput::make('diameter')
                         ->label('Diameter (cm)')
@@ -31,10 +77,9 @@ class DetailKayuMasukForm
                         ->validationMessages([
                             'between' => 'Wijaya hanya menerima kayu dengan diameter antara 13 cm hingga 50 cm.',
                         ])
-                        ->afterStateUpdated(function ($state, callable $set) {
-                            if ($state === null) {
+                        ->afterStateUpdated(function ($state) {
+                            if ($state === null)
                                 return;
-                            }
 
                             if ($state < 13) {
                                 Notification::make()
@@ -50,32 +95,10 @@ class DetailKayuMasukForm
                                     ->send();
                             }
                         }),
-
-                    Select::make('panjang')
-                        ->label('Panjang')
-                        ->options([
-                            130 => '130 cm',
-                            260 => '260 cm',
-                        ])
-                        ->required()
-                        ->default(130)
-                        ->native(false),
-
-                    Select::make('grade')
-                        ->label('Grade')
-                        ->options([
-                            1 => 'Grade A',
-                            2 => 'Grade B',
-                        ])
-                        ->required()
-                        ->default(1)
-                        ->native(false)
-                        ->searchable(),
                     TextInput::make('jumlah_batang')
                         ->label('Jumlah Batang')
                         ->required()
                         ->numeric(),
-                ]),
-        ]);
+                ]);
     }
 }

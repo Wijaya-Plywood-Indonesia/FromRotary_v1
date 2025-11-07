@@ -15,6 +15,7 @@ class KayuMasuk extends Model
         'upload_dokumen_angkut',
         'tgl_kayu_masuk',
         'seri',
+        'kubikasi',
         'id_supplier_kayus',
         'id_kendaraan_supplier_kayus',
         'id_dokumen_kayus',
@@ -54,6 +55,7 @@ class KayuMasuk extends Model
     {
         return $this->belongsTo(DokumenKayu::class, 'id_dokumen_kayus');
     }
+
     public function tempatKayu(): HasMany
     {
         return $this->hasMany(TempatKayu::class, 'id_tempat_kayu');

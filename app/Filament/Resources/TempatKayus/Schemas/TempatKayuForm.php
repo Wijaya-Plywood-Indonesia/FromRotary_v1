@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TempatKayus\Schemas;
 
+use App\Models\KayuMasuk;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\Select;
@@ -20,9 +21,19 @@ class TempatKayuForm
                     ->numeric(),
                 Select::make('id_kayu_masuk')
                     ->label('Kayu Masuk')
-                    ->relationship('kayuMasuk', 'seri')
+                    ->options(function () {
+                        return KayuMasuk::query()
+                            ->get()
+                            ->mapWithKeys(function ($kayuMasuk) {
+                                return [
+                                    $kayuMasuk->id => 'Seri - ' . $kayuMasuk->seri,
+                                ];
+                            });
+                    })
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->placeholder('Pilih Seri Kayu Masuk')
+                    ->required(),
                 // ->required(),
                 Select::make('id_lahan')
                     ->label('Lahan')

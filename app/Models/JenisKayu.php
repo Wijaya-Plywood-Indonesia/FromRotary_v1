@@ -17,8 +17,12 @@ class JenisKayu extends Model
     {
         return $this->hasMany(PenggunaanLahanRotary::class, 'id_jenis_kayu');
     }
-    public function kayuMasuk()
+    public function hargaKayu()
     {
         return $this->hasMany(HargaKayu::class, 'id_jenis_kayu', 'id');
+    }
+    public function detailKayuMasuk()
+    {
+        return $this->hasMany(DetailKayuMasuk::class, 'id_jenis_kayu', 'id');
     }
 }
