@@ -48,6 +48,7 @@ class KendaraanSupplierKayuForm
                     ])
                     ->required()
                     ->native(false)
+                    ->default('supplier')
                     ->searchable(),
             ]);
     }

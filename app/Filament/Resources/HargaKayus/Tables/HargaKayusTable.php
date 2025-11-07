@@ -18,21 +18,26 @@ class HargaKayusTable
         return $table
             ->columns([
                 TextColumn::make('jenisKayu.nama_kayu')
+                    ->searchable()
                     ->sortable(),
+
                 TextColumn::make('panjang')
                     ->numeric()
                     ->searchable()
                     ->sortable(),
+
                 TextColumn::make('diameter_terkecil')
                     ->label('Min')
                     ->numeric()
                     ->searchable()
                     ->sortable(),
+
                 TextColumn::make('diameter_terbesar')
                     ->label('Max')
                     ->numeric()
                     ->searchable()
                     ->sortable(),
+
                 TextColumn::make('grade')
                     ->label('A / B')
                     ->formatStateUsing(fn($state) => match ((int) $state) {
@@ -55,6 +60,15 @@ class HargaKayusTable
                     ->sortable()
                     ->searchable(),
 
+                TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
             ])
             ->filters([
                 //
@@ -63,7 +77,7 @@ class HargaKayusTable
 
                 ViewAction::make(),
                 EditAction::make(),
-                DeleteAction::make(),
+                //   DeleteAction::make(),
 
             ])
             ->toolbarActions([

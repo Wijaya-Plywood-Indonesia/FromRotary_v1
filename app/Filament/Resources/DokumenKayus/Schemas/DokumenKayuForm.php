@@ -37,6 +37,7 @@ class DokumenKayuForm
                             ->label('Upload Dokumen Legal')
                             ->disk('public')
                             ->directory('sumber-kayu/dokumen')
+                            ->nullable()
                             ->preserveFilenames()
                             ->required(),
 
