@@ -20,10 +20,11 @@ class SupplierKayuForm
                     ->required(),
                 TextInput::make('no_telepon')
                     ->tel()
-                    ->required(),
+                    ->nullable(),
                 TextInput::make('nik')
 
                     ->label('Nomor Induk Kependudukan')
+                    ->required()
                     ->minLength(16)
                     ->maxLength(16),
 

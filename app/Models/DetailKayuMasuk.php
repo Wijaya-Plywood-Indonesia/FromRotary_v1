@@ -40,12 +40,13 @@ class DetailKayuMasuk extends Model
 
     public function getKubikasiAttribute()
     {
-        $diameter = (float) ($this->diameter ?? 0); // asumsi mm
+        $diameter = (float) ($this->diameter ?? 0); // cm
         $jumlah = (float) ($this->jumlah_batang ?? 0);
+        $panjang = (float) ($this->panjang ?? 0);
 
         // formula: diameter * jumlah * 0.785 / 1_000_000
         // kembalikan float dengan presisi cukup tinggi
-        $kubikasi = ($diameter * $jumlah * 0.785) / 1000000;
+        $kubikasi = ($panjang * $diameter * $diameter * $jumlah * 0.785) / 1000000;
 
         return $kubikasi; // mis. 0.123456789
     }
@@ -67,7 +68,7 @@ class DetailKayuMasuk extends Model
         $kubikasiRaw = $this->getAttribute('kubikasi'); // akan memanggil accessor di atas
 
         // Kalkulasi presisi lalu lakukan pembulatan akhir
-        $total = $hargaSatuan * $kubikasiRaw;
+        $total = $hargaSatuan * $kubikasiRaw * 1000;
 
         // Jika kamu menyimpan/menampilkan dalam rupiah tanpa decimal, gunakan round($total, 0)
         // Jika butuh 2 desimal, gunakan round($total, 2)
