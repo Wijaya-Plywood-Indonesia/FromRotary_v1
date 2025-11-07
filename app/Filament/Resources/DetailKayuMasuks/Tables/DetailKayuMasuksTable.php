@@ -20,17 +20,32 @@ class DetailKayuMasuksTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->striped()
 
+            ->striped() // gunakan striping bawaan
+            ->recordClasses(function ($record) {
+                // Tambahkan class kondisional per record (grade)
+                // Kita mengembalikan string atau array kelas tailwind yang valid.
+                $grade = (int) ($record->grade ?? 0);
+
+                return match ($grade) {
+                    1 => 'bg-opacity-5 filament-row-grade-a', // tambahkan hook class custom
+                    2 => 'bg-opacity-5 filament-row-grade-b',
+                    default => null,
+                };
+            })
             ->columns([
+                TextColumn::make('no')
+                    ->label('No')
+                    ->rowIndex()
+                    ->alignCenter()
+                    ->width('60px'),
+
                 TextColumn::make('lahan_display')
                     ->label('Lahan')
-                    ->getStateUsing(
-                        fn($record) =>
-                        "{$record->lahan->kode_lahan}"
-                    )
-                    ->sortable(['lahan.kode_lahan']) // optional
+                    ->getStateUsing(fn($record) => "{$record->lahan->kode_lahan}")
+                    ->sortable(['lahan.kode_lahan'])
                     ->searchable(['lahan.kode_lahan']),
+
                 TextColumn::make('keterangan_kayu')
                     ->label('Kayu')
                     ->getStateUsing(function ($record) {
