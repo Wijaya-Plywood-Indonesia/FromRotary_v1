@@ -13,6 +13,12 @@ class Ukuran extends Model
         'tebal',
 
     ];
+
+    protected $casts = [
+        'panjang' => 'float',
+        'lebar' => 'float',
+        'tebal' => 'float',
+    ];
     public function targets()
     {
         return $this->hasMany(DetailHasilPaletRotary::class, 'id_ukuran', 'id');
@@ -24,9 +30,11 @@ class Ukuran extends Model
     protected $appends = ['kubikasi'];
     public function getKubikasiAttribute()
     {
-        return ($this->panjang ?? 0)
-            * ($this->lebar ?? 0)
-            * ($this->tebal ?? 0);
+        $panjang = (float) $this->panjang;
+        $lebar = (float) $this->lebar;
+        $tebal = (float) $this->tebal;
+
+        return $panjang * $lebar * $tebal;
     }
 
 
