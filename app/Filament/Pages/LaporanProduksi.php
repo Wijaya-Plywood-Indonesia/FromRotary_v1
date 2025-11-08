@@ -44,7 +44,10 @@ class LaporanProduksi extends Page implements HasForms
         $produksiList = ProduksiRotary::with([
             'mesin',
             'detailPegawaiRotary.pegawai',
+            'detailPaletRotary',
+            'target',
         ])
+            ->whereHas('detailPaletRotary')
             ->orderBy('tgl_produksi', 'desc')
             ->limit(10)
             ->get();
@@ -52,10 +55,33 @@ class LaporanProduksi extends Page implements HasForms
         $this->dataProduksi = [];
 
         foreach ($produksiList as $produksi) {
-            $mesinNama = $produksi->mesin->nama_mesin ?? $produksi->id_mesin;
+            $mesinNama = $produksi->mesin->nama_mesin;
             $tanggal = \Carbon\Carbon::parse($produksi->tgl_produksi)->format('d/m/Y');
 
-            // HANYA AMBIL DATA PEKERJA
+            $targetHarian = $produksi->detailPaletRotary->sum('total_lembar') ?? 0;
+
+
+            $targetModel = $produksi->target;
+            $target = $targetModel?->target ?? 6000; // TOTALNYA ADALAH 6000
+            $jamKerja = $targetModel?->jam ?? 10;   // AMBIL DATA JAM KERJA
+            $targetPerJam = $jamKerja > 0 ? $target / $jamKerja : 0;
+
+            // SELISIH
+            $selisih = $targetHarian - $target;
+
+            // --- HITUNG JUMLAH PEKERJA DARI RELASI ---
+            $jumlahPekerja = $produksi->detailPegawaiRotary->count();
+
+            // --- HITUNG POTONGAN BIAYA ---
+            $potonganTotal = 0;
+            $potonganPerOrang = 0;
+
+            if (strtoupper($mesinNama) === 'SPINDLESS') {
+                $potonganTotal = 173 * abs($selisih);
+                $potonganPerOrang = $jumlahPekerja > 0 ? $potonganTotal / $jumlahPekerja : 0;
+            }
+
+            // --- Data untuk table pekerja ---
             $pekerja = [];
             foreach ($produksi->detailPegawaiRotary as $detail) {
                 $pekerja[] = [
@@ -64,36 +90,34 @@ class LaporanProduksi extends Page implements HasForms
                     'jam_masuk' => $detail->jam_masuk ? \Carbon\Carbon::parse($detail->jam_masuk)->format('H:i') : '-',
                     'jam_pulang' => $detail->jam_pulang ? \Carbon\Carbon::parse($detail->jam_pulang)->format('H:i') : '-',
                     'ijin' => $detail->ijin ?? '-',
-                    'pot_target' => number_format((float) str_replace('.', '', $detail->pot_target ?? 0), 0, '', '.'),
+                    'pot_target' => number_format(round($potonganPerOrang, 2), 0, '', '.'),
+                    'selisih' => $selisih,
                     'keterangan' => $detail->keterangan ?? '-',
                 ];
             }
 
-            // Summary harian pekerja
-            $totalTargetHarian = collect($pekerja)->sum(fn($p) => (float) str_replace('.', '', $p['pot_target'] ?? 0));
 
+            // Data Produksi untuk table footer
             $this->dataProduksi[] = [
                 'tanggal' => $tanggal,
                 'mesin' => $mesinNama,
-                'bahan' => [], // Kosong
-                'hasil' => [], // Kosong
                 'pekerja' => $pekerja,
                 'kendala' => $produksi->kendala ?? 'Tidak ada kendala.',
+                'total_target_harian' => $targetHarian,
+                'target' => $target,
+                'target_per_jam' => $targetPerJam,
+                'jam_kerja' => $jamKerja,
+                'selisih' => $selisih,
                 'summary' => [
-                    'total_batang' => 0,
-                    'total_lembar' => 0,
-                    'total_m3' => 0,
-                    'jam_kerja' => 0,
                     'jumlah_pekerja' => count($pekerja),
-                    'total_target_harian' => $totalTargetHarian,
-                    'total_status_harian' => 0,
-                ],
+                    'total_target_harian' => $target,
+                    'total_status_harian' => $targetHarian,
+                ]
             ];
         }
-
-        // Hitung summary keseluruhan (tetap pakai fungsi Anda)
         $this->calculateOverallSummary();
     }
+
 
     protected function calculateOverallSummary()
     {
@@ -106,20 +130,16 @@ class LaporanProduksi extends Page implements HasForms
             'total_status' => 0,
             'total_pot_target' => 0,
             'total_pekerja' => 0,
+            'total_hasil_produksi' => 0,
         ];
 
         foreach ($this->dataProduksi as $data) {
-            $this->summary['total_batang'] += (int) ($data['summary']['total_batang'] ?? 0);
-            $this->summary['total_lembar'] += (int) ($data['summary']['total_lembar'] ?? 0);
-            $this->summary['total_m3'] += (float) ($data['summary']['total_m3'] ?? 0);
-            $this->summary['total_jam_kerja'] += (int) ($data['summary']['jam_kerja'] ?? 0);
+            $this->summary['total_hasil_produksi'] += $data['total_target_harian']; // hasil
+            $this->summary['total_target'] += $data['target'];                     // target mesin
+            $this->summary['total_pekerja'] += $data['summary']['jumlah_pekerja'];
 
-            // Hitung dari pekerja
             $pekerja = $data['pekerja'] ?? [];
-            $this->summary['total_target'] += collect($pekerja)->sum(fn($p) => (float) str_replace('.', '', $p['pot_target'] ?? 0));
-            $this->summary['total_status'] += $data['summary']['total_lembar'] ?? 0; // Status = total lembar
             $this->summary['total_pot_target'] += collect($pekerja)->sum(fn($p) => (float) str_replace('.', '', $p['pot_target'] ?? 0));
-            $this->summary['total_pekerja'] += count($pekerja);
         }
     }
 

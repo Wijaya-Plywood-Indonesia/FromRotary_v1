@@ -6,10 +6,9 @@ use App\Models\JenisKayu;
 use App\Models\Lahan;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
+use Filament\Support\Facades\Filament;
 
 class DetailKayuMasukForm
 {
@@ -43,7 +42,20 @@ class DetailKayuMasukForm
                         ->required()
                         ->default(1)
                         ->native(false)
-                        ->searchable(),
+                        ->searchable()
+                        ->reactive()
+                        ->afterStateHydrated(function ($state, $set) {
+                            $saved = request()->cookie('filament_local_storage_detail_kayu_masuk.grade')
+                                ?? optional(json_decode(request()->header('X-Filament-Local-Storage'), true))['detail_kayu_masuk.grade']
+                                ?? null;
+
+                            if ($saved && in_array($saved, [1, 2])) {
+                                $set('grade', (int) $saved);
+                            }
+                        })
+                        ->afterStateUpdated(function ($state) {
+                            cookie()->queue('filament_local_storage_detail_kayu_masuk.grade', $state, 60 * 24 * 30); // 30 hari
+                        }),
 
                     Select::make('panjang')
                         ->label('Panjang')

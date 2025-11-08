@@ -16,7 +16,7 @@ class Target extends Model
         'id_mesin',
         'id_ukuran',
         'id_jenis_kayu',
-        'ukuran',
+        'kode_ukuran',
         'target',
         'orang',
         'jam',
@@ -47,6 +47,8 @@ class Target extends Model
     {
         return $this->belongsTo(JenisKayu::class, 'id_jenis_kayu', 'id');
     }
+
+
 
 
     public function getDeskripsiAttribute()

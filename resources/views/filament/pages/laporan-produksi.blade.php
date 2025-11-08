@@ -8,11 +8,9 @@
 
         <!-- CARD MESIN -->
         <div
-            class="bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden"
+            class="bg-white dark:bg-zinc-900 rounded-sm shadow-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden"
         >
-            <div
-                class="bg-gradient-to-r from-zinc-700 to-zinc-800 p-4 text-white"
-            >
+            <div class="bg-zinc800 p-4 text-white">
                 <h2 class="text-lg font-bold text-center">
                     PEKERJA MESIN: {{ strtoupper($mesinNama) }}
                 </h2>
@@ -63,9 +61,9 @@
                                         Ijin
                                     </th>
                                     <th
-                                        class="p-2 text-right text-xs font-medium w-24"
+                                        class="p-2 text-right text-xs font-medium w-36"
                                     >
-                                        Target
+                                        Potongan Target
                                     </th>
                                     <th
                                         class="p-2 text-left text-xs font-medium"
@@ -110,7 +108,7 @@
                                         {{ $p["ijin"] ?? "-" }}
                                     </td>
                                     <td
-                                        class="p-2 text-right text-xs border-r border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-medium"
+                                        class="p-2 text-right text-xs border-r border-zinc-300 dark:border-zinc-700 font-bold @if($p['selisih'] >= 0) text-green-400 @else text-red-400 @endif"
                                     >
                                         {{ $p["pot_target"] ?? "-" }}
                                     </td>
@@ -132,30 +130,14 @@
                                 @endforelse
 
                                 <!-- TOTAL TARGET -->
-                                @php $totalTarget =
-                                collect($pekerja)->sum(fn($p) => (float)
-                                str_replace('.', '', $p['pot_target'] ?? 0));
-                                $totalPekerja = count($pekerja); @endphp
-                                <tr
-                                    class="bg-yellow-50 dark:bg-yellow-900/20 font-bold text-zinc-800 dark:text-zinc-200"
-                                >
-                                    <td
-                                        colspan="2"
-                                        class="p-2 text-right border-r-1 border-zinc-300 dark:border-zinc-600"
-                                    >
-                                        Total Pekerja
-                                    </td>
-                                    <td
-                                        class="p-2 text-center border-r border-zinc-300 dark:border-zinc-700"
-                                    >
-                                        {{ $totalPekerja }}
-                                    </td>
-                                    <td
-                                        class="p-2 text-left border-r border-zinc-300 dark:border-zinc-700"
-                                    >
-                                        {{ number_format($totalTarget) }}
-                                    </td>
-                                </tr>
+                                @php $pekerja = $first['pekerja'] ?? [];
+                                $totalPekerja = count($pekerja); $hasil =
+                                $first['total_target_harian'] ?? 0; $target =
+                                $first['target'] ?? 6000; $targetPerJam =
+                                $first['target_per_jam'] ?? 0; $selisih =
+                                $first['selisih'] ?? 0; $warna = $selisih >= 0 ?
+                                'text-green-400' : 'text-red-400'; $tanda =
+                                $selisih >= 0 ? '+' : ''; @endphp
                             </tbody>
 
                             <tfoot
@@ -164,11 +146,45 @@
                                 <tr>
                                     <td
                                         colspan="7"
-                                        class="p-3 text-center text-zinc-600 dark:text-zinc-400 text-xs"
+                                        class="p-3 text-center text-xs text-zinc-600 dark:text-zinc-400 space-x-3"
                                     >
-                                        Total Pekerja: {{ $totalPekerja }} orang
-                                        | Terakhir diperbarui:
-                                        {{ now()->format('d/m/Y H:i') }}
+                                        <span class="font-medium"
+                                            >Pekerja:</span
+                                        >
+                                        <strong>{{ $totalPekerja }}</strong>
+                                        <span class="text-zinc-400">|</span>
+                                        <span class="font-medium">Target:</span>
+                                        <strong class="font-mono">{{
+                                            number_format($target)
+                                        }}</strong>
+                                        <span class="text-zinc-400">|</span>
+                                        <span class="font-medium"
+                                            >Target/Jam:</span
+                                        >
+                                        <strong class="font-mono">{{
+                                            number_format($targetPerJam)
+                                        }}</strong>
+                                        <span class="text-zinc-400">|</span>
+                                        <span class="font-medium">Hasil:</span>
+                                        <strong
+                                            class="font-mono {{ $warna }}"
+                                            >{{ number_format($hasil) }}</strong
+                                        >
+                                        <span class="text-zinc-400">|</span>
+                                        <span class="font-medium"
+                                            >Selisih:</span
+                                        >
+                                        <strong class="font-mono {{ $warna }}"
+                                            >{{ $tanda
+                                            }}{{
+                                                number_format($selisih)
+                                            }}</strong
+                                        >
+                                        <span class="text-zinc-400">|</span>
+                                        <span
+                                            class="text-xs"
+                                            >{{ now()->format('d/m/Y H:i') }}</span
+                                        >
                                     </td>
                                 </tr>
                             </tfoot>
