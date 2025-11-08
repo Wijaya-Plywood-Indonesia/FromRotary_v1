@@ -14,6 +14,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Facades\Filament;
+use Filament\Resources\Pages\ViewRecord;
 
 class DetailKayuMasuksTable
 {
@@ -99,6 +100,7 @@ class DetailKayuMasuksTable
                 //
             ])
             ->headerActions([
+                CreateAction::make(),
                 Action::make('total_kubikasi')
                     ->label(function () {
                         // Ambil semua data DetailKayuMasuk
@@ -153,7 +155,7 @@ class DetailKayuMasuksTable
                         // Kalau mau full reload (halaman benar-benar segar):
                         $livewire->js('window.location.reload()');
                     }),
-                CreateAction::make(), // ðŸ‘ˆ ini yang munculkan tombol "Tambah"
+
             ])
             ->recordActions([
                 Action::make('kurangiBatang')
