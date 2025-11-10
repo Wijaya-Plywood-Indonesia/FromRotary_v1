@@ -60,10 +60,10 @@ class LaporanProduksi extends Page implements HasForms
             $targetHarian = $produksi->detailPaletRotary->sum('total_lembar') ?? 0;
 
             // --- UBAH LOGIKA: CARI TARGET BERDASARKAN kode_ukuran DARI detailPaletRotary ---
-            $kodeUkuran = $produksi->detailPaletRotary->first()?->kode_ukuran ?? '';
+            $idUkuran = $produksi->detailPaletRotary->first()?->id_ukuran ?? 0;
 
             $targetModel = \App\Models\Target::where('id_mesin', $produksi->id_mesin)
-                ->where('kode_ukuran', $kodeUkuran)
+                ->where('id_ukuran', $idUkuran)
                 ->first();
 
             // --- TETAP PAKAI VARIABEL LAMA ---
@@ -77,16 +77,15 @@ class LaporanProduksi extends Page implements HasForms
             // --- HITUNG JUMLAH PEKERJA DARI RELASI ---
             $jumlahPekerja = $produksi->detailPegawaiRotary->count();
 
+            $potongan = $targetModel?->potongan ?? 0;
+
             // --- HITUNG POTONGAN BIAYA (HANYA JIKA KURANG) ---
             $potonganTotal = 0;
             $potonganPerOrang = 0;
 
-            if (strtoupper($mesinNama) === 'SPINDLESS') {
-                if ($selisih < 0) {
-                    $potonganTotal = 173 * abs($selisih);
-                    $potonganPerOrang = $jumlahPekerja > 0 ? $potonganTotal / $jumlahPekerja : 0;
-                }
-                // Jika lebih/sama → potongan = 0
+            if ($selisih < 0) {
+                $potonganTotal = ceil(abs($selisih) * $potongan);
+                $potonganPerOrang = $jumlahPekerja > 0 ? $potonganTotal / $jumlahPekerja : 0;
             }
 
             // --- Data untuk table pekerja ---
