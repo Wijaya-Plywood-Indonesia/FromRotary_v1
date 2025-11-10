@@ -53,10 +53,6 @@ class ProduksiRotary extends Model
     {
         return $this->hasMany(RiwayatKayu::class, 'id_rotary');
     }
-    public function target()
-    {
-        return $this->belongsTo(Target::class, 'id_mesin', 'id_mesin');
-    }
     protected static function booted()
     {
         static::deleting(function ($record) {
