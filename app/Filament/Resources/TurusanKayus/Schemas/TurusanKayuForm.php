@@ -18,23 +18,8 @@ class TurusanKayuForm
     {
         return $schema
             ->components([
-                Select::make('jenis_dokumen_angkut')
-                    ->label('Jenis Dokumen Angkut')
-                    ->options([
-                        'SAKR' => 'SAKR',
-                        'SK SHHK' => 'SK SHHK',
-                        'Nota Angkutan' => 'Nota Angkutan',
-                    ])
-                    ->required()
-                    ->native(false)
-                    ->searchable()
-                    ->preload(),
-                FileUpload::make('upload_dokumen_angkut')
-                    ->label('Upload Dokumen Angkut')
-                    ->disk('public')
-                    ->directory('kayu_masuk/dokumen')
-                    ->preserveFilenames()
-                    ->required(),
+
+
 
                 DatePicker::make('tgl_kayu_masuk')
                     ->label('Tanggal Kayu Masuk')
@@ -79,20 +64,6 @@ class TurusanKayuForm
                     ->suffix(' m³')
                     ->helperText('Nilai ini akan diperbarui otomatis dari detail kayu masuk.'),
 
-                Select::make('id_supplier_kayus')
-                    ->label('Supplier Kayu')
-                    ->options(
-                        SupplierKayu::query()
-                            ->get()
-                            ->mapWithKeys(function ($supplier) {
-                                return [
-                                    $supplier->id => "{$supplier->nama_supplier} - {$supplier->no_telepon}", // sesuaikan kolomnya
-                                ];
-                            })
-                    )
-                    ->searchable()
-                    ->required()
-                    ->placeholder('Pilih Supplier Kayu'),
 
                 Select::make('id_kendaraan_supplier_kayus')
                     ->label('Kendaraan Supplier Kayu')
@@ -109,20 +80,6 @@ class TurusanKayuForm
                     ->required()
                     ->placeholder('Pilih Kendaraan Supplier'),
 
-                Select::make('id_dokumen_kayus')
-                    ->label('Dokumen Kayu')
-                    ->options(
-                        DokumenKayu::query()
-                            ->get()
-                            ->mapWithKeys(function ($dokumen) {
-                                return [
-                                    $dokumen->id => "{$dokumen->nama_legal} - {$dokumen->dokumen_legal}", // sesuaikan kolomnya
-                                ];
-                            })
-                    )
-                    ->searchable()
-                    ->required()
-                    ->placeholder('Pilih Dokumen Kayu'),
             ]);
     }
 }

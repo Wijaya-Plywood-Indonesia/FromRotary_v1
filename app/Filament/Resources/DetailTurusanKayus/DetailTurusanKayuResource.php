@@ -7,6 +7,7 @@ use App\Filament\Resources\DetailTurusanKayus\Pages\EditDetailTurusanKayu;
 use App\Filament\Resources\DetailTurusanKayus\Pages\ListDetailTurusanKayus;
 use App\Filament\Resources\DetailTurusanKayus\Schemas\DetailTurusanKayuForm;
 use App\Filament\Resources\DetailTurusanKayus\Tables\DetailTurusanKayusTable;
+use App\Filament\Resources\TurusanKayus\RelationManagers\DetailturusanKayusRelationManager;
 use App\Models\DetailTurusanKayu;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -34,6 +35,7 @@ class DetailTurusanKayuResource extends Resource
     {
         return [
             //
+
         ];
     }
 

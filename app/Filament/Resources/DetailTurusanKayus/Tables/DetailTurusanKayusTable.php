@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\DetailTurusanKayus\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -43,6 +44,10 @@ class DetailTurusanKayusTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->headerActions([
+                CreateAction::make(),
+
             ])
             ->filters([
                 //

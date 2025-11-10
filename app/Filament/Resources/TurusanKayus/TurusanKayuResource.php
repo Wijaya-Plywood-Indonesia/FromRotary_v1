@@ -5,6 +5,7 @@ namespace App\Filament\Resources\TurusanKayus;
 use App\Filament\Resources\TurusanKayus\Pages\CreateTurusanKayu;
 use App\Filament\Resources\TurusanKayus\Pages\EditTurusanKayu;
 use App\Filament\Resources\TurusanKayus\Pages\ListTurusanKayus;
+use App\Filament\Resources\TurusanKayus\RelationManagers\DetailturusanKayusRelationManager;
 use App\Filament\Resources\TurusanKayus\Schemas\TurusanKayuForm;
 use App\Filament\Resources\TurusanKayus\Tables\TurusanKayusTable;
 use App\Models\KayuMasuk;
@@ -35,7 +36,8 @@ class TurusanKayuResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+                //
+            DetailturusanKayusRelationManager::class,
         ];
     }
 
