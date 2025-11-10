@@ -4,13 +4,14 @@ namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
 use App\Models\ProduksiRotary;
-use App\Models\Target;
 use BackedEnum;
 use UnitEnum;
 use App\Exports\LaporanProduksiExport;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
+use Filament\Schemas\Components\Grid;
 use Maatwebsite\Excel\Facades\Excel;
 
 class LaporanProduksi extends Page implements HasForms
@@ -22,67 +23,89 @@ class LaporanProduksi extends Page implements HasForms
     protected static UnitEnum|string|null $navigationGroup = 'Laporan';
     protected static ?string $title = 'Laporan Produksi Rotary';
 
+    // TAMBAH INI → FIX ERROR $heading
+    public function getHeading(): string
+    {
+        return static::$title;
+    }
+
     public $dataProduksi = [];
+    public $tanggal = null;
 
     public function mount(): void
     {
+        $this->tanggal = now()->format('Y-m-d');
+        $this->form->fill(['tanggal' => $this->tanggal]);
         $this->loadAllData();
+    }
+
+    protected function getFormSchema(): array
+    {
+        return [
+            Grid::make(2)
+                ->schema([
+                    DatePicker::make('tanggal')
+                        ->label('Tanggal')
+                        ->default(now())
+                        ->native(false)
+                        ->displayFormat('d/m/Y')
+                        ->format('Y-m-d')
+                        ->reactive()
+                        ->afterStateUpdated(fn($state) => $this->tanggal = $state && $this->loadAllData())
+                        ->columnSpan(1),
+                ])
+                ->columnSpan(1),
+        ];
     }
 
     protected function getHeaderActions(): array
     {
         return [
             Action::make('export')
-                ->label('Export to Excel')
+                ->label('Download Excel')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('success')
+                ->button()
+                ->size('sm')
                 ->action('exportToExcel'),
         ];
     }
 
     public function loadAllData()
     {
+        $tanggal = $this->tanggal ?? now()->format('Y-m-d');
+
         $produksiList = ProduksiRotary::with([
             'mesin',
             'detailPegawaiRotary.pegawai',
             'detailPaletRotary',
         ])
             ->whereHas('detailPaletRotary')
+            ->whereDate('tgl_produksi', $tanggal)
             ->orderBy('tgl_produksi', 'desc')
-            ->limit(10)
             ->get();
 
         $this->dataProduksi = [];
 
         foreach ($produksiList as $produksi) {
             $mesinNama = $produksi->mesin->nama_mesin;
-            $tanggal = \Carbon\Carbon::parse($produksi->tgl_produksi)->format('d/m/Y');
+            $tanggalFormat = \Carbon\Carbon::parse($produksi->tgl_produksi)->format('d/m/Y');
+            $kodeUkuran = $produksi->detailPaletRotary->first()?->kode_ukuran ?? 'TIDAK ADA UKURAN';
 
             $targetHarian = $produksi->detailPaletRotary->sum('total_lembar') ?? 0;
 
-            // --- CARI TARGET BERDASARKAN kode_ukuran ---
-            $idUkuran = $produksi->detailPaletRotary->first()?->id_ukuran ?? 0;
-
-            // CARI TARGET BERDASARKAN id_mesin + id_ukuran
             $targetModel = \App\Models\Target::where('id_mesin', $produksi->id_mesin)
-                ->where('id_ukuran', $idUkuran)
+                ->where('kode_ukuran', $kodeUkuran)
                 ->first();
 
-            // --- VARIABEL LAMA TETAP DIPAKAI ---
             $target = $targetModel?->target ?? 0;
             $jamKerja = $targetModel?->jam ?? 0;
             $targetPerJam = $jamKerja > 0 ? $target / $jamKerja : 0;
 
-            // SELISIH
             $selisih = $targetHarian - $target;
-
-            // --- HITUNG JUMLAH PEKERJA ---
             $jumlahPekerja = $produksi->detailPegawaiRotary->count();
 
-            // --- AMBIL POTONGAN PER LEMBAR DARI TARGET ---
-            $potonganPerLembar = $targetModel?->potongan ?? 0;
-
-            // --- HITUNG POTONGAN (HANYA JIKA KURANG) ---
+            $potonganPerLembar = $targetModel?->potongan_per_lembar ?? 0;
             $potonganTotal = 0;
             $potonganPerOrang = 0;
 
@@ -91,7 +114,6 @@ class LaporanProduksi extends Page implements HasForms
                 $potonganPerOrang = $jumlahPekerja > 0 ? $potonganTotal / $jumlahPekerja : 0;
             }
 
-            // --- DATA PEKERJA ---
             $pekerja = [];
             foreach ($produksi->detailPegawaiRotary as $detail) {
                 $pekerja[] = [
@@ -107,8 +129,9 @@ class LaporanProduksi extends Page implements HasForms
             }
 
             $this->dataProduksi[] = [
-                'tanggal' => $tanggal,
+                'tanggal' => $tanggalFormat,
                 'mesin' => $mesinNama,
+                'kode_ukuran' => $kodeUkuran,
                 'pekerja' => $pekerja,
                 'kendala' => $produksi->kendala ?? 'Tidak ada kendala.',
                 'total_target_harian' => $targetHarian,
@@ -144,7 +167,7 @@ class LaporanProduksi extends Page implements HasForms
         foreach ($this->dataProduksi as $data) {
             $this->summary['total_hasil_produksi'] += $data['total_target_harian'];
             $this->summary['total_target'] += $data['target'];
-            $this->summary['total_pekerja'] += $data['summary']['jumlah_pekerja'];
+            $this->summary['total,total_pekerja'] += $data['summary']['jumlah_pekerja'];
 
             $pekerja = $data['pekerja'] ?? [];
             $this->summary['total_pot_target'] += collect($pekerja)->sum(fn($p) => (float) str_replace('.', '', $p['pot_target'] ?? 0));
@@ -153,7 +176,8 @@ class LaporanProduksi extends Page implements HasForms
 
     public function exportToExcel()
     {
-        $fileName = 'laporan-produksi-' . now()->format('Y-m-d-His') . '.xlsx';
+        $tanggal = $this->tanggal ?? now()->format('Y-m-d');
+        $fileName = 'laporan-produksi-' . \Carbon\Carbon::parse($tanggal)->format('Y-m-d') . '.xlsx';
         return Excel::download(new LaporanProduksiExport($this->dataProduksi), $fileName);
     }
 }

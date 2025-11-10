@@ -1,6 +1,14 @@
 <x-filament-panels::page>
+    <!-- HEADER OTOMATIS DARI FILAMENT -->
+    <x-filament-panels::header :actions="$this->getHeaderActions()">
+        <div class="flex items-center gap-3 ml-auto">
+            {{ $this->form }}
+        </div>
+    </x-filament-panels::header>
+
     @php $dataProduksi = $dataProduksi ?? []; $groupedByMesin =
-    collect($dataProduksi)->groupBy('mesin'); @endphp
+    collect($dataProduksi)->groupBy('mesin'); $kodeUkuran =
+    $first['kode_ukuran'] ?? 'TIDAK ADA UKURAN';@endphp
 
     <div class="space-y-12">
         @forelse ($groupedByMesin as $mesinNama => $produksiList) @php $first =
@@ -10,9 +18,10 @@
         <div
             class="bg-white dark:bg-zinc-900 rounded-sm shadow-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden"
         >
-            <div class="bg-zinc800 p-4 text-white">
+            <div class="bg-zinc-800 p-4 text-white">
                 <h2 class="text-lg font-bold text-center">
-                    PEKERJA MESIN: {{ strtoupper($mesinNama) }}
+                    PEKERJA MESIN: {{ strtoupper($mesinNama) }} -
+                    {{ strtoupper($kodeUkuran) }}
                 </h2>
             </div>
 
