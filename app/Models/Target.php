@@ -48,9 +48,6 @@ class Target extends Model
         return $this->belongsTo(JenisKayu::class, 'id_jenis_kayu', 'id');
     }
 
-
-
-
     public function getDeskripsiAttribute()
     {
         $namaMesin = $this->mesin?->nama_mesin ?? '-';

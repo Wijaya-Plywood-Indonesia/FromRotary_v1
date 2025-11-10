@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
 use App\Models\ProduksiRotary;
+use App\Models\Target;
 use BackedEnum;
 use UnitEnum;
 use App\Exports\LaporanProduksiExport;
@@ -59,14 +60,15 @@ class LaporanProduksi extends Page implements HasForms
 
             $targetHarian = $produksi->detailPaletRotary->sum('total_lembar') ?? 0;
 
-            // --- UBAH LOGIKA: CARI TARGET BERDASARKAN kode_ukuran DARI detailPaletRotary ---
-            $kodeUkuran = $produksi->detailPaletRotary->first()?->kode_ukuran ?? '';
+            // --- CARI TARGET BERDASARKAN kode_ukuran ---
+            $idUkuran = $produksi->detailPaletRotary->first()?->id_ukuran ?? 0;
 
+            // CARI TARGET BERDASARKAN id_mesin + id_ukuran
             $targetModel = \App\Models\Target::where('id_mesin', $produksi->id_mesin)
-                ->where('kode_ukuran', $kodeUkuran)
+                ->where('id_ukuran', $idUkuran)
                 ->first();
 
-            // --- TETAP PAKAI VARIABEL LAMA ---
+            // --- VARIABEL LAMA TETAP DIPAKAI ---
             $target = $targetModel?->target ?? 0;
             $jamKerja = $targetModel?->jam ?? 0;
             $targetPerJam = $jamKerja > 0 ? $target / $jamKerja : 0;
@@ -74,22 +76,22 @@ class LaporanProduksi extends Page implements HasForms
             // SELISIH
             $selisih = $targetHarian - $target;
 
-            // --- HITUNG JUMLAH PEKERJA DARI RELASI ---
+            // --- HITUNG JUMLAH PEKERJA ---
             $jumlahPekerja = $produksi->detailPegawaiRotary->count();
 
-            // --- HITUNG POTONGAN BIAYA (HANYA JIKA KURANG) ---
+            // --- AMBIL POTONGAN PER LEMBAR DARI TARGET ---
+            $potonganPerLembar = $targetModel?->potongan ?? 0;
+
+            // --- HITUNG POTONGAN (HANYA JIKA KURANG) ---
             $potonganTotal = 0;
             $potonganPerOrang = 0;
 
-            if (strtoupper($mesinNama) === 'SPINDLESS') {
-                if ($selisih < 0) {
-                    $potonganTotal = 173 * abs($selisih);
-                    $potonganPerOrang = $jumlahPekerja > 0 ? $potonganTotal / $jumlahPekerja : 0;
-                }
-                // Jika lebih/sama → potongan = 0
+            if ($selisih < 0) {
+                $potonganTotal = ceil(abs($selisih) * $potonganPerLembar);
+                $potonganPerOrang = $jumlahPekerja > 0 ? $potonganTotal / $jumlahPekerja : 0;
             }
 
-            // --- Data untuk table pekerja ---
+            // --- DATA PEKERJA ---
             $pekerja = [];
             foreach ($produksi->detailPegawaiRotary as $detail) {
                 $pekerja[] = [
@@ -104,7 +106,6 @@ class LaporanProduksi extends Page implements HasForms
                 ];
             }
 
-            // Data Produksi untuk table footer
             $this->dataProduksi[] = [
                 'tanggal' => $tanggal,
                 'mesin' => $mesinNama,
@@ -122,9 +123,9 @@ class LaporanProduksi extends Page implements HasForms
                 ]
             ];
         }
+
         $this->calculateOverallSummary();
     }
-
 
     protected function calculateOverallSummary()
     {
@@ -141,8 +142,8 @@ class LaporanProduksi extends Page implements HasForms
         ];
 
         foreach ($this->dataProduksi as $data) {
-            $this->summary['total_hasil_produksi'] += $data['total_target_harian']; // hasil
-            $this->summary['total_target'] += $data['target'];                     // target mesin
+            $this->summary['total_hasil_produksi'] += $data['total_target_harian'];
+            $this->summary['total_target'] += $data['target'];
             $this->summary['total_pekerja'] += $data['summary']['jumlah_pekerja'];
 
             $pekerja = $data['pekerja'] ?? [];
