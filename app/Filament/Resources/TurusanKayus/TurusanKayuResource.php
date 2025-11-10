@@ -19,6 +19,7 @@ class TurusanKayuResource extends Resource
     protected static ?string $model = KayuMasuk::class;
 
     protected static ?string $navigationLabel = 'Turusan Kayu';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema
