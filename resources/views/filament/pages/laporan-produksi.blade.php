@@ -108,9 +108,9 @@
                                         {{ $p["ijin"] ?? "-" }}
                                     </td>
                                     <td
-                                        class="p-2 text-right text-xs border-r border-zinc-300 dark:border-zinc-700 font-bold @if($p['selisih'] >= 0) text-green-400 @else text-red-400 @endif"
+                                        class="p-2 text-right text-xs border-r border-zinc-300 dark:border-zinc-700 font-bold @if($p['selisih'] < 0) text-red-600 dark:text-red-400 @else text-zinc-700 @endif"
                                     >
-                                        {{ $p["pot_target"] ?? "-" }}
+                                        {{ $p["pot_target"] }}
                                     </td>
                                     <td
                                         class="p-2 text-left text-xs text-zinc-700 dark:text-zinc-300"
@@ -133,11 +133,12 @@
                                 @php $pekerja = $first['pekerja'] ?? [];
                                 $totalPekerja = count($pekerja); $hasil =
                                 $first['total_target_harian'] ?? 0; $target =
-                                $first['target'] ?? 6000; $targetPerJam =
+                                $first['target'] ?? 0; $targetPerJam =
                                 $first['target_per_jam'] ?? 0; $selisih =
                                 $first['selisih'] ?? 0; $warna = $selisih >= 0 ?
-                                'text-green-400' : 'text-red-400'; $tanda =
-                                $selisih >= 0 ? '+' : ''; @endphp
+                                'text-green-600' : 'text-red-600'; $tanda =
+                                $selisih >= 0 ? '+' : ''; $jamKerja =
+                                $first['jam_kerja'] ?? 0; @endphp
                             </tbody>
 
                             <tfoot
@@ -159,7 +160,7 @@
                                         }}</strong>
                                         <span class="text-zinc-400">|</span>
                                         <span class="font-medium"
-                                            >Target/Jam:</span
+                                            >Jam Kerja :</span
                                         >
                                         <strong class="font-mono">{{
                                             number_format($targetPerJam)
@@ -181,9 +182,9 @@
                                             }}</strong
                                         >
                                         <span class="text-zinc-400">|</span>
-                                        <span
-                                            class="text-xs"
-                                            >{{ now()->format('d/m/Y H:i') }}</span
+                                        <span class="text-xs"
+                                            >Tanggal :
+                                            {{ $first["tanggal"] }}</span
                                         >
                                     </td>
                                 </tr>
