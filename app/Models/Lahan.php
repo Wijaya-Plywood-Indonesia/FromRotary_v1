@@ -32,5 +32,9 @@ class Lahan extends Model
     {
         return $this->hasMany(DetailKayuMasuk::class, 'id_lahan');
     }
+    public function detailTurusanKayus()
+    {
+        return $this->hasMany(DetailTurusanKayu::class, 'lahan_id');
+    }
 
 }
