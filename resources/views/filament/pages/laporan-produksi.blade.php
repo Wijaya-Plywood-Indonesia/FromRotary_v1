@@ -10,7 +10,7 @@
         <div
             class="bg-white dark:bg-zinc-900 rounded-sm shadow-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden"
         >
-            <div class="bg-zinc800 p-4 text-white">
+            <div class="bg-zinc-800 p-4 text-white">
                 <h2 class="text-lg font-bold text-center">
                     PEKERJA MESIN: {{ strtoupper($mesinNama) }}
                 </h2>

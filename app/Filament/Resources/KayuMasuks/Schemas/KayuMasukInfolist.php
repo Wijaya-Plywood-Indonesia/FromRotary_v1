@@ -35,12 +35,12 @@ class KayuMasukInfolist
                             ->color('gray'),
 
                         TextEntry::make('seri')
-                            ->label('Nomor Seri')
+                            ->label('Seri Kayu')
                             ->numeric()
                             ->badge()
                             ->color('warning'),
                         TextEntry::make('kubikasi')
-                            ->label('Total Kayu Masuk (m³)')
+                            ->label('Kubikasi Sekarang (m³)')
                             ->formatStateUsing(fn($state) => number_format((float) $state, 6, ',', '.'))
                             ->suffix(' m³')
                             ->badge()

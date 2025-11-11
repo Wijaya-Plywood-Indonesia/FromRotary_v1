@@ -60,75 +60,99 @@
                 <td>
                     {{ $record->kayuMasuk->penggunaanKendaraanSupplier->nopol_kendaraan ?? '-' }}
                 </td>
-
                 <td>
                     {{ $record->kayuMasuk->penggunaanDokumenKayu->dokumen_legal ?? '-' }}
                 </td>
             </tr>
         </table>
 
-        @php $details = $record->kayuMasuk->detailMasukanKayu ?? collect();
+        @php $details = $record->kayuMasuk->detailTurusanKayus ?? collect();
         $grouped = $details->groupBy(function($item) { $kodeLahan =
         optional($item->lahan)->kode_lahan ?? '-'; $grade = $item->grade ?? 0;
         $panjang = $item->panjang ?? '-'; $jenis =
-        optional($item->jenisKayu)->nama_kayu ?? '-'; return $kodeLahan . '|' .
-        $grade . '|' . $panjang . '|' . $jenis; }); $grandBatang = 0; $grandM3 =
-        0; $grandHarga = 0; @endphp @foreach($grouped as $key => $items) @php
-        [$lahan, $grade, $ukuran, $jenis] = explode('|', $key); $gradeText =
-        $grade == 1 ? 'A' : ($grade == 2 ? 'B' : '-'); $subtotalBatang =
-        $items->sum('jumlah_batang'); $subtotalM3 = $items->sum('kubikasi');
-        $subtotalHarga = $items->sum('total_harga'); $grandBatang +=
-        $subtotalBatang; $grandM3 += $subtotalM3; $grandHarga += $subtotalHarga;
-        @endphp
+        optional($item->jenisKayu)->nama_kayu ?? '-'; return
+        "{$kodeLahan}|{$grade}|{$panjang}|{$jenis}"; }); $grandBatang = 0;
+        $grandM3 = 0; $grandHarga = 0; @endphp @foreach($grouped as $key =>
+        $items) @php [$kodeLahan, $grade, $panjang, $jenis] = explode('|',
+        $key); $gradeText = $grade == 1 ? 'A' : ($grade == 2 ? 'B' : '-');
+        $subtotalBatang = $items->sum('kuantitas'); $subtotalM3 =
+        $items->sum('kubikasi'); $subtotalHarga = $items->sum('total_harga');
+        $grandBatang += $subtotalBatang; $grandM3 += $subtotalM3; $grandHarga +=
+        $subtotalHarga; @endphp
 
         <div class="group-title">
-            {{ $lahan }}&nbsp;&nbsp;{{ $ukuran }} {{ $jenis }} ({{
+            {{ $kodeLahan }} &nbsp;&nbsp; {{ $panjang }} cm {{ $jenis }} ({{
                 $gradeText
             }})
         </div>
+        @php $firstItem = $items->first(); $idJenisKayu =
+        optional($firstItem->jenisKayu)->id ?? $firstItem->id_jenis_kayu ??
+        null; $groupedByDiameter =
+        app(\App\Http\Controllers\NotaKayuController::class)
+        ->groupByRentangDiameter($items, $idJenisKayu, $grade, $panjang);
+        @endphp
 
-        <table>
+        {{-- === Rekap per Rentang Diameter === --}}
+        <table border="1" cellspacing="0" cellpadding="5" width="100%">
             <thead>
                 <tr>
-                    <th style="text-align: center">D</th>
-                    <th style="text-align: center">Q</th>
-                    <th style="text-align: center">m³</th>
+                    <th style="text-align: center">Rentang D (cm)</th>
+                    <th style="text-align: center">Batang</th>
+                    <th style="text-align: center">Kubikasi</th>
                     <th style="text-align: center">Harga</th>
                     <th style="text-align: center">Poin</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($items as $detail)
+                @forelse($groupedByDiameter as $detail)
                 <tr>
-                    <td style="text-align: right">{{ $detail->diameter }}</td>
-                    <td>{{ $detail->jumlah_batang }}</td>
-                    <td>
-                        {{ number_format($detail->kubikasi ?? 0, 4, ',', '.') }}
+                    <td style="text-align: center">{{ $detail["rentang"] }}</td>
+                    <td style="text-align: right">{{ $detail["batang"] }}</td>
+                    <td style="text-align: right">
+                        {{ number_format($detail["kubikasi"], 4, ",", ".") }}
                     </td>
-                    <td>
-                        Rp.
-                        {{ number_format($detail->harga_satuan ?? 0, 0, ',', '.') }}
+                    <td style="text-align: right">
+                        Rp
+                        {{
+                            number_format($detail["harga_satuan"], 0, ",", ".")
+                        }}
                     </td>
-                    <td>
-                        Rp.
-                        {{ number_format($detail->total_harga ?? 0, 0, ',', '.') }}
+                    <td style="text-align: right">
+                        Rp
+                        {{ number_format($detail["total_harga"], 0, ",", ".") }}
                     </td>
                 </tr>
-                @endforeach
-            </tbody>
-            <tfoot>
+                @empty
                 <tr>
-                    <th style="text-align: right">Total</th>
-                    <th>{{ $subtotalBatang }}</th>
-                    <th>{{ number_format($subtotalM3, 4, ",", ".") }} m³</th>
-                    <th colspan="2" style="text-align: right">
-                        Rp. {{ number_format($subtotalHarga, 0, ",", ".") }}
-                    </th>
+                    <td colspan="5" style="text-align: center">
+                        Tidak ada data
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+            @php $totalBatangGrup = $groupedByDiameter->sum('batang');
+            $totalKubikasiGrup = $groupedByDiameter->sum('kubikasi');
+            $totalHargaGrup = $groupedByDiameter->sum('total_harga'); @endphp
+
+            <tfoot>
+                <tr style="font-weight: bold; background: #f7f7f7">
+                    <td style="text-align: center">Total</td>
+                    <td style="text-align: right">
+                        {{ number_format($totalBatangGrup, 0, ",", ".") }}
+                    </td>
+                    <td style="text-align: right">
+                        {{ number_format($totalKubikasiGrup, 4, ",", ".") }}
+                    </td>
+                    <td></td>
+                    <td style="text-align: right">
+                        Rp {{ number_format($totalHargaGrup, 0, ",", ".") }}
+                    </td>
                 </tr>
             </tfoot>
         </table>
-        @endforeach
 
+        {{-- === Tabel lama masih ada di bawah untuk perbandingan === --}}
+        @endforeach
         <div style="margin-top: 20px; display: flex; justify-content: flex-end">
             <table
                 style="
@@ -170,16 +194,15 @@
                     </td>
                 </tr>
 
-                <!-- Baris Total Akhir yang full lebar -->
                 <tr>
                     <td
                         colspan="4"
                         style="
                             text-align: right;
                             font-weight: bold;
-                            font-size: 18px; /* ukuran font lebih besar */
+                            font-size: 18px;
                             padding: 10px 12px;
-                            border: 2px solid #000; /* tebal agar menonjol */
+                            border: 2px solid #000;
                             background: #f2f2f2;
                         "
                     >
@@ -189,6 +212,7 @@
                 </tr>
             </table>
         </div>
+
         <br /><br /><br />
         <table class="signature" style="width: 100%">
             <tr>
@@ -204,10 +228,7 @@
                 <td>{{ $record->penerima ?? '-' }}</td>
             </tr>
         </table>
-        <div class="footer">Dicetak pada: {{ now()->format('d-m-Y H:i') }}</div>
 
-        <!-- <script>
-            window.print(); // otomatis buka dialog print
-        </script> -->
+        <div class="footer">Dicetak pada: {{ now()->format('d-m-Y H:i') }}</div>
     </body>
 </html>
