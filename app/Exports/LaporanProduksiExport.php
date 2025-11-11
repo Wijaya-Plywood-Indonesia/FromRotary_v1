@@ -55,27 +55,28 @@ class LaporanProduksiExport implements FromCollection, WithHeadings, WithTitle
 
             // DATA PEKERJA
             foreach ($pekerja as $p) {
+                $potTargetRaw = (float) str_replace('.', '', $p['pot_target'] ?? '0');
                 $rows->push([
                     $p['id'] ?? '-',
                     $p['nama'] ?? '-',
                     $p['jam_masuk'] ?? '-',
                     $p['jam_pulang'] ?? '-',
                     $p['ijin'] ?? '-',
-                    $p['pot_target'] ?? '-',
+                    $potTargetRaw > 0 ? (int) $potTargetRaw : '-', // TANPA TITIK
                     $p['keterangan'] ?? '-',
                     '', // spasi
-                    number_format($target),
-                    $jamKerja,
-                    number_format($targetPerJam, 2),
-                    number_format($hasil),
-                    $selisih >= 0 ? '+' . number_format($selisih) : number_format($selisih),
+                    (int) $target,                    // TANPA TITIK
+                    (int) $jamKerja,                  // TANPA TITIK
+                    round((float) $targetPerJam, 2),  // 2 DESIMAL
+                    (int) $hasil,                     // TANPA TITIK
+                    $selisih >= 0 ? '+' . (int) abs($selisih) : (int) $selisih, // TANPA TITIK
                     $kendala
                 ]);
             }
 
             // TOTAL
             $totalPekerja = count($pekerja);
-            $totalPotongan = collect($pekerja)->sum(fn($p) => (float) str_replace('.', '', $p['pot_target'] ?? 0));
+            $totalPotongan = collect($pekerja)->sum(fn($p) => (float) str_replace('.', '', $p['pot_target'] ?? '0'));
 
             $rows->push([
                 'TOTAL',
@@ -83,14 +84,14 @@ class LaporanProduksiExport implements FromCollection, WithHeadings, WithTitle
                 '',
                 '',
                 '',
-                number_format($totalPotongan, 0, '', '.'),
+                $totalPotongan > 0 ? (int) $totalPotongan : '', // TANPA TITIK
                 '',
                 '',
-                number_format($target),
-                $jamKerja,
-                number_format($targetPerJam, 2),
-                number_format($hasil),
-                $selisih >= 0 ? '+' . number_format($selisih) : number_format($selisih),
+                (int) $target,
+                (int) $jamKerja,
+                round((float) $targetPerJam, 2),
+                (int) $hasil,
+                $selisih >= 0 ? '+' . (int) abs($selisih) : (int) $selisih,
                 '',
                 $totalPekerja . ' pekerja'
             ]);

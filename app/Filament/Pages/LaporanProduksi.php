@@ -11,7 +11,6 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
-use Filament\Schemas\Components\Grid;
 use Maatwebsite\Excel\Facades\Excel;
 
 class LaporanProduksi extends Page implements HasForms
@@ -23,38 +22,29 @@ class LaporanProduksi extends Page implements HasForms
     protected static UnitEnum|string|null $navigationGroup = 'Laporan';
     protected static ?string $title = 'Laporan Produksi Rotary';
 
-    // TAMBAH INI → FIX ERROR $heading
-    public function getHeading(): string
-    {
-        return static::$title;
-    }
-
     public $dataProduksi = [];
     public $tanggal = null;
+
+    public bool $isLoading = false;
 
     public function mount(): void
     {
         $this->tanggal = now()->format('Y-m-d');
-        $this->form->fill(['tanggal' => $this->tanggal]);
+        $this->form->fill(['tanggal' => $this->tanggal]); // PAKAI form() dari HasForms
         $this->loadAllData();
     }
 
     protected function getFormSchema(): array
     {
         return [
-            Grid::make(2)
-                ->schema([
-                    DatePicker::make('tanggal')
-                        ->label('Tanggal')
-                        ->default(now())
-                        ->native(false)
-                        ->displayFormat('d/m/Y')
-                        ->format('Y-m-d')
-                        ->reactive()
-                        ->afterStateUpdated(fn($state) => $this->tanggal = $state && $this->loadAllData())
-                        ->columnSpan(1),
-                ])
-                ->columnSpan(1),
+            DatePicker::make('tanggal')
+                ->label('Pilih Tanggal')
+                ->default(now())
+                ->reactive()
+                ->afterStateUpdated(function ($state) {
+                    $this->tanggal = $state;
+                    $this->loadAllData();
+                }),
         ];
     }
 
@@ -65,14 +55,30 @@ class LaporanProduksi extends Page implements HasForms
                 ->label('Download Excel')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('success')
-                ->button()
-                ->size('sm')
                 ->action('exportToExcel'),
         ];
     }
 
+    // Fungsi Pembulatan
+    protected function roundToNearestHundred(float $number): int
+    {
+        $thousands = floor($number / 1000);
+        $base = $thousands * 1000;
+        $remainder = $number - $base;
+
+        if ($remainder < 300) {
+            return $base;
+        } elseif ($remainder < 800) {
+            return $base + 500;
+        } else {
+            return $base + 1000;
+        }
+    }
+
     public function loadAllData()
     {
+        $this->isLoading = true;
+
         $tanggal = $this->tanggal ?? now()->format('Y-m-d');
 
         $produksiList = ProduksiRotary::with([
@@ -90,12 +96,12 @@ class LaporanProduksi extends Page implements HasForms
         foreach ($produksiList as $produksi) {
             $mesinNama = $produksi->mesin->nama_mesin;
             $tanggalFormat = \Carbon\Carbon::parse($produksi->tgl_produksi)->format('d/m/Y');
-            $kodeUkuran = $produksi->detailPaletRotary->first()?->kode_ukuran ?? 'TIDAK ADA UKURAN';
+            $idUkuran = $produksi->detailPaletRotary->first()?->id_ukuran ?? 'TIDAK ADA UKURAN';
 
             $targetHarian = $produksi->detailPaletRotary->sum('total_lembar') ?? 0;
 
             $targetModel = \App\Models\Target::where('id_mesin', $produksi->id_mesin)
-                ->where('kode_ukuran', $kodeUkuran)
+                ->where('id_ukuran', $idUkuran)
                 ->first();
 
             $target = $targetModel?->target ?? 0;
@@ -103,14 +109,17 @@ class LaporanProduksi extends Page implements HasForms
             $targetPerJam = $jamKerja > 0 ? $target / $jamKerja : 0;
 
             $selisih = $targetHarian - $target;
+
             $jumlahPekerja = $produksi->detailPegawaiRotary->count();
 
-            $potonganPerLembar = $targetModel?->potongan_per_lembar ?? 0;
+            $potonganPerLembar = $targetModel?->potongan ?? 0;
+            $potonganPerLembar = ceil($potonganPerLembar);
             $potonganTotal = 0;
             $potonganPerOrang = 0;
 
             if ($selisih < 0) {
-                $potonganTotal = ceil(abs($selisih) * $potonganPerLembar);
+                $potonganTotal = abs($selisih) * $potonganPerLembar;
+
                 $potonganPerOrang = $jumlahPekerja > 0 ? $potonganTotal / $jumlahPekerja : 0;
             }
 
@@ -122,7 +131,9 @@ class LaporanProduksi extends Page implements HasForms
                     'jam_masuk' => $detail->jam_masuk ? \Carbon\Carbon::parse($detail->jam_masuk)->format('H:i') : '-',
                     'jam_pulang' => $detail->jam_pulang ? \Carbon\Carbon::parse($detail->jam_pulang)->format('H:i') : '-',
                     'ijin' => $detail->ijin ?? '-',
-                    'pot_target' => $potonganPerOrang > 0 ? number_format(round($potonganPerOrang, 2), 0, '', '.') : '-',
+                    'pot_target' => $potonganPerOrang > 0
+                        ? number_format($this->roundToNearestHundred($potonganPerOrang), 0, '', '.')
+                        : '-',
                     'selisih' => $selisih,
                     'keterangan' => $detail->keterangan ?? '-',
                 ];
@@ -131,7 +142,7 @@ class LaporanProduksi extends Page implements HasForms
             $this->dataProduksi[] = [
                 'tanggal' => $tanggalFormat,
                 'mesin' => $mesinNama,
-                'kode_ukuran' => $kodeUkuran,
+                'kode_ukuran' => $idUkuran,
                 'pekerja' => $pekerja,
                 'kendala' => $produksi->kendala ?? 'Tidak ada kendala.',
                 'total_target_harian' => $targetHarian,
@@ -148,6 +159,8 @@ class LaporanProduksi extends Page implements HasForms
         }
 
         $this->calculateOverallSummary();
+
+        $this->isLoading = false;
     }
 
     protected function calculateOverallSummary()
@@ -167,7 +180,7 @@ class LaporanProduksi extends Page implements HasForms
         foreach ($this->dataProduksi as $data) {
             $this->summary['total_hasil_produksi'] += $data['total_target_harian'];
             $this->summary['total_target'] += $data['target'];
-            $this->summary['total,total_pekerja'] += $data['summary']['jumlah_pekerja'];
+            $this->summary['total_pekerja'] += $data['summary']['jumlah_pekerja'];
 
             $pekerja = $data['pekerja'] ?? [];
             $this->summary['total_pot_target'] += collect($pekerja)->sum(fn($p) => (float) str_replace('.', '', $p['pot_target'] ?? 0));
