@@ -114,12 +114,13 @@ class LaporanProduksi extends Page implements HasForms
 
             $potonganPerLembar = $targetModel?->potongan ?? 0;
             $potonganPerLembar = ceil($potonganPerLembar);
+
             $potonganTotal = 0;
             $potonganPerOrang = 0;
 
             if ($selisih < 0) {
-                $potonganTotal = abs($selisih) * $potonganPerLembar;
 
+                $potonganTotal = abs($selisih) * $potonganPerLembar;
                 $potonganPerOrang = $jumlahPekerja > 0 ? $potonganTotal / $jumlahPekerja : 0;
             }
 

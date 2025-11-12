@@ -31,7 +31,7 @@ return new class extends Migration {
             $table->integer('panjang');
             $table->integer('grade');
             $table->integer('diameter');
-            $table->integer('kuantitas');
+            $table->integer('kuantitas')->default('1');
             $table->timestamps();
         });
     }
