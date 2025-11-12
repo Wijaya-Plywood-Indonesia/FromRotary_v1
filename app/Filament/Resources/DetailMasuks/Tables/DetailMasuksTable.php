@@ -46,7 +46,7 @@ class DetailMasuksTable
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 // JENIS KAYU (RELASI)
-                TextColumn::make('jenisKayu.nama_jenis')
+                TextColumn::make('jenisKayu.nama_kayu')
                     ->label('Jenis Kayu')
                     ->placeholder('-')
                     ->searchable()
@@ -90,7 +90,7 @@ class DetailMasuksTable
 
                 SelectFilter::make('id_jenis_kayu')
                     ->label('Jenis Kayu')
-                    ->relationship('jenisKayu', 'nama_jenis')
+                    ->relationship('jenisKayu', 'nama_kayu')
                     ->searchable()
                     ->preload(),
             ])

@@ -41,7 +41,7 @@ class DetailHasilsTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make('jenisKayu.nama_jenis')
+                TextColumn::make('jenisKayu.nama_kayu')
                     ->label('Jenis Kayu')
                     ->placeholder('-')
                     ->searchable()
@@ -83,7 +83,7 @@ class DetailHasilsTable
 
                 SelectFilter::make('id_jenis_kayu')
                     ->label('Jenis Kayu')
-                    ->relationship('jenisKayu', 'nama_jenis')
+                    ->relationship('jenisKayu', 'nama_kayu')
                     ->searchable()
                     ->preload(),
             ])

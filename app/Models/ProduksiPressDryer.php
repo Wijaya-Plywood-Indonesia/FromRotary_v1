@@ -30,10 +30,10 @@ class ProduksiPressDryer extends Model
         return $this->hasMany(DetailMesin::class, 'id_produksi_dryer');
     }
 
-    public function validasiPressDryers()
-    {
-        return $this->hasMany(ValidasiPressDryer::class, 'id_produksi_dryer');
-    }
+    // public function validasiPressDryers()
+    // {
+    //     return $this->hasMany(ValidasiPressDryer::class, 'id_produksi_dryer');
+    // }
 
     public function detailPegawais()
     {

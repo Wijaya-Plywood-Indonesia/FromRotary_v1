@@ -46,7 +46,7 @@ class DetailMasukForm
                 // JENIS KAYU (OPSIONAL)
                 Select::make('id_jenis_kayu')
                     ->label('Jenis Kayu')
-                    ->relationship('jenisKayu', 'nama_jenis')
+                    ->relationship('jenisKayu', 'nama_kayu')
                     ->searchable()
                     ->preload()
                     ->placeholder('Pilih Jenis Kayu')

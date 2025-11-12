@@ -14,60 +14,52 @@ class DetailMesinsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->recordTitleAttribute('id')
             ->query(DetailMesin::query())
             ->columns([
                 // MESIN DRYER
-                TextColumn::make('mesinDryer.nama_mesin')
-                    ->label('Nama Mesin')
-                    ->placeholder('-')
+                TextColumn::make('mesin.nama_mesin')
+                    ->label('Mesin')
+                    ->formatStateUsing(
+                        fn($state, $record) =>
+                        $record->mesin
+                        ? $state . ' (' . $record->mesin->kategoriMesin?->nama_kategori_mesin . ')'
+                        : '-'
+                    )
                     ->searchable()
-                    ->sortable()
-                    ->toggleable(),
+                    ->sortable(),
+
+                // KATEGORI (OPSIONAL)
+                TextColumn::make('kategoriMesin.nama_kategori_mesin')
+                    ->label('Kategori')
+                    ->placeholder('-')
+                    ->searchable(),
 
                 // JAM KERJA
                 TextColumn::make('jam_kerja_mesin')
                     ->label('Jam Kerja')
-                    ->searchable()
-                    ->sortable()
-                    ->weight('medium'),
-
-                // PRODUKSI DRYER - TANGGAL
-                TextColumn::make('produksiDryer.tanggal_produksi')
-                    ->label('Tanggal Produksi')
-                    ->date('d M Y')
-                    ->sortable()
                     ->searchable(),
 
-                // PRODUKSI DRYER - SHIFT
+                // PRODUKSI
+                TextColumn::make('produksiDryer.tanggal_produksi')
+                    ->label('Tanggal')
+                    ->date('d M Y'),
+
                 TextColumn::make('produksiDryer.shift')
                     ->label('Shift')
                     ->badge()
-                    ->color(fn($state) => $state === 'PAGI' ? 'success' : 'warning')
-                    ->formatStateUsing(fn($state) => $state),
-
-                // DIBUAT
-                TextColumn::make('created_at')
-                    ->label('Dibuat')
-                    ->dateTime('d M Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->color(fn($state) => $state === 'PAGI' ? 'success' : 'warning'),
             ])
             ->filters([
+                SelectFilter::make('id_kategori_mesin')
+                    ->relationship('kategoriMesin', 'nama_kategori_mesin'),
+
                 SelectFilter::make('id_produksi_dryer')
-                    ->label('Produksi Dryer')
                     ->relationship('produksiDryer', 'tanggal_produksi')
                     ->getOptionLabelFromRecordUsing(
-                        fn($record) =>
-                        $record->tanggal_produksi->format('d M Y') . ' | ' . $record->shift
-                    )
-                    ->searchable()
-                    ->preload(),
-
-                SelectFilter::make('id_mesin_dryer')
-                    ->label('Mesin')
-                    ->relationship('mesinDryer', 'nama_mesin')
-                    ->searchable()
-                    ->preload(),
+                        fn($r) =>
+                        $r->tanggal_produksi->format('d M Y') . ' | ' . $r->shift
+                    ),
             ])
             ->recordActions([
                 EditAction::make(),
