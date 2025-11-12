@@ -13,7 +13,25 @@ return new class extends Migration
     {
         Schema::create('detail_hasils', function (Blueprint $table) {
             $table->id();
+            $table->string('no_palet');
+            $table->string('kw');
+            $table->string('isi');
+            $table->foreignId('id_kayu_masuk')
+                ->nullable()
+                ->constrained('kayu_masuks')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->foreignId('id_jenis_kayu')
+                ->nullable()
+                ->constrained('jenis_kayus')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->foreignId('id_produksi_dryer')
+                ->constrained('produksi_press_dryers')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->timestamps();
+
         });
     }
 
