@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -13,7 +12,9 @@ return new class extends Migration
     {
         Schema::create('produksi_press_dryers', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->date('tgl_produksi')->nullable();
+            $table->string("shift", '10')->nullable();
+            $table->string("kendala", 255)->nullable();
         });
     }
 
