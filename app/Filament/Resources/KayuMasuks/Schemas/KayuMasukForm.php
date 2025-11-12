@@ -117,7 +117,7 @@ class KayuMasukForm
                             ->get()
                             ->mapWithKeys(function ($dokumen) {
                                 return [
-                                    $dokumen->id => "{$dokumen->nama_legal} - {$dokumen->dokumen_legal}", // sesuaikan kolomnya
+                                    $dokumen->id => "{$dokumen->nama_legal} - {$dokumen->dokumen_legal} (no {$dokumen->no_dokumen_legal})", // sesuaikan kolomnya
                                 ];
                             })
                     )

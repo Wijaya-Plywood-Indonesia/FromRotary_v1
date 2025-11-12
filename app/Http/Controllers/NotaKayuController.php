@@ -50,7 +50,7 @@ class NotaKayuController extends Controller
                 ->where('diameter_terbesar', '>=', $diameter)
                 ->value('harga_beli');
 
-            $grandTotal += ($harga ?? 0) * $item->kubikasi;
+            $grandTotal += ($harga ?? 0) * $item->kubikasi * 1000;
         }
 
         // === Pembulatan manual (jika ada) ===

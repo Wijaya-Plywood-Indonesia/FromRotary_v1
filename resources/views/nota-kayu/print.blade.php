@@ -112,13 +112,11 @@
                         {{ number_format($detail["kubikasi"], 4, ",", ".") }}
                     </td>
                     <td style="text-align: right">
-                        Rp
                         {{
                             number_format($detail["harga_satuan"], 0, ",", ".")
                         }}
                     </td>
                     <td style="text-align: right">
-                        Rp
                         {{ number_format($detail["total_harga"], 0, ",", ".") }}
                     </td>
                 </tr>
@@ -145,7 +143,7 @@
                     </td>
                     <td></td>
                     <td style="text-align: right">
-                        Rp {{ number_format($totalHargaGrup, 0, ",", ".") }}
+                        {{ number_format($totalHargaGrup, 0, ",", ".") }}
                     </td>
                 </tr>
             </tfoot>
@@ -217,7 +215,7 @@
         <table class="signature" style="width: 100%">
             <tr>
                 <td>Penanggung Jawab Kayu</td>
-                <td>Penerima</td>
+                <td>Grader Kayu</td>
             </tr>
             <tr>
                 <td style="height: 70px"></td>

@@ -15,6 +15,7 @@ class SupplierKayu extends Model
         'nama_supplier',
         'no_telepon',
         'nik',
+        'upload_ktp',
         'jenis_kelamin',
         'alamat',
         'jenis_bank',

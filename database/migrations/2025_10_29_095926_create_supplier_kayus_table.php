@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->string('nama_supplier');
             $table->string('no_telepon');
             $table->string('nik');
+            $table->string('upload_ktp')->nullable();
             $table->boolean('jenis_kelamin_pegawai')->default(0);
             $table->text('alamat')->nullable();
             $table->string('jenis_bank');

@@ -87,29 +87,22 @@ class KayuMasukInfolist
                             ->badge()
                             ->color('success'),
 
-                        TextEntry::make('penggunaanDokumenKayu.dokumen_legal')
-                            ->label('Nomor Dokumen')
+                        TextEntry::make('dokumen_info')
+                            ->label('Dokumen Legal')
+                            ->default(
+                                fn($record) =>
+                                $record->penggunaanDokumenKayu
+                                ? ($record->penggunaanDokumenKayu->dokumen_legal ?? '-')
+                                . 'No : (' . ($record->penggunaanDokumenKayu->no_dokumen_legal ?? '-') . ')'
+                                : '-'
+                            )
                             ->badge()
                             ->color('info'),
                     ])
                     ->columns(2),
 
                 // 🔹 Bagian 5: Metadata Record
-                Section::make('Informasi Tambahan')
-                    ->schema([
-                        TextEntry::make('created_at')
-                            ->label('Dibuat Pada')
-                            ->dateTime()
-                            ->badge()
-                            ->color('gray'),
 
-                        TextEntry::make('updated_at')
-                            ->label('Terakhir Diperbarui')
-                            ->dateTime()
-                            ->badge()
-                            ->color('gray'),
-                    ])
-                    ->columns(2),
             ]);
     }
 }
