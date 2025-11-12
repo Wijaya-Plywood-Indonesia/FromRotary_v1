@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('produksi_press_dryers', function (Blueprint $table) {
             $table->id();
+            $table->date('tanggal_produksi');
+            $table->string('shift');
+            $table->text('kendala')->nullable();
             $table->timestamps();
         });
     }
