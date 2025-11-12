@@ -12,29 +12,14 @@ return new class extends Migration {
     {
         Schema::create('detail_mesin', function (Blueprint $table) {
             $table->id();
-<<<<<<< HEAD
             $table->unsignedBigInteger('id_mesin_dryer')->nullable();
-
-            $table->decimal('jam_kerja_mesin', 8, 2)->nullable();
-
+            $table->string('jam_kerja_mesin');
             // Foreign Key ke tabel induk
             $table->foreignId('id_produksi_dryer')
-                ->references('id')
-                ->on('produksi_press_dryer')
-                ->cascadeOnDelete();
-
-            // Foreign key ke mesin
-
-
-=======
-            $table->unsignedBigInteger('id_mesin_dryer');
-            $table->string('jam_kerja_mesin');
->>>>>>> d4d04f7caa43051e9ddb0c5abb86a3e8e5dc0c6b
+                ->constrained('produksi_press_dryers')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->timestamps();
-            $table->foreignId('id_produksi_dryer')
-                  ->constrained('produksi_press_dryers')
-                  ->cascadeOnUpdate()
-                  ->restrictOnDelete();
         });
     }
 

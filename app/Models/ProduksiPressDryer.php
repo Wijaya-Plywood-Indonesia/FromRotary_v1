@@ -14,6 +14,7 @@ class ProduksiPressDryer extends Model
         'kendala',
     ];
 
+
     public function detailMasuks()
     {
         return $this->hasMany(DetailMasuk::class, 'id_produksi_dryer');

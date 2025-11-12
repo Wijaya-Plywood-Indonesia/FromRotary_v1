@@ -12,22 +12,17 @@ return new class extends Migration {
     {
         Schema::create('detail_pegawai', function (Blueprint $table) {
             $table->id();
-
-            // Kolom ini mungkin merujuk ke tabel 'pegawais'
-            // Saya buat sebagai integer, Anda bisa tambahkan ->constrained() jika tabelnya ada
             $table->unsignedBigInteger('id_pegawai')->nullable();
-
             $table->string('tugas')->nullable();
-            $table->time('masuk')->nullable();
-            $table->time('pulang')->nullable();
+            $table->timestamp('masuk')->nullable();
+            $table->timestamp('pulang')->nullable();
             $table->string('ijin')->nullable();
-            $table->text('ket')->nullable(); // 'ket' (keterangan) lebih baik pakai text
+            $table->string('ket')->nullable();
 
-            // Foreign Key ke tabel induk
-            $table->foreignId('id_produksi_dryer') // Nama kolom sesuai ERD
-                ->references('id')
-                ->on('produksi_press_dryer') // Nama tabel induk yang benar
-                ->cascadeOnDelete();
+            $table->foreignId('id_produksi_dryer')
+                ->constrained('produksi_press_dryers')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
 
             $table->timestamps();
         });
