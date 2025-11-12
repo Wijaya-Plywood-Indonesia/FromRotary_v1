@@ -18,21 +18,41 @@ class DetailTurunKayusTable
             ->columns([
                 TextColumn::make('pegawai.nama_pegawai')
                     ->label('Nama Pegawai')
-                    ->formatStateUsing(fn($record) => "{$record->pegawai->kode_pegawai} - {$record->pegawai->nama_pegawai}"),
+                    // Format ini bagus untuk menampilkan kode dan nama
+                    ->formatStateUsing(fn($record) => "{$record->pegawai->kode_pegawai} - {$record->pegawai->nama_pegawai}")
+                    ->searchable(['kode_pegawai', 'nama_pegawai']), // Tambahkan search ke relasi
+
+                // Tambahkan kolom untuk Kayu Masuk (Seri)
+                TextColumn::make('kayuMasuk.seri')
+                    ->label('Seri Kayu Masuk')
+                    ->searchable()
+                    ->sortable(),
+
+                // Anda juga bisa tambahkan relasi dari kayuMasuk
+                TextColumn::make('kayuMasuk.penggunaanSupplier.nama_supplier')
+                    ->label('Supplier')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true), // Sembunyikan default
+
+                TextColumn::make('kayuMasuk.penggunaanKendaraanSupplier.nopol_kendaraan')
+                    ->label('Nopol')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true), // Sembunyikan default
 
             ])
             ->filters([
                 //
             ])
-            ->headerActions([
-                CreateAction::make()->label('Tambah Petugas Turun Kayu'), //++ˆ ini yang munculkan tombol "Tambah"
-            ])
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
             ])
-            ->toolbarActions([
-
+            ->bulkActions([ // Mengganti toolbarActions dengan bulkActions
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
             ]);
     }
 }
