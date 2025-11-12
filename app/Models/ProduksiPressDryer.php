@@ -39,4 +39,9 @@ class ProduksiPressDryer extends Model
     {
         return $this->hasMany(DetailPegawai::class, 'id_produksi_dryer');
     }
+
+    public function getLabelAttribute()
+    {
+        return $this->tanggal_produksi . ' | ' . $this->shift;
+    }
 }
