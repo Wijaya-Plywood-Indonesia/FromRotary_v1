@@ -12,9 +12,10 @@ return new class extends Migration {
     {
         Schema::create('produksi_press_dryers', function (Blueprint $table) {
             $table->id();
-            $table->date('tgl_produksi')->nullable();
-            $table->string("shift", '10')->nullable();
-            $table->string("kendala", 255)->nullable();
+            $table->date('tanggal_produksi');
+            $table->string('shift');
+            $table->text('kendala')->nullable();
+            $table->timestamps();
         });
     }
 

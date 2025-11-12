@@ -12,16 +12,13 @@ return new class extends Migration {
     {
         Schema::create('validasi', function (Blueprint $table) {
             $table->id();
-            $table->string('role')->nullable(); // (pengawas, kepala produksi)
-            $table->string('status')->nullable();
-
-            // Foreign Key ke tabel induk
-            $table->foreignId('id_produksi_dryer') // Nama kolom sesuai ERD
-                ->references('id')
-                ->on('produksi_press_dryer') // Nama tabel induk yang benar
-                ->cascadeOnDelete();
-
+            $table->string('role');
+            $table->string('status');
             $table->timestamps();
+            $table->foreignId('id_produksi_dryer')
+                ->constrained('produksi_press_dryers')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
         });
     }
 

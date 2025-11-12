@@ -29,20 +29,20 @@ class ProduksiPressDryerResource extends Resource
         return parent::getEloquentQuery()->latest('created_at');
     }
 
-    // public static function form(Schema $schema): Schema
-    // {
-    //     return ProduksiPressDryerForm::configure($schema);
-    // }
+    public static function form(Schema $schema): Schema
+    {
+        return ProduksiPressDryerForm::configure($schema);
+    }
 
-    // public static function infolist(Schema $schema): Schema
-    // {
-    //     return ProduksiPressDryerInfolist::configure($schema);
-    // }
+    public static function infolist(Schema $schema): Schema
+    {
+  
+    }
 
-    // public static function table(Table $table): Table
-    // {
-    //     return ProduksiPressDryersTable::configure($table);
-    // }
+    public static function table(Table $table): Table
+    {
+
+    }
 
 
 

@@ -13,31 +13,24 @@ return new class extends Migration {
         Schema::create('detail_masuk', function (Blueprint $table) {
             $table->id();
             $table->string('no_palet');
-            $table->string('kw')->nullable();
-            $table->string('isi')->nullable();
-            $table->string('ukuran')->nullable();
-            $table->string('jenis_kayu')->nullable();
-            $table->timestamp('timestamp')->nullable(); // Sesuai ERD
-
-            // Foreign Key ke tabel induk
-            $table->foreignId('id_produksi_dryer')
-                ->references('id')
-                ->on('produksi_press_dryer')
-                ->cascadeOnDelete();
-
-
-            // Foreign ke Ukuran
-            $table->foreignId('id_ukuran')
-                ->references('id')
-                ->on('ukurans')
-                ->cascadeOnDelete();
-
-            // Foreign ke Jenis Kayu
+            $table->string('kw');
+            $table->string('isi');
+            $table->foreignId('id_kayu_masuk')
+                ->nullable()
+                ->constrained('kayu_masuks')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->foreignId('id_jenis_kayu')
-                ->references('id')
-                ->on('jenis_kayus')
-                ->cascadeOnDelete();
-            $table->timestamps(); // Standar created_at & updated_at
+                ->nullable()
+                ->constrained('jenis_kayus')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->foreignId('id_produksi_dryer')
+                ->constrained('produksi_press_dryers')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->timestamps();
+
         });
     }
 
