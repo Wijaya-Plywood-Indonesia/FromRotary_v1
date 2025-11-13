@@ -6,23 +6,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::table('validasi_press_dryers', function (Blueprint $table) {
-            //
-        });
+        Schema::rename('validasis', 'validasi_press_dryers');
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('validasi_press_dryers', function (Blueprint $table) {
-            //
-        });
+        Schema::rename('validasi_press_dryers', 'validasis');
     }
 };
