@@ -24,7 +24,8 @@ class TurusanKayuForm
                 DatePicker::make('tgl_kayu_masuk')
                     ->label('Tanggal Kayu Masuk')
                     ->default(now()) // otomatis isi dengan waktu sekarang
-                    ->readOnly()    // tidak bisa diubah manual
+                    ->readOnly()
+                    ->disabled()    // tidak bisa diubah manual
                     ->required(),
 
                 TextInput::make('seri')
@@ -32,6 +33,7 @@ class TurusanKayuForm
                     ->numeric()
                     ->required()
                     ->readOnly()
+                    ->disabled()
                     ->default(function () {
                         // Ambil nilai seri terbesar dari database
                         $lastSeri = KayuMasuk::max('seri');
@@ -55,16 +57,6 @@ class TurusanKayuForm
                     })
                     ->hintColor('info'),
 
-                TextInput::make('kubikasi')
-                    ->label('Total Kayu Masuk (m³)')
-                    ->default(0)
-                    ->numeric()
-                    ->disabled() // tidak bisa diubah di form
-                    ->dehydrated(true) // tetap dikirim ke database walaupun disabled
-                    ->suffix(' m³')
-                    ->helperText('Nilai ini akan diperbarui otomatis dari detail kayu masuk.'),
-
-
                 Select::make('id_kendaraan_supplier_kayus')
                     ->label('Kendaraan Supplier Kayu')
                     ->options(
@@ -77,6 +69,7 @@ class TurusanKayuForm
                             })
                     )
                     ->searchable()
+                    ->disabled()
                     ->required()
                     ->placeholder('Pilih Kendaraan Supplier'),
 

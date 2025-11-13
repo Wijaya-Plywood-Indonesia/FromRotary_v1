@@ -22,6 +22,7 @@ class DetailKayuMasuksTable
     {
         return $table
 
+
             ->striped() // gunakan striping bawaan
             ->recordClasses(function ($record) {
                 // Tambahkan class kondisional per record (grade)
@@ -35,6 +36,7 @@ class DetailKayuMasuksTable
                 };
             })
             ->columns([
+
                 TextColumn::make('no')
                     ->label('No')
                     ->rowIndex()

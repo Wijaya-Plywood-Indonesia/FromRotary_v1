@@ -9,6 +9,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class HargaKayusTable
@@ -72,6 +73,12 @@ class HargaKayusTable
             ])
             ->filters([
                 //
+                SelectFilter::make('grade')
+                    ->label('Pilih Grade')
+                    ->options([
+                        1 => 'Grade A',
+                        2 => 'Grade B',
+                    ]),
             ])
             ->recordActions([
 
