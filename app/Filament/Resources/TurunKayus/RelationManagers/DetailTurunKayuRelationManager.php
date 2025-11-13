@@ -29,34 +29,28 @@ class DetailTurunKayuRelationManager extends RelationManager
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Ambil ID pegawai (bisa satu atau banyak)
         $pegawaiIds = $data['id_pegawai'] ?? [];
-        if (!is_array($pegawaiIds)) {
-            $pegawaiIds = [$pegawaiIds];
+        $kayuMasukId = $data['id_kayu_masuk'] ?? null;
+        $turunKayuId = $this->ownerRecord->id;
+
+        // Validasi wajib
+        if (empty($pegawaiIds) || !$kayuMasukId || !$turunKayuId) {
+            return [];
         }
 
-        // Ambil ID kayu masuk (yang sudah difilter)
-        $kayuMasukId = $data['id_kayu_masuk'];
+        // Pastikan $pegawaiIds adalah array
+        $pegawaiIds = is_array($pegawaiIds) ? $pegawaiIds : [$pegawaiIds];
 
-        // Hapus data filter agar Filament tidak bingung
-        unset($data['id_pegawai']);
-        unset($data['id_kayu_masuk']);
-        // Hapus juga key filter sementara
-        unset($data['id_supplier_kayus']);
-        unset($data['id_kendaraan_supplier_kayus']);
-
-        // Dapatkan record 'TurunKayu' (induk) yang sedang dibuka
-        $turunKayu = $this->ownerRecord;
-
+        // Loop & insert 1 baris per pegawai
         foreach ($pegawaiIds as $pegawaiId) {
             DetailTurunKayu::create([
-                'id_turun_kayu' => $turunKayu->id, // ID Induk
-                'id_pegawai' => $pegawaiId,          // ID Pegawai dari loop
-                'id_kayu_masuk' => $kayuMasukId,     // ID Kayu Masuk dari form
+                'id_turun_kayu' => $turunKayuId,
+                'id_pegawai' => $pegawaiId,
+                'id_kayu_masuk' => $kayuMasukId,
             ]);
         }
 
-        // Kembalikan array kosong agar Filament tidak mencoba membuat record standar
+        // Kembalikan array kosong → Filament tidak insert lagi
         return [];
     }
 }

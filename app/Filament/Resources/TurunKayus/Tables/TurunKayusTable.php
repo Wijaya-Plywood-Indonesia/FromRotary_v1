@@ -63,7 +63,6 @@ class TurunKayusTable
                     ->modalHeading(fn($record) => $record->kendala ? 'Perbarui Kendala' : 'Tambah Kendala')
                     ->modalSubmitActionLabel('Simpan'),
                 EditAction::make(),
-                ViewAction::make(),
                 DeleteAction::make(),
             ])
             ->toolbarActions([

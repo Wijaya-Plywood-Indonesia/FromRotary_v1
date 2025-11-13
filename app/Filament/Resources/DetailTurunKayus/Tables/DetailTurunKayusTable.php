@@ -2,13 +2,14 @@
 
 namespace App\Filament\Resources\DetailTurunKayus\Tables;
 
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Columns\TextColumn;
 use App\Models\DetailTurunKayu;
+use Illuminate\Support\Facades\Storage;
+
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 
 class DetailTurunKayusTable
 {
@@ -19,75 +20,88 @@ class DetailTurunKayusTable
                 DetailTurunKayu::query()
                     ->with([
                         'pegawai',
-                        'kayuMasuk',
                         'kayuMasuk.penggunaanSupplier',
-                        'kayuMasuk.penggunaanKendaraanSupplier',
-                        'turunKayu'
+                        'kayuMasuk.penggunaanKendaraanSupplier'
                     ])
             )
-            ->columns([
+            ->columns([  // BENAR: columns(), BUKAN components()
 
-
-                // PEGAWAI
+                // 1. PEKERJA
                 TextColumn::make('pegawai.nama_pegawai')
-                    ->label('Pegawai')
-                    ->getStateUsing(fn($record) => $record?->pegawai?->pluck('nama_pegawai')->join(', ') ?? '—')
-                    ->badge()
-                    ->searchable(),
+                    ->label('Pekerja')
+                    ->formatStateUsing(function ($record) {
+                        if (!$record->pegawai) {
+                            return '—';
+                        }
 
-                // SUPPLIER
+                        // Tampilkan kode + nama pegawai (hanya 1 pegawai per baris)
+                        return $record->pegawai->kode_pegawai . ' - ' . $record->pegawai->nama_pegawai;
+                    })
+                    ->badge()
+                    ->searchable()
+                    ->sortable(),
+
+                // 2. SUPPLIER
                 TextColumn::make('kayuMasuk.penggunaanSupplier.nama_supplier')
                     ->label('Supplier')
-                    ->getStateUsing(fn($record) => $record?->kayuMasuk?->penggunaanSupplier?->nama_supplier ?? '—')
-                    ->placeholder('—')
-                    ->searchable(),
+                    ->getStateUsing(
+                        fn($record) =>
+                        $record?->kayuMasuk?->penggunaanSupplier?->nama_supplier ?? '—'
+                    )
+                    ->searchable()
+                    ->sortable(),
 
-                // NOPOL
+                // 3. NOPOL + JENIS
                 TextColumn::make('kayuMasuk.penggunaanKendaraanSupplier.nopol_kendaraan')
-                    ->label('Nopol')
-                    ->getStateUsing(fn($record) => $record?->kayuMasuk?->penggunaanKendaraanSupplier?->nopol_kendaraan ?? '—')
-                    ->placeholder('—')
-                    ->searchable(),
+                    ->label('Nopol & Jenis')
+                    ->getStateUsing(
+                        fn($record) =>
+                        $record?->kayuMasuk?->penggunaanKendaraanSupplier
+                        ? "{$record->kayuMasuk->penggunaanKendaraanSupplier->nopol_kendaraan} ({$record->kayuMasuk->penggunaanKendaraanSupplier->jenis_kendaraan})"
+                        : '—'
+                    )
+                    ->searchable()
+                    ->sortable(),
 
-                // JENIS KENDARAAN
-                TextColumn::make('kayuMasuk.penggunaanKendaraanSupplier.jenis_kendaraan')
-                    ->label('Jenis Kendaraan')
-                    ->getStateUsing(fn($record) => $record?->kayuMasuk?->penggunaanKendaraanSupplier?->jenis_kendaraan ?? '—')
-                    ->placeholder('—'),
-
-                // SERI
+                // 4. SERI
                 TextColumn::make('kayuMasuk.seri')
                     ->label('Seri')
                     ->getStateUsing(fn($record) => $record?->kayuMasuk?->seri ?? '—')
-                    ->placeholder('—')
-                    ->searchable(),
-
-                // DIBUAT
-                TextColumn::make('created_at')
-                    ->label('Dibuat')
-                    ->dateTime('d M Y H:i')
+                    ->searchable()
                     ->sortable(),
+
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'selesai' => 'success',
+                        'proses' => 'warning',
+                        'menunggu' => 'gray',
+                        'batal' => 'danger',
+                        default => 'gray',
+                    })
+                    ->sortable(),
+
+                TextColumn::make('foto')
+                    ->label('Foto')
+                    ->badge()
+                    ->formatStateUsing(fn($state) => $state ? 'Ada File' : 'Kosong')
+                    ->color(fn($state) => $state ? 'success' : 'danger')
+
+                    // --- TAMBAHAN ---
+                    ->url(function (?string $state): ?string {
+                        // Jika state (nama file) ada, buat URL
+                        if ($state) {
+                            return Storage::url($state);
+                        }
+                        // Jika tidak, jangan berikan URL (badge tidak bisa diklik)
+                        return null;
+                    })
+                    ->openUrlInNewTab(), // Buka di tab baru
 
             ])
             ->filters([
-                SelectFilter::make('id_turun_kayu')
-                    ->relationship('turunKayu', 'tanggal')
-                    ->getOptionLabelFromRecordUsing(fn($r) => $r?->tanggal?->format('d M Y') ?? '—'),
-
-                SelectFilter::make('id_pegawai')
-                    ->relationship('pegawai', 'nama_pegawai')
-                    ->getOptionLabelFromRecordUsing(fn($p) => $p ? "{$p->kode_pegawai} - {$p->nama_pegawai}" : '—')
-                    ->multiple()
-                    ->searchable(),
-
-                SelectFilter::make('id_kayu_masuk')
-                    ->relationship('kayuMasuk', 'seri')
-                    ->getOptionLabelFromRecordUsing(
-                        fn($k) =>
-                        $k ? ($k->penggunaanSupplier?->nama_supplier ?? '') . ' | ' .
-                        ($k->penggunaanKendaraanSupplier?->nopol_kendaraan ?? '') . ' | ' . $k->seri : '—'
-                    )
-                    ->searchable(),
+                //
             ])
             ->actions([
                 EditAction::make(),
@@ -96,8 +110,8 @@ class DetailTurunKayusTable
             ->bulkActions([
                 DeleteBulkAction::make(),
             ])
-            ->emptyStateHeading('Belum ada data')
-            ->emptyStateDescription('Silakan tambah detail turun kayu.')
+            ->emptyStateHeading('Belum ada detail')
+            ->emptyStateDescription('Tambahkan pekerja dan kayu masuk.')
             ->defaultSort('created_at', 'desc');
     }
 }

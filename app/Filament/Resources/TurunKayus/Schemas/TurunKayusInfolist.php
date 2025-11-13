@@ -11,6 +11,8 @@ class TurunKayusInfolist
     {
         return $schema
             ->components([
+                TextEntry::make('tanggal')
+                    ->numeric(),
                 TextEntry::make('kendala'),
             ]);
     }

@@ -7,6 +7,7 @@ use App\Filament\Resources\TurunKayus\Pages\EditTurunKayu;
 use App\Filament\Resources\TurunKayus\Pages\ListTurunKayus;
 use App\Filament\Resources\TurunKayus\RelationManagers\DetailTurunKayuRelationManager;
 use App\Filament\Resources\TurunKayus\Schemas\TurunKayuForm;
+use App\Filament\Resources\TurunKayus\Schemas\TurunKayusInfolist;
 use App\Filament\Resources\TurunKayus\Tables\TurunKayusTable;
 use App\Models\TurunKayu;
 use BackedEnum;
@@ -31,6 +32,11 @@ class TurunKayuResource extends Resource
     public static function table(Table $table): Table
     {
         return TurunKayusTable::configure($table);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return TurunKayusInfolist::configure($schema);
     }
 
     public static function getRelations(): array
