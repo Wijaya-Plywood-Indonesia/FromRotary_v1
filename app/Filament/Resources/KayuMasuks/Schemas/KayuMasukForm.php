@@ -71,14 +71,14 @@ class KayuMasukForm
                     })
                     ->hintColor('info'),
 
-                TextInput::make('kubikasi')
-                    ->label('Total Kayu Masuk (m³)')
-                    ->default(0)
-                    ->numeric()
-                    ->disabled() // tidak bisa diubah di form
-                    ->dehydrated(true) // tetap dikirim ke database walaupun disabled
-                    ->suffix(' m³')
-                    ->helperText('Nilai ini akan diperbarui otomatis dari detail kayu masuk.'),
+                // TextInput::make('kubikasi')
+                //     ->label('Total Kayu Masuk (m³)')
+                //     ->default(0)
+                //     ->numeric()
+                //     ->disabled() // tidak bisa diubah di form
+                //     ->dehydrated(true) // tetap dikirim ke database walaupun disabled
+                //     ->suffix(' m³')
+                //     ->helperText('Nilai ini akan diperbarui otomatis dari detail kayu masuk.'),
 
                 Select::make('id_supplier_kayus')
                     ->label('Supplier Kayu')
@@ -117,7 +117,7 @@ class KayuMasukForm
                             ->get()
                             ->mapWithKeys(function ($dokumen) {
                                 return [
-                                    $dokumen->id => "{$dokumen->nama_legal} - {$dokumen->dokumen_legal}", // sesuaikan kolomnya
+                                    $dokumen->id => "{$dokumen->nama_legal} - {$dokumen->dokumen_legal} (no {$dokumen->no_dokumen_legal})", // sesuaikan kolomnya
                                 ];
                             })
                     )

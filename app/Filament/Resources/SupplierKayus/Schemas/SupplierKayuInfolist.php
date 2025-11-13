@@ -17,13 +17,22 @@ class SupplierKayuInfolist
                 TextEntry::make('nama_supplier'),
                 TextEntry::make('no_telepon'),
                 TextEntry::make('nik'),
-                TextEntry::make('jenis_kelamin_label')
-                    ->default(fn($get) => $get('jenis_kelamin_pegawai') ? 'Laki-laki' : 'Perempuan')
+
+                TextEntry::make('upload_ktp')
+                    ->label('File KTP')
+                    ->badge()
+                    ->formatStateUsing(fn($state) => $state ? 'Lihat File' : 'Kosong')
+                    ->color(fn($state) => $state ? 'success' : 'danger')
+                    ->url(fn($state) => $state ? asset('storage/' . $state) : null)
+                    ->openUrlInNewTab(),
+
+                TextEntry::make('jenis_kelamin')
+                    ->default(fn($get) => $get('jenis_kelamin') ? 'Laki-laki' : 'Perempuan')
                 ,
 
                 TextEntry::make('jenis_bank'),
                 TextEntry::make('no_rekening'),
-                TextEntry::make('jenis_kelamin_label')
+                TextEntry::make('status_supplier')
                     ->default(fn($get) => $get('status_supplier') ? 'Tidak Aktif' : 'Aktif')
                 ,
                 TextEntry::make('created_at')

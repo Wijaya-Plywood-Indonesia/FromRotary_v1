@@ -16,20 +16,44 @@ class DetailTurusanKayusTable
         return $table
             ->columns([
                 TextColumn::make('nomer_urut')
+                    ->label('No')
                     ->numeric()
+                    ->alignCenter()
                     ->sortable(),
-                TextColumn::make('lahan_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('jenis_kayu_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('panjang')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('grade')
-                    ->numeric()
-                    ->sortable(),
+
+                TextColumn::make('kayu_masuk_id')
+                    ->label('Kayu Masuk')
+                    ->rowIndex()
+                    ->alignCenter(),
+
+                TextColumn::make('lahan_display')
+                    ->label('Lahan')
+                    ->getStateUsing(fn($record) => "{$record->lahan->kode_lahan}")
+                    ->sortable(['lahan.kode_lahan'])
+                    ->searchable(['lahan.kode_lahan']),
+
+                TextColumn::make('keterangan_kayu')
+                    ->label('Kayu')
+                    ->getStateUsing(function ($record) {
+                        $namaKayu = $record->jenisKayu?->nama_kayu ?? '-';
+                        $panjang = $record->panjang ?? '-';
+                        $grade = match ($record->grade) {
+                            1 => 'A',
+                            2 => 'B',
+                            default => '-',
+                        };
+
+                        return "{$namaKayu} {$panjang} ({$grade})";
+                    })
+                    ->sortable(['jenisKayu.nama_kayu', 'panjang', 'grade']) // tetap bisa diurutkan
+                    ->searchable(['jenisKayu.nama_kayu', 'panjang']) // bisa dicari juga
+                    //  ->badge()
+                    ->color(fn($record) => match ($record->grade) {
+                        1 => 'success',
+                        2 => 'primary',
+                        default => 'gray',
+                    }),
+
                 TextColumn::make('diameter')
                     ->numeric()
                     ->sortable(),

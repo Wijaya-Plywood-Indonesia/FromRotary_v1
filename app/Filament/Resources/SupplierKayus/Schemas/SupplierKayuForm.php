@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\SupplierKayus\Schemas;
 
-use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -22,24 +22,31 @@ class SupplierKayuForm
                     ->tel()
                     ->nullable(),
                 TextInput::make('nik')
-
                     ->label('Nomor Induk Kependudukan')
                     ->required()
                     ->minLength(16)
                     ->maxLength(16),
 
-                Select::make('jenis_kelamin_pegawai')
+                FileUpload::make('upload_ktp')
+                    ->label('Upload Foto KTP')
+                    ->disk('public')
+                    ->directory('suplier/ktp')
+                    ->nullable()
+                    ->preserveFilenames()
+                ,
+
+                Select::make('jenis_kelamin')
                     ->label('Jenis Kelamin')
                     ->options([
-                        0 => 'Perempuan',
-                        1 => 'Laki-laki',
+                        '0' => 'Perempuan',
+                        '1' => 'Laki-laki',
                     ])
 
                     ->default('0')
                     ->native(false),
 
                 Textarea::make('alamat')
-                    ->columnSpanFull(),
+                ,
                 Select::make('jenis_bank')
                     ->label('Jenis Bank')
                     ->options([

@@ -40,6 +40,11 @@ class SupplierKayusTable
 
                 TextColumn::make('nama_supplier')
                     ->searchable(),
+                TextColumn::make('upload_ktp')
+                    ->label('File KTP')
+                    ->badge()
+                    ->formatStateUsing(fn($state) => $state ? 'Ada File' : 'Kosong')
+                    ->color(fn($state) => $state ? 'success' : 'danger'),
 
                 TextColumn::make('no_telepon')
                     ->icon('heroicon-o-phone')
