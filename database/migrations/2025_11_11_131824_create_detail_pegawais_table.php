@@ -15,12 +15,13 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('id_pegawai');
             $table->string('tugas');
-            $table->timestamp('masuk')->nullable();
-            $table->timestamp('pulang')->nullable();
+            $table->time('masuk')->nullable();
+            $table->time('pulang')->nullable();
             $table->string('ijin')->nullable();
             $table->string('ket')->nullable();
             $table->timestamps();
             $table->foreignId('id_produksi_dryer')
+                  ->nullable()
                   ->constrained('produksi_press_dryers')
                   ->cascadeOnUpdate()
                   ->restrictOnDelete();

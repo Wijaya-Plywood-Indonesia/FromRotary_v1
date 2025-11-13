@@ -6,8 +6,8 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Table;
-
 use Filament\Tables\Columns\TextColumn;
+
 
 class PegawaiDryersTable
 {
@@ -15,27 +15,29 @@ class PegawaiDryersTable
     {
         return $table
             ->columns([
-                TextColumn::make('id_pegawai')
-                    ->numeric()
-                    ->sortable(),
+                TextColumn::make('pegawai.nama_pegawai')
+                    ->label('Pegawai')
+                    ->sortable()
+                    ->searchable(),
+
                 TextColumn::make('tugas')
-                    ->sortable(),
+                    ->label('Tugas')
+                    ->searchable(),
+
                 TextColumn::make('masuk')
-                    ->time()
-                    ->sortable(),
+                    ->label('Masuk')
+                    ->dateTime('d M Y H:i'),
+
                 TextColumn::make('pulang')
-                    ->time()
-                    ->sortable(),
-                TextColumn::make('tugas')
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Pulang')
+                    ->dateTime('d M Y H:i'),
+
+                TextColumn::make('ijin')
+                    ->label('Ijin'),
+
+                TextColumn::make('ket')
+                    ->label('Keterangan')
+                    ->limit(30),
             ])
             ->filters([
                 //

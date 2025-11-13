@@ -8,4 +8,8 @@ use Filament\Resources\Pages\CreateRecord;
 class CreatePegawaiDryer extends CreateRecord
 {
     protected static string $resource = PegawaiDryerResource::class;
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }
