@@ -12,19 +12,18 @@ return new class extends Migration {
     {
         Schema::create('detail_pegawai', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_pegawai')->nullable();
-            $table->string('tugas')->nullable();
-            $table->timestamp('masuk')->nullable();
-            $table->timestamp('pulang')->nullable();
+            $table->unsignedBigInteger('id_pegawai');
+            $table->string('tugas');
+            $table->time('masuk')->nullable();
+            $table->time('pulang')->nullable();
             $table->string('ijin')->nullable();
             $table->string('ket')->nullable();
 
             $table->foreignId('id_produksi_dryer')
+                ->nullable()
                 ->constrained('produksi_press_dryers')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-
-            $table->timestamps();
         });
     }
 

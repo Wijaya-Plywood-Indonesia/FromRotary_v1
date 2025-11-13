@@ -23,6 +23,7 @@ class PegawaiRotaryResource extends Resource
     //grubping
     protected static string|UnitEnum|null $navigationGroup = 'Rotary';
     protected static ?int $navigationSort = 2;
+
     public static function form(Schema $schema): Schema
     {
         return PegawaiRotaryForm::configure($schema);

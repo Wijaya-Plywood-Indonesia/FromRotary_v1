@@ -24,7 +24,6 @@ class ProduksiPressDryerResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFire;
     protected static string|UnitEnum|null $navigationGroup = 'Dryer';
-
     protected static ?int $navigationSort = 1;
 
     public static function getEloquentQuery(): Builder

@@ -27,4 +27,9 @@ class Pegawai extends Model
     {
         return $this->hasMany(DetailTurunKayu::class, 'id_pegawai');
     }
+
+    public function detailPegawai()
+    {
+        return $this->hasMany(DetailPegawai::class, 'id_pegawai');
+    }
 }
