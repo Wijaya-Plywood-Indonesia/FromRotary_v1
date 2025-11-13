@@ -71,15 +71,6 @@ class KayuMasukForm
                     })
                     ->hintColor('info'),
 
-                // TextInput::make('kubikasi')
-                //     ->label('Total Kayu Masuk (m³)')
-                //     ->default(0)
-                //     ->numeric()
-                //     ->disabled() // tidak bisa diubah di form
-                //     ->dehydrated(true) // tetap dikirim ke database walaupun disabled
-                //     ->suffix(' m³')
-                //     ->helperText('Nilai ini akan diperbarui otomatis dari detail kayu masuk.'),
-
                 Select::make('id_supplier_kayus')
                     ->label('Supplier Kayu')
                     ->options(

@@ -60,4 +60,8 @@ class SupplierKayu extends Model
         return $this->hasMany(KayuMasuk::class, 'id_supplier_kayus', );
     }
 
+    public function kendaraanSupplier()
+    {
+        return $this->hasMany(KendaraanSupplierKayu::class, 'id_supplier', );
+    }
 }

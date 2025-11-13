@@ -20,15 +20,6 @@ class KayuMasuk extends Model
         'id_kendaraan_supplier_kayus',
         'id_dokumen_kayus',
     ];
-
-    /**
-     * Atur agar field tgl_kayu_masuk dianggap sebagai tanggal.
-     */
-
-
-    /**
-     * Event model: otomatis isi seri saat membuat data baru.
-     */
     protected static function booted()
     {
         static::creating(function ($record) {
@@ -72,5 +63,15 @@ class KayuMasuk extends Model
     public function detailTurusanKayus()
     {
         return $this->hasMany(DetailTurusanKayu::class, 'id_kayu_masuk');
+    }
+
+    public function detailTurunKayus()
+    {
+        return $this->hasMany(DetailTurunKayu::class, 'id_kayu_masuk');
+    }
+
+    public function detailMasuk()
+    {
+        return $this->hasMany(DetailMasuk::class, 'id_kayu_masuk');
     }
 }

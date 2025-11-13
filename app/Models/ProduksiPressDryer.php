@@ -14,6 +14,7 @@ class ProduksiPressDryer extends Model
         'kendala',
     ];
 
+
     public function detailMasuks()
     {
         return $this->hasMany(DetailMasuk::class, 'id_produksi_dryer');
@@ -29,13 +30,18 @@ class ProduksiPressDryer extends Model
         return $this->hasMany(DetailMesin::class, 'id_produksi_dryer');
     }
 
-    public function validasiPressDryers()
-    {
-        return $this->hasMany(ValidasiPressDryer::class, 'id_produksi_dryer');
-    }
+    // public function validasiPressDryers()
+    // {
+    //     return $this->hasMany(ValidasiPressDryer::class, 'id_produksi_dryer');
+    // }
 
     public function detailPegawais()
     {
         return $this->hasMany(DetailPegawai::class, 'id_produksi_dryer');
+    }
+
+    public function getLabelAttribute()
+    {
+        return $this->tanggal_produksi . ' | ' . $this->shift;
     }
 }

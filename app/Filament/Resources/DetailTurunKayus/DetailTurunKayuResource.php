@@ -24,12 +24,11 @@ class DetailTurunKayuResource extends Resource
     {
         return DetailTurunKayuForm::configure($schema);
     }
-
-
     public static function table(Table $table): Table
     {
         return DetailTurunKayusTable::configure($table);
     }
+
 
     public static function getRelations(): array
     {

@@ -15,7 +15,10 @@ class TurunKayu extends Model
     // Sesuaikan fillable dengan ERD Anda, bukan hanya id dan tanggal
     protected $fillable = [
         'tanggal',
-        'id_kayu_masuk',
+        'kendala'
+    ];
+    protected $casts = [
+        'tanggal' => 'datetime',
     ];
 
     public function kayuMasuk()
@@ -26,7 +29,6 @@ class TurunKayu extends Model
     {
         return $this->hasMany(DetailTurunKayu::class, 'id_turun_kayu');
     }
-
     public function tempatKayu(): HasMany
     {
         return $this->hasMany(TempatKayu::class, 'id_turun_kayu');

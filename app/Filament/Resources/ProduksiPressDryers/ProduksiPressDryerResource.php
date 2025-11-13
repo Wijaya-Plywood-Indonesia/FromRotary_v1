@@ -8,6 +8,7 @@ use App\Filament\Resources\ProduksiPressDryers\Pages\ListProduksiPressDryers;
 use App\Filament\Resources\ProduksiPressDryers\Pages\ViewProduksiPressDryer;
 use App\Filament\Resources\ProduksiPressDryers\Schemas\ProduksiPressDryerForm;
 use App\Filament\Resources\ProduksiPressDryers\Tables\ProduksiPressDryersTable;
+use App\Filament\Resources\ProduksiPressDryers\Schemas\ProduksiPressDryerInfolist;
 use App\Models\ProduksiPressDryer;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -23,6 +24,7 @@ class ProduksiPressDryerResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFire;
     protected static string|UnitEnum|null $navigationGroup = 'Dryer';
+    protected static ?int $navigationSort = 1;
 
     public static function getEloquentQuery(): Builder
     {
@@ -36,12 +38,12 @@ class ProduksiPressDryerResource extends Resource
 
     public static function infolist(Schema $schema): Schema
     {
-  
+        return ProduksiPressDryerInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-
+        return ProduksiPressDryersTable::configure($table);
     }
 
 
