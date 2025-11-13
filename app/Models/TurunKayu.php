@@ -15,7 +15,7 @@ class TurunKayu extends Model
     // Sesuaikan fillable dengan ERD Anda, bukan hanya id dan tanggal
     protected $fillable = [
         'tanggal',
-        'id_kayu_masuk',
+        'kendala'
     ];
 
     public function kayuMasuk()

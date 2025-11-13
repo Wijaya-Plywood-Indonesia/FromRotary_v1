@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetailTurunKayu extends Model
 {
@@ -12,6 +13,7 @@ class DetailTurunKayu extends Model
     protected $fillable = [
         'id_turun_kayu',
         'id_pegawai',
+        'id_kayu_masuk'
     ];
     protected $casts = [
         'id_turun_kayus' => 'integer',
@@ -26,5 +28,10 @@ class DetailTurunKayu extends Model
     public function pegawai()
     {
         return $this->belongsTo(Pegawai::class, 'id_pegawai');
+    }
+
+    public function kayuMasuk(): BelongsTo
+    {
+        return $this->belongsTo(KayuMasuk::class, 'id_kayu_masuk');
     }
 }

@@ -8,6 +8,7 @@ use App\Filament\Resources\ProduksiPressDryers\Pages\ListProduksiPressDryers;
 use App\Filament\Resources\ProduksiPressDryers\Pages\ViewProduksiPressDryer;
 use App\Filament\Resources\ProduksiPressDryers\Schemas\ProduksiPressDryerForm;
 use App\Filament\Resources\ProduksiPressDryers\Tables\ProduksiPressDryersTable;
+use App\Filament\Resources\ProduksiPressDryers\Schemas\ProduksiPressDryerInfolist;
 use App\Models\ProduksiPressDryer;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -37,7 +38,8 @@ class ProduksiPressDryerResource extends Resource
 
     public static function infolist(Schema $schema): Schema
     {
-        return $schema;
+
+        return ProduksiPressDryerInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table

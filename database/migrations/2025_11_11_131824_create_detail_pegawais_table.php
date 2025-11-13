@@ -4,23 +4,24 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('detail_pegawais', function (Blueprint $table) {
+        Schema::create('detail_pegawai', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_pegawai');
             $table->string('tugas');
             $table->time('masuk')->nullable();
             $table->time('pulang')->nullable();
+
             $table->string('ijin')->nullable();
             $table->string('ket')->nullable();
-            $table->timestamps();
+
             $table->foreignId('id_produksi_dryer')
+
                   ->nullable()
                   ->constrained('produksi_press_dryers')
                   ->cascadeOnUpdate()
@@ -33,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('detail_pegawais');
+        Schema::dropIfExists('detail_pegawai');
     }
 };

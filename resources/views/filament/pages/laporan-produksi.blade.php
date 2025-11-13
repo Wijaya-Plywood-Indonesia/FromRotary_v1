@@ -1,18 +1,41 @@
 <x-filament-panels::page>
-    @php $dataProduksi = $dataProduksi ?? []; $groupedByMesin =
+    <!-- HEADER DENGAN FORM DI KANAN -->
+    <div class="p-4 bg-white dark:bg-zinc-900 rounded-lg shadow">
+        {{ $this->form }}
+    </div>
+
+    <!-- Loading Indicator -->
+    @if($isLoading)
+    <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-75 dark:bg-zinc-900 dark:bg-opacity-75"
+    >
+        <div class="flex items-center space-x-3">
+            <x-filament::loading-indicator class="w-8 h-8 text-primary-600" />
+            <span class="text-lg font-medium text-zinc-700 dark:text-zinc-300">
+                Memuat data...
+            </span>
+        </div>
+    </div>
+    @endif @php $dataProduksi = $dataProduksi ?? []; $groupedByMesin =
     collect($dataProduksi)->groupBy('mesin'); @endphp
 
-    <div class="space-y-12">
+    <div class="space-y-12 mt-6">
         @forelse ($groupedByMesin as $mesinNama => $produksiList) @php $first =
-        $produksiList->first(); $pekerja = $first['pekerja'] ?? []; @endphp
+        $produksiList->first(); $pekerja = $first['pekerja'] ?? []; $kodeUkuran
+        = $first['kode_ukuran'] ?? 'TIDAK ADA UKURAN'; $totalPekerja =
+        count($pekerja); $hasil = $first['total_target_harian'] ?? 0; $target =
+        $first['target'] ?? 0; $selisih = $first['selisih'] ?? 0; $warna =
+        $selisih >= 0 ? 'text-green-400' : 'text-red-400'; $tanda = $selisih >=
+        0 ? '+' : ''; $jamKerja = $first['jam_kerja'] ?? 0; @endphp
 
         <!-- CARD MESIN -->
         <div
             class="bg-white dark:bg-zinc-900 rounded-sm shadow-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden"
         >
-            <div class="bg-zinc800 p-4 text-white">
+            <div class="bg-zinc-800 p-4 text-white">
                 <h2 class="text-lg font-bold text-center">
-                    PEKERJA MESIN: {{ strtoupper($mesinNama) }}
+                    PEKERJA MESIN: {{ strtoupper($mesinNama) }} -
+                    {{ strtoupper($kodeUkuran) }}
                 </h2>
             </div>
 
@@ -31,7 +54,6 @@
                                         DATA PEKERJA
                                     </th>
                                 </tr>
-
                                 <tr
                                     class="bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-300 border-t border-zinc-300 dark:border-zinc-600"
                                 >
@@ -72,7 +94,6 @@
                                     </th>
                                 </tr>
                             </thead>
-
                             <tbody>
                                 @forelse ($pekerja as $i => $p)
                                 <tr
@@ -108,7 +129,11 @@
                                         {{ $p["ijin"] ?? "-" }}
                                     </td>
                                     <td
-                                        class="p-2 text-right text-xs border-r border-zinc-300 dark:border-zinc-700 font-bold @if($p['selisih'] < 0) text-red-600 dark:text-red-400 @else text-zinc-700 @endif"
+                                        class="p-2 text-right text-xs border-r border-zinc-300 dark:border-zinc-700 font-bold {{
+                                            $p['selisih'] < 0
+                                                ? 'text-red-600 dark:text-red-400'
+                                                : 'text-zinc-700'
+                                        }}"
                                     >
                                         Rp {{ $p["pot_target"] }}
                                     </td>
@@ -128,18 +153,7 @@
                                     </td>
                                 </tr>
                                 @endforelse
-
-                                <!-- TOTAL TARGET -->
-                                @php $pekerja = $first['pekerja'] ?? [];
-                                $totalPekerja = count($pekerja); $hasil =
-                                $first['total_target_harian'] ?? 0; $target =
-                                $first['target'] ?? 0; $selisih =
-                                $first['selisih'] ?? 0; $warna = $selisih >= 0 ?
-                                'text-green-400' : 'text-red-400'; $tanda =
-                                $selisih >= 0 ? '+' : ''; $jamKerja =
-                                $first['jam_kerja'] ?? 0; @endphp
                             </tbody>
-
                             <tfoot
                                 class="bg-zinc-100 dark:bg-zinc-800 border-t-2 border-zinc-300 dark:border-zinc-600"
                             >
@@ -177,12 +191,12 @@
                                         <strong class="font-mono {{ $warna }}"
                                             >{{ $tanda
                                             }}{{
-                                                number_format($selisih)
+                                                number_format(abs($selisih))
                                             }}</strong
                                         >
                                         <span class="text-zinc-400">|</span>
                                         <span class="text-xs"
-                                            >Tanggal :
+                                            >Tanggal:
                                             {{ $first["tanggal"] }}</span
                                         >
                                     </td>
@@ -195,7 +209,7 @@
         </div>
         @empty
         <div class="text-center p-12 text-zinc-500 dark:text-zinc-400">
-            <p class="text-lg">Tidak ada data produksi.</p>
+            <p class="text-lg">Tidak ada data produksi untuk tanggal ini.</p>
         </div>
         @endforelse
     </div>

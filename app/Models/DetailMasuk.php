@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DetailMasuk extends Model
 {
-    protected $table = 'detail_masuks';
+    protected $table = 'detail_masuk';
 
     protected $fillable = [
         'no_palet',
@@ -26,7 +26,7 @@ class DetailMasuk extends Model
     {
         return $this->belongsTo(JenisKayu::class, 'id_jenis_kayu', 'id');
     }
-    public function produksi()
+    public function produksiDryer()
     {
         return $this->belongsTo(ProduksiPressDryer::class, 'id_produksi_dryer');
     }
