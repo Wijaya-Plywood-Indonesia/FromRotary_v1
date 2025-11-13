@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\NotaKayus\Tables;
 
+use App\Models\DetailKayuMasuk;
+use App\Models\DetailTurusanKayu;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -34,7 +36,45 @@ class NotaKayusTable
                     }),
 
                 TextColumn::make('penanggung_jawab')
+                    ->label('PJ')
                     ->searchable(),
+                TextColumn::make('total_summary')
+                    ->label('Rekap Turusan')
+                    ->getStateUsing(function ($record) {
+                        if (!$record->kayuMasuk) {
+                            return "0 Batang\n0.0000 m³";
+                        }
+
+                        $total = DetailTurusanKayu::hitungTotalByKayuMasuk($record->kayuMasuk->id);
+                        $batang = number_format($total['total_batang']);
+                        $kubikasi = number_format($total['total_kubikasi'], 4);
+
+                        return "{$batang} Batang\n{$kubikasi} m³";
+                    })
+                    ->badge()
+                    ->color('success')
+                    ->formatStateUsing(fn(string $state) => str_replace("\n", '<br>', e($state)))
+                    ->html() // penting agar <br> terbaca sebagai baris baru
+                    ->alignCenter(),
+                TextColumn::make('total_summary2')
+                    ->label('Rekap Turusan 2')
+                    ->getStateUsing(function ($record) {
+                        if (!$record->kayuMasuk) {
+                            return "0 Batang\n0.0000 m³";
+                        }
+
+                        $total = DetailKayuMasuk::hitungTotalByKayuMasuk($record->kayuMasuk->id);
+                        $batang = number_format($total['total_batang']);
+                        $kubikasi = number_format($total['total_kubikasi'], 4);
+
+                        return "{$batang} Batang\n{$kubikasi} m³";
+                    })
+                    ->badge()
+                    ->color('success')
+                    ->formatStateUsing(fn(string $state) => str_replace("\n", '<br>', e($state)))
+                    ->html() // penting agar <br> terbaca sebagai baris baru
+                    ->alignCenter(),
+
                 TextColumn::make('penerima')
                     ->searchable(),
                 TextColumn::make('satpam')
@@ -49,6 +89,8 @@ class NotaKayusTable
                         'warning' => fn($state) => str_contains($state, 'Menunggu'),
                         'danger' => fn($state) => str_contains($state, 'Ditolak'),
                     ]),
+
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -58,6 +100,7 @@ class NotaKayusTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])
@@ -66,13 +109,33 @@ class NotaKayusTable
                     ->label('Tandai Sudah Diperiksa')
                     ->icon('heroicon-o-check')
                     ->color('success')
-                    ->visible(fn($record) => $record->status === 'Belum Diperiksa') // tombol hanya muncul kalau belum diperiksa
+                    ->visible(function ($record) {
+                        // Pastikan status masih "Belum Diperiksa"
+                        if ($record->status !== 'Belum Diperiksa') {
+                            return false;
+                        }
+
+                        // Pastikan ada relasi kayuMasuk
+                        if (!$record->kayuMasuk) {
+                            return false;
+                        }
+
+                        // Ambil total dari kedua sumber
+                        $total1 = DetailTurusanKayu::hitungTotalByKayuMasuk($record->kayuMasuk->id);
+                        $total2 = DetailKayuMasuk::hitungTotalByKayuMasuk($record->kayuMasuk->id);
+
+                        // Bandingkan total batang dan kubikasi
+                        $batangSama = $total1['total_batang'] == $total2['total_batang'];
+                        $kubikasiSama = abs($total1['total_kubikasi'] - $total2['total_kubikasi']) < 0.0001; // toleransi desimal
+            
+                        return $batangSama && $kubikasiSama;
+                    })
                     ->action(function ($record) {
                         $user = Auth::user();
                         $record->status = "Sudah Diperiksa oleh {$user->name}";
                         $record->save();
                     })
-                    ->requiresConfirmation() // opsional, kalau mau ada popup konfirmasi
+                    ->requiresConfirmation()
                     ->successNotificationTitle('Status berhasil diperbarui'),
                 Action::make('print')
                     ->label('Cetak Nota')

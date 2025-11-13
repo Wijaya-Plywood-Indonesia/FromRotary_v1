@@ -16,4 +16,9 @@ class ListKayuMasuks extends ListRecords
             CreateAction::make(),
         ];
     }
+    public static function getRelations(): array
+    {
+        // Kosongkan agar tidak ada Relation Manager di halaman View
+        return [];
+    }
 }

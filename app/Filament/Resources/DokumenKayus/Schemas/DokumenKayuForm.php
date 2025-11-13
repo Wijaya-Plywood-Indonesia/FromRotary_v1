@@ -50,7 +50,7 @@ class DokumenKayuForm
                             ->disk('public')
                             ->directory('sumber-kayu/ktp')
                             ->preserveFilenames()
-                            ->required(),
+                            ->nullable(),
 
                         FileUpload::make('foto_lokasi')
                             ->label('Foto Lokasi')
@@ -68,25 +68,25 @@ class DokumenKayuForm
                     ->schema([
                         TextInput::make('nama_tempat')
                             ->label('Nama Tempat / Area')
-                            ->required()
+                            ->nullable()
                             ->maxLength(255),
 
                         Textarea::make('alamat_lengkap')
                             ->label('Alamat Lengkap')
-                            ->required()
+                            ->nullable()
                             ->rows(3),
 
                         TextInput::make('latitude')
                             ->label('Latitude')
                             ->numeric()
                             ->reactive()
-                            ->required(),
+                            ->nullable(),
 
                         TextInput::make('longitude')
                             ->label('Longitude')
                             ->numeric()
                             ->reactive()
-                            ->required(),
+                            ->nullable(),
                     ]),
 
                 /** =========================

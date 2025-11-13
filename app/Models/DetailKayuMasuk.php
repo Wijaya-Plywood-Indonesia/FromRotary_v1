@@ -83,4 +83,19 @@ class DetailKayuMasuk extends Model
             ->whereRaw('? BETWEEN harga_kayus.diameter_terkecil AND harga_kayus.diameter_terbesar', [$this->diameter]);
     }
 
+    public static function hitungTotalByKayuMasuk($idKayuMasuk): array
+    {
+        $records = self::where('id_kayu_masuk', $idKayuMasuk)->get();
+
+        $totalBatang = $records->sum('jumlah_batang');
+        $totalKubikasi = $records->sum(function ($r) {
+            return ($r->panjang * $r->diameter * $r->diameter * $r->jumlah_batang * 0.785) / 1_000_000;
+        });
+
+        return [
+            'total_batang' => $totalBatang,
+            'total_kubikasi' => $totalKubikasi,
+        ];
+    }
+
 }

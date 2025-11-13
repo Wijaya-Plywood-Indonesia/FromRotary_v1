@@ -17,6 +17,11 @@ class KayuMasuksTable
             ->columns([
                 TextColumn::make('jenis_dokumen_angkut')
                     ->searchable(),
+                TextColumn::make('penggunaanSupplier.nama_supplier')
+                    ->label('Nama Supplier')
+                //->badge()
+                //  ->color('success')
+                ,
                 TextColumn::make('upload_dokumen_angkut')
                     ->label('Dokumen Legal')
                     ->badge()
@@ -27,6 +32,7 @@ class KayuMasuksTable
                 TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])

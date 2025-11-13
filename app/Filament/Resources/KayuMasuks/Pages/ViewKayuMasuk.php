@@ -16,4 +16,9 @@ class ViewKayuMasuk extends ViewRecord
             EditAction::make(),
         ];
     }
+    public static function getRelations(): array
+    {
+        // Kosongkan agar tidak ada Relation Manager di halaman View
+        return [];
+    }
 }

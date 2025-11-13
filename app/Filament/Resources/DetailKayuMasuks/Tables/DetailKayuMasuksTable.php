@@ -15,6 +15,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Tables\Grouping\Group;
+use Illuminate\Support\Collection;
 
 class DetailKayuMasuksTable
 {
@@ -37,16 +39,17 @@ class DetailKayuMasuksTable
             })
             ->columns([
 
-                TextColumn::make('no')
-                    ->label('No')
-                    ->rowIndex()
-                    ->alignCenter()
-                    ->width('60px'),
+                // TextColumn::make('no')
+                //     ->label('No')
+                //     ->rowIndex()
+                //     ->alignCenter()
+                //     ->width('60px'),
 
                 TextColumn::make('lahan_display')
                     ->label('Lahan')
                     ->getStateUsing(fn($record) => "{$record->lahan->kode_lahan}")
                     ->sortable(['lahan.kode_lahan'])
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(['lahan.kode_lahan']),
 
                 TextColumn::make('keterangan_kayu')
@@ -75,11 +78,10 @@ class DetailKayuMasuksTable
                     ->numeric()
                     ->sortable(),
 
-
-
                 TextColumn::make('jumlah_batang')
+                    ->label('Batang')
                     ->numeric()
-                    ->suffix(' batang')
+                    ->suffix(' btg')
                     ->sortable(),
                 TextColumn::make('kubikasi')
                     ->label('Kubikasi')
@@ -95,9 +97,42 @@ class DetailKayuMasuksTable
                     })
                     ->suffix(' m³')
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->alignRight(),
 
             ])
+            ->groups([
+                Group::make('lahan.kode_lahan')
+                    ->label('Lahan')
+                    ->collapsible()
+                    ->orderQueryUsing(function ($query, $direction) {
+                        // supaya Filament tahu cara urutkan data saat ASC/DESC di UI
+                        return $query
+                            ->join('lahans', 'detail_kayu_masuks.id_lahan', '=', 'lahans.id')
+                            ->orderBy('lahans.kode_lahan', $direction)
+                            ->select('detail_kayu_masuks.*'); // penting untuk mencegah ambiguitas
+                    })
+                    ->getTitleFromRecordUsing(function ($record, $records = null) {
+                        $kode = $record->lahan?->kode_lahan ?? '-';
+                        $nama = $record->lahan?->nama_lahan ?? '-';
+                        $jenis_kayu = $record->jenisKayu?->nama_kayu ?? '-';
+
+                        if ($records instanceof Collection && $records->isNotEmpty()) {
+                            $totalBatang = $records->count();
+                            $totalKubikasi = $records->sum(fn($r) => (float) $r->kubikasi);
+                        } else {
+                            $query = DetailKayuMasuk::query()
+                                ->where('id_lahan', $record->id_lahan)
+                                ->get();
+                            $totalBatang = $query->count();
+                            $totalKubikasi = $query->sum(fn($r) => (float) $r->kubikasi);
+                        }
+
+                        $kubikasiFormatted = number_format($totalKubikasi, 4, ',', '.');
+                        return "{$kode} {$nama} {$jenis_kayu} - {$totalBatang} batang ({$kubikasiFormatted} m³)";
+                    }),
+            ])
+            ->defaultGroup('lahan.kode_lahan')
             ->filters([
                 //
             ])
@@ -161,28 +196,28 @@ class DetailKayuMasuksTable
             ])
             ->recordActions([
                 Action::make('kurangiBatang')
-                    ->label('Kurangi Batang')
+                    ->label('')
                     ->icon('heroicon-o-minus')
                     ->color('danger')
-                    ->button() // ✅ tampil sebagai tombol juga
+                    ->button()
                     ->outlined(false)
                     ->size('sm')
-                    //  ->requiresConfirmation()
                     ->action(function (DetailKayuMasuk $record) {
                         if ($record->jumlah_batang > 0) {
-                            $record->decrement('jumlah_batang');
+                            $record->jumlah_batang = $record->jumlah_batang - 1;
                             $record->save();
                         }
                     }),
+
                 Action::make('tambahBatang')
-                    ->label('Tambah Batang')
+                    ->label('')
                     ->icon('heroicon-o-plus')
                     ->color('success')
-                    ->button() // ✅ ubah jadi tombol solid
-                    ->outlined(false) // (opsional) kalau mau solid penuh
-                    ->size('sm') // kecil, biar rapi
+                    ->button()
+                    ->outlined(false)
+                    ->size('sm')
                     ->action(function (DetailKayuMasuk $record) {
-                        $record->increment('jumlah_batang');
+                        $record->jumlah_batang = $record->jumlah_batang + 1;
                         $record->save();
                     }),
 

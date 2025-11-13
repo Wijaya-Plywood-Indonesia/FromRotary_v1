@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\DetailKayuMasuks\Schemas;
 
+use App\Models\DetailKayuMasuk;
 use App\Models\JenisKayu;
 use App\Models\Lahan;
 use Filament\Forms\Components\Select;
@@ -25,14 +26,46 @@ class DetailKayuMasukForm
                         ->options(
                             Lahan::query()
                                 ->get()
-                                ->mapWithKeys(function ($lahan) {
-                                    return [
-                                        $lahan->id => "{$lahan->kode_lahan} - {$lahan->nama_lahan}",
-                                    ];
-                                })
+                                ->mapWithKeys(fn($lahan) => [
+                                    $lahan->id => "{$lahan->kode_lahan} - {$lahan->nama_lahan}",
+                                ])
                         )
+                        ->default(fn() => DetailKayuMasuk::latest('id')->value('id_lahan') ?? 1)
                         ->searchable()
-                        ->required(),
+                        ->required()
+                        ->reactive()
+                        ->afterStateUpdated(function ($state, callable $set) {
+                            if (!$state) {
+                                $set('panjang', 0);
+                                return;
+                            }
+
+                            $lahan = Lahan::find($state);
+
+                            if (!$lahan) {
+                                $set('panjang', 0);
+                                return;
+                            }
+
+                            $nama = strtolower($lahan->nama_lahan ?? '');
+
+                            // Jika nama lahan mengandung angka 130 atau 260
+                            if (str_contains($nama, '130')) {
+                                $set('panjang', 130);
+                                return;
+                            } elseif (str_contains($nama, '260')) {
+                                $set('panjang', 260);
+                                return;
+                            }
+
+                            // Jika tidak mengandung angka, ambil panjang terakhir berdasarkan lahan_id
+                            $lastPanjang = DetailKayuMasuk::where('id_lahan', $state)
+                                ->latest('id')
+                                ->value('panjang');
+
+                            $set('panjang', $lastPanjang ?? 0);
+                        }),
+
                     Select::make('grade')
                         ->label('Grade')
                         ->options([
@@ -62,12 +95,26 @@ class DetailKayuMasukForm
                         ->options([
                             130 => '130 cm',
                             260 => '260 cm',
+                            0 => 'Tidak Diketahui',
                         ])
                         ->required()
-                        ->default(130)
+                        ->default(function () {
+                            // Saat form pertama dibuka, ambil panjang terakhir dari lahan terakhir
+                            $lastLahan = DetailKayuMasuk::latest('id')->value('id_lahan');
+                            if (!$lastLahan)
+                                return 0;
+
+                            $lastPanjang = DetailKayuMasuk::where('id_lahan', $lastLahan)
+                                ->latest('id')
+                                ->value('panjang');
+
+                            return $lastPanjang ?? 0;
+                        })
+                        ->searchable()
                         ->native(false),
 
-                    Select::make('id_jenis_kayu')
+
+                    Select::make('jenis_kayu_id')
                         ->label('Jenis Kayu')
                         ->options(
                             JenisKayu::query()
@@ -76,10 +123,9 @@ class DetailKayuMasukForm
                                     $JenisKayu->id => "{$JenisKayu->kode_kayu} - {$JenisKayu->nama_kayu}",
                                 ])
                         )
+                        ->default(fn() => DetailKayuMasuk::latest('id')->value('id_jenis_kayu') ?? 1)
                         ->searchable()
-                        ->placeholder('Pilih Jenis Kayu')
                         ->required(),
-
                     TextInput::make('diameter')
                         ->label('Diameter (cm)')
                         ->placeholder('13 cm - 50 cm')
@@ -110,6 +156,7 @@ class DetailKayuMasukForm
                     TextInput::make('jumlah_batang')
                         ->label('Jumlah Batang')
                         ->required()
+                        ->default(1)
                         ->numeric(),
                 ]);
     }

@@ -47,7 +47,7 @@ class KayuMasukForm
                     ->label('Nomor Seri')
                     ->numeric()
                     ->required()
-                    ->readOnly()
+                    //  ->readOnly()
                     ->default(function () {
                         // Ambil nilai seri terbesar dari database
                         $lastSeri = KayuMasuk::max('seri');
@@ -102,7 +102,7 @@ class KayuMasukForm
                             ->get()
                             ->mapWithKeys(function ($kendaraan) {
                                 return [
-                                    $kendaraan->id => "{$kendaraan->nopol_kendaraan} - {$kendaraan->jenis_kendaraan}", // sesuaikan kolomnya
+                                    $kendaraan->id => "{$kendaraan->nopol_kendaraan} - {$kendaraan->jenis_kendaraan} - {$kendaraan->pemilik_kendaraan}", // sesuaikan kolomnya
                                 ];
                             })
                     )
