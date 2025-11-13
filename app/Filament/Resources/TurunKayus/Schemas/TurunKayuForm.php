@@ -17,12 +17,6 @@ class TurunKayuForm
                     ->placeholder('Pilih Tanggal')
                     ->default(now())
                     ->required()
-                    ->native(false),
-
-                Textarea::make('kendala')
-                    ->label('Kendala')
-                    ->required()
-                    ->placeholder('Tuliskan kendala'),
             ]);
     }
 }
