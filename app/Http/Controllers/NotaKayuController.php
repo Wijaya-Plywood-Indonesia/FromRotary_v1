@@ -15,6 +15,7 @@ class NotaKayuController extends Controller
             'kayuMasuk.penggunaanSupplier',
         ]);
 
+
         $detail = $record->kayuMasuk->detailTurusanKayus ?? collect();
 
         $jenisKayuId = optional($detail->first())->jenis_kayu_id
@@ -67,12 +68,21 @@ class NotaKayuController extends Controller
         $hargaBeliAkhir = $grandTotal - $biayaTurunKayu;
 
         // === Pembulatan ke kelipatan 5000 ===
-        $mod = $hargaBeliAkhir % 5000;
+        $mod = (int) $hargaBeliAkhir % 5000;
         $hargaBeliAkhirBulat = $mod >= 2500
-            ? $hargaBeliAkhir + (5000 - $mod)
-            : $hargaBeliAkhir - $mod;
+            ? (int) $hargaBeliAkhir + (5000 - $mod)
+            : (int) $hargaBeliAkhir - $mod;
 
-        $totalAkhir = $hargaBeliAkhirBulat + $pembulatanManual;
+        // === Tambahkan pembulatan manual ===
+        $totalAkhir = (int) ($hargaBeliAkhirBulat + $pembulatanManual);
+
+        // === Pastikan hasil akhir tetap kelipatan 5000 ===
+        $mod = $totalAkhir % 5000;
+        $totalAkhir = $mod >= 2500
+            ? $totalAkhir + (5000 - $mod)
+            : $totalAkhir - $mod;
+
+        // === Hitung selisih ===
         $selisih = $grandTotal - $totalAkhir;
 
         return view('nota-kayu.print', [
