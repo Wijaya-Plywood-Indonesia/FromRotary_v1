@@ -84,14 +84,14 @@ class DetailTurunKayuForm
                         '4:3',
                         '1:1',
                     ])
-                    ->maxSize(5120)
+                    ->maxSize(1024)
                     ->disk('public')
                     ->directory('turun-kayu/foto-bukti')
                     ->visibility('public')
                     ->downloadable()
                     ->openable()
-                    ->helperText('Upload foto bukti. Watermark akan ditambahkan otomatis setelah simpan.')
                     ->columnSpanFull()
+
                     ->required(),
             ]);
     }

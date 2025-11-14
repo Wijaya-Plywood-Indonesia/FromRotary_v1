@@ -34,11 +34,7 @@ class CreateDetailTurunKayu extends CreateRecord
             $this->halt();
         }
 
-        // Set pegawai pertama
         $data['id_pegawai'] = $this->pegawaiIds[0];
-
-        // ⭐ PENTING: Jangan ubah $data['foto'] di sini!
-        // Biarkan Filament yang handle penyimpanan file
 
         return $data;
     }
@@ -46,8 +42,6 @@ class CreateDetailTurunKayu extends CreateRecord
     protected function afterCreate(): void
     {
         $firstRecord = $this->record;
-
-        // ⭐ Refresh record untuk dapat path yang sudah permanent
         $firstRecord->refresh();
 
         $originalFotoPath = $firstRecord->foto;
@@ -55,29 +49,24 @@ class CreateDetailTurunKayu extends CreateRecord
         Log::info("=== AFTER CREATE ===");
         Log::info("Foto path dari database: " . $originalFotoPath);
 
-        // Validasi ada foto
         if (!$originalFotoPath) {
             Log::warning("Tidak ada foto");
             $this->createOtherRecordsWithoutPhoto($firstRecord);
             return;
         }
 
-        // Full path foto asli
         $originalFullPath = storage_path('app/public/' . $originalFotoPath);
 
         Log::info("Full path: " . $originalFullPath);
         Log::info("File exists: " . (file_exists($originalFullPath) ? 'YES' : 'NO'));
 
-        // Validasi file ada
         if (!file_exists($originalFullPath)) {
-            Log::error("❌ File foto tidak ditemukan: {$originalFullPath}");
-
+            Log::error("File foto tidak ditemukan: {$originalFullPath}");
             Notification::make()
                 ->title('Peringatan')
                 ->body('File foto tidak ditemukan. Data tersimpan tanpa watermark.')
                 ->warning()
                 ->send();
-
             $this->createOtherRecordsWithoutPhoto($firstRecord);
             return;
         }
@@ -85,7 +74,7 @@ class CreateDetailTurunKayu extends CreateRecord
         $createdCount = 0;
         $records = [$firstRecord];
 
-        // Buat record untuk pegawai lainnya (TANPA foto dulu)
+        // Buat record untuk pegawai lainnya
         if (count($this->pegawaiIds) > 1) {
             for ($i = 1; $i < count($this->pegawaiIds); $i++) {
                 $pegawaiId = $this->pegawaiIds[$i];
@@ -102,7 +91,7 @@ class CreateDetailTurunKayu extends CreateRecord
             }
         }
 
-        // ⭐ Tambahkan watermark untuk SETIAP record
+        // Proses setiap record
         foreach ($records as $index => $record) {
             try {
                 $pegawai = $record->pegawai;
@@ -113,7 +102,7 @@ class CreateDetailTurunKayu extends CreateRecord
                     continue;
                 }
 
-                // Generate nama file unik untuk setiap pegawai
+                // Generate nama file unik
                 $extension = pathinfo($originalFotoPath, PATHINFO_EXTENSION);
                 $timestamp = now()->format('Ymd_His');
                 $randomString = substr(md5($record->id . $pegawai->kode_pegawai . time()), 0, 8);
@@ -126,55 +115,65 @@ class CreateDetailTurunKayu extends CreateRecord
                     mkdir($directory, 0755, true);
                 }
 
-                // Copy file asli ke file baru
+                // Copy file asli
                 if (!copy($originalFullPath, $newFullPath)) {
                     throw new \Exception("Gagal copy file ke: {$newFullPath}");
                 }
 
-                Log::info("✅ File dicopy ke: {$newFullPath}");
+                Log::info("File dicopy: {$newFullPath}");
 
-                // Tambahkan watermark ke file baru
-                WatermarkService::addWatermark($newFileName, [
-                    'nama_supir' => $nama_supir
+                // COMPRESS DULU (ukuran < 1MB)
+                WatermarkService::compressAndResize($newFileName, [
+                    'max_width' => 1200,
+                    'quality' => 80,
+                    'strip' => true,
                 ]);
 
-                Log::info("✅ Watermark ditambahkan");
+                Log::info("File berhasil di-compress");
 
-                // Update record dengan path baru
+                // BARU TAMBAHKAN WATERMARK
+                WatermarkService::addWatermarkWithGradient($newFileName, [
+                    'nama_supir' => $nama_supir,
+                    'position' => 'bottom-right',
+                    'margin' => 30,
+                    'font_size' => 32,
+                    'bg_opacity' => 0.75,
+                    'date_format' => 'd F Y',
+                ]);
+
+                Log::info("Watermark berhasil ditambahkan");
+
+                // Update record
                 $record->update(['foto' => $newFileName]);
-
                 $createdCount++;
 
-                Log::info("✅ Record updated dengan foto: {$newFileName}");
+                Log::info("Record updated: {$newFileName}");
 
             } catch (\Exception $e) {
-                Log::error("❌ Gagal watermark untuk record ID {$record->id}: " . $e->getMessage());
+                Log::error("Gagal proses untuk record ID {$record->id}: " . $e->getMessage());
                 Log::error("Stack trace: " . $e->getTraceAsString());
 
-                // Set foto asli jika gagal watermark
                 if ($index === 0) {
-                    // Record pertama tetap pakai foto asli
                     $record->update(['foto' => $originalFotoPath]);
                 } else {
-                    // Record lain tidak dapat foto
                     $record->update(['foto' => null]);
                 }
             }
         }
 
-        // Hapus file asli (opsional)
+        // Hapus file asli
         if (file_exists($originalFullPath) && $createdCount > 0) {
             try {
                 unlink($originalFullPath);
-                Log::info("🗑️ File asli dihapus: {$originalFullPath}");
+                Log::info("File asli dihapus: {$originalFullPath}");
             } catch (\Exception $e) {
-                Log::warning("⚠️ Gagal hapus file asli: " . $e->getMessage());
+                Log::warning("Gagal hapus file asli: " . $e->getMessage());
             }
         }
 
         Notification::make()
             ->title('Berhasil!')
-            ->body("{$createdCount} data turun kayu dengan watermark berhasil dibuat.")
+            ->body("{$createdCount} data turun kayu dengan watermark & compress berhasil dibuat.")
             ->success()
             ->duration(5000)
             ->send();
