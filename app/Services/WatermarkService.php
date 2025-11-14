@@ -2,80 +2,157 @@
 
 namespace App\Services;
 
-
 use Illuminate\Support\Facades\File;
-use Intervention\Image\Laravel\Facades\Image;
+use Illuminate\Support\Facades\Log;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Typography\FontFactory;
 
 class WatermarkService
 {
-    public static function addWatermark(string $imagePath, array $info = []): string
+    /**
+     * Tambahkan watermark ke gambar dengan font proporsional
+     *
+     * @param string $relativePath Path relatif di storage/app/public/
+     * @param array $info Data tambahan (nama_supir, dll)
+     * @return string Path relatif (sama jika gagal)
+     */
+    public static function addWatermark(string $relativePath, array $info = []): string
     {
-        $img = Image::read(storage_path('app/public/' . $imagePath));
+        try {
+            $manager = new ImageManager(new Driver());
+            $fullPath = storage_path('app/public/' . $relativePath);
 
-        $width = $img->width();
-        $height = $img->height();
+            // 1. Validasi file
+            if (!File::exists($fullPath)) {
+                Log::warning("Watermark: File tidak ditemukan", ['path' => $fullPath]);
+                return $relativePath;
+            }
 
-        // Background semi-transparent di pojok kanan bawah
-        $boxHeight = 120;
-        // INI BENAR: Gunakan drawRectangle()
-        $img->drawRectangle(0, $height - $boxHeight, $width, $height, function ($draw) {
-            $draw->background('rgba(0, 0, 0, 0.6)');
-        });
+            $mime = mime_content_type($fullPath);
+            $allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!in_array($mime, $allowed)) {
+                Log::warning("Watermark: Bukan gambar", ['mime' => $mime]);
+                return $relativePath;
+            }
 
-        // Logo perusahaan (jika ada)
-        $logoPath = public_path('images/logo-watermark.png');
-        if (file_exists($logoPath)) {
-            $watermark = Image::read($logoPath);
-            $watermark->resize(60, 60, function ($constraint) {
-                $constraint->aspectRatio();
+            // 2. Baca gambar
+            $img = $manager->read($fullPath);
+            $originalWidth = $img->width();
+            $originalHeight = $img->height();
+
+            // 3. Resize jika terlalu besar (> 2000px) untuk performa & visibilitas
+            $maxSize = 2000;
+            if ($originalWidth > $maxSize || $originalHeight > $maxSize) {
+                $img->scaleDown(width: $maxSize, height: $maxSize);
+            }
+
+            $width = $img->width();
+            $height = $img->height();
+
+            // 4. Hitung ukuran font proporsional
+            $fontSize = max(20, (int) ($width / 28)); // ~3.5% dari lebar
+            $diagonalFontSize = max(50, (int) ($width / 12)); // ~8% dari lebar
+            $lineHeight = (int) ($fontSize * 1.4);
+
+            // 5. Path font
+            $fontMedium = public_path('fonts/Roboto-Medium.ttf');
+            $logoPath = public_path('images/logo-watermark.png');
+
+            // 6. Background box (pojok kiri bawah)
+            $boxWidth = min(500, (int) ($width * 0.4));
+            $boxHeight = 130;
+            $boxX = 15;
+            $boxY = $height - $boxHeight - 15;
+
+            $img->drawRectangle($boxX, $boxY, function ($rect) use ($boxWidth, $boxHeight) {
+                $rect->size($boxWidth, $boxHeight);
+                $rect->background('rgba(0, 0, 0, 0.65)');
+                $rect->border('#ffffff', 1);
             });
-            $img->insert($watermark, 'bottom-left', 15, 15);
+
+            // 7. Logo (jika ada)
+            $logoOffsetX = 25;
+            $logoOffsetY = 25;
+            $hasLogo = false;
+
+            if (File::exists($logoPath)) {
+                try {
+                    $logo = $manager->read($logoPath);
+                    $logo->scaleDown(width: 70, height: 70);
+                    $img->place($logo, 'bottom-left', $logoOffsetX, $logoOffsetY);
+                    $hasLogo = true;
+                } catch (\Exception $e) {
+                    Log::warning("Watermark: Gagal load logo", ['error' => $e->getMessage()]);
+                }
+            }
+
+            // 8. Teks mulai dari...
+            $textX = $hasLogo ? 100 : 30;
+            $textY = $boxY + 35;
+
+            // Helper untuk text
+            $addText = function ($text, &$y) use ($img, $textX, $fontMedium, $fontSize, $lineHeight) {
+                $img->text($text, $textX, $y, function (FontFactory $font) use ($fontMedium, $fontSize) {
+                    if (File::exists($fontMedium)) {
+                        $font->file($fontMedium);
+                    }
+                    $font->size($fontSize);
+                    $font->color('#ffffff');
+                    $font->align('left');
+                    $font->valign('top');
+                });
+                $y += $lineHeight;
+            };
+
+            // Tanggal & Waktu
+            $addText('Tanggal: ' . now()->format('d/m/Y H:i:s'), $textY);
+
+            // Nama Supir
+            if (!empty($info['nama_supir'])) {
+                $addText('Supir: ' . $info['nama_supir'], $textY);
+            }
+
+            // 9. Watermark Diagonal (Security)
+            $diagonalText = $info['diagonal_text'] ?? 'DOKUMEN RESMI';
+            $diagonalFont = $fontMedium;
+
+            if (File::exists($diagonalFont)) {
+                $img->text($diagonalText, $width / 2, $height / 2, function (FontFactory $font) use ($diagonalFont, $diagonalFontSize) {
+                    $font->file($diagonalFont);
+                    $font->size($diagonalFontSize);
+                    $font->color('rgba(255, 255, 255, 0.22)');
+                    $font->align('center');
+                    $font->valign('middle');
+                    $font->angle(45);
+                });
+
+                // Overlay tipis untuk efek "cap"
+                $img->drawRectangle(0, 0, function ($rect) use ($width, $height) {
+                    $rect->size($width, $height);
+                    $rect->background('rgba(255, 255, 255, 0.02)');
+                });
+            }
+
+            // 10. Simpan dengan kualitas optimal
+            $img->save($fullPath, quality: 92);
+
+            Log::info("Watermark berhasil ditambahkan", [
+                'path' => $relativePath,
+                'size' => "{$width}x{$height}",
+                'font_size' => $fontSize
+            ]);
+
+            return $relativePath;
+
+        } catch (\Throwable $e) {
+            Log::error("Watermark gagal", [
+                'path' => $relativePath ?? 'unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return $relativePath;
         }
-
-        // Text watermark dengan info detail
-        $y = $height - 95;
-        $lineHeight = 22;
-
-        // Nama perusahaan
-        $img->text(config('app.name', 'PT. Kayu Jaya'), 90, $y, function ($font) {
-            $font->size(16);
-            $font->color('#ffffff');
-            $font->align('left');
-        });
-
-        $y += $lineHeight;
-
-        // Tanggal & Waktu
-        $img->text('Tanggal: ' . now()->format('d/m/Y H:i:s'), 90, $y, function ($font) {
-            $font->size(14);
-            $font->color('#ffff00');
-            $font->align('left');
-        });
-
-        $y += $lineHeight;
-
-        // Info tambahan (pegawai, dll)
-        if (!empty($info['pegawai'])) {
-            $img->text('Pekerja: ' . $info['pegawai'], 90, $y, function ($font) {
-                $font->size(14);
-                $font->color('#00ff00');
-                $font->align('left');
-            });
-        }
-
-        // Watermark diagonal di tengah (sebagai security)
-        $img->text('DOKUMEN RESMI', $width / 2, $height / 2, function ($font) {
-            $font->file(public_path('fonts/Arial-Bold.ttf'));
-            $font->size(80);
-            $font->color('rgba(255, 255, 255, 0.1)');
-            $font->align('center');
-            $font->valign('middle');
-            $font->angle(45);
-        });
-
-        // Save dengan kompresi
-        $img->save(storage_path('app/public/' . $imagePath), 90);
-
-        return $imagePath;
     }
 }

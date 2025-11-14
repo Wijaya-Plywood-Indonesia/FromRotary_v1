@@ -7,6 +7,8 @@ use App\Models\KayuMasuk;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextInput;
+use Illuminate\Support\Facades\Log;
 use App\Services\WatermarkService;
 
 class DetailTurunKayuForm
@@ -67,21 +69,29 @@ class DetailTurunKayuForm
                     ->default('menunggu')
                     ->required(),
 
+
+                TextInput::make('nama_supir')
+                    ->label('Nama Supir')
+                    ->required(),
+
                 // TANDA TANGAN (FOTO)
                 FileUpload::make('foto')
-                    ->label('Upload bukti')
+                    ->label('Foto Bukti')
+                    ->image()
+                    ->imageEditor()
+                    ->imageEditorAspectRatios([
+                        '16:9',
+                        '4:3',
+                        '1:1',
+                    ])
+                    ->maxSize(5120)
                     ->disk('public')
                     ->directory('turun-kayu/foto-bukti')
-                    ->afterStateUpdated(function ($state, $set) {
-                        if ($state) {
-                            // Tambahkan watermark setelah upload
-                            $watermarkedPath = WatermarkService::addWatermark($state);
-                            $set('foto', $watermarkedPath);
-                        }
-                    })
-                    ->helperText('Upload foto bukti turun kayu. Watermark akan ditambahkan otomatis.')
+                    ->visibility('public')
+                    ->downloadable()
+                    ->openable()
+                    ->helperText('Upload foto bukti. Watermark akan ditambahkan otomatis setelah simpan.')
                     ->columnSpanFull()
-                    ->preserveFilenames()
                     ->required(),
             ]);
     }

@@ -51,6 +51,11 @@ class DetailTurunKayusTable
                     ->searchable()
                     ->sortable(),
 
+                TextColumn::make('nama_supir')
+                    ->label('Nama Supir')
+                    ->searchable()
+                    ->sortable(),
+
                 // 3. NOPOL + JENIS
                 TextColumn::make('kayuMasuk.penggunaanKendaraanSupplier.nopol_kendaraan')
                     ->label('Nopol & Jenis')
