@@ -11,6 +11,7 @@ use App\Filament\Resources\ProduksiPressDryers\Tables\ProduksiPressDryersTable;
 use App\Filament\Resources\ProduksiPressDryers\Schemas\ProduksiPressDryerInfolist;
 use App\Models\ProduksiPressDryer;
 use BackedEnum;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -46,6 +47,16 @@ class ProduksiPressDryerResource extends Resource
         return ProduksiPressDryersTable::configure($table);
     }
 
+public static function getRelations(): array
+    {
+        return [
+            RelationManagers\DetailMesinsRelationManager::class,
+            RelationManagers\DetailPegawaisRelationManager::class,
+            RelationManagers\DetailMasuksRelationManager::class,
+            RelationManagers\DetailHasilsRelationManager::class,
+            RelationManagers\ValidasiPressDryersRelationManager::class,
+        ];
+    }
 
 
     public static function getPages(): array

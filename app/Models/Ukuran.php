@@ -19,6 +19,16 @@ class Ukuran extends Model
         'lebar' => 'float',
         'tebal' => 'float',
     ];
+
+    public function detailMasuks()
+    {
+        return $this->hasMany(DetailMasuk::class, 'id_ukuran');
+    }
+
+    public function detailHasils()
+    {
+        return $this->hasMany(DetailHasil::class, 'id_ukuran');
+    }
     public function targets()
     {
         return $this->hasMany(DetailHasilPaletRotary::class, 'id_ukuran', 'id');
@@ -42,6 +52,4 @@ class Ukuran extends Model
 
         return $panjang * $lebar * $tebal;
     }
-
-
 }

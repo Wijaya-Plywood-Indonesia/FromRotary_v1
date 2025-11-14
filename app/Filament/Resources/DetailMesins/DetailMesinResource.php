@@ -17,6 +17,10 @@ use Filament\Tables\Table;
 class DetailMesinResource extends Resource
 {
     protected static ?string $model = DetailMesin::class;
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

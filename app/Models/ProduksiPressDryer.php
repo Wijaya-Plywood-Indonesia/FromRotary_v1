@@ -14,6 +14,11 @@ class ProduksiPressDryer extends Model
         'kendala',
     ];
 
+    protected $casts = [
+    'tanggal_produksi' => 'date', // atau 'datetime'
+    // casts lainnya...
+];
+
 
     public function detailMasuks()
     {
@@ -30,10 +35,10 @@ class ProduksiPressDryer extends Model
         return $this->hasMany(DetailMesin::class, 'id_produksi_dryer');
     }
 
-    // public function validasiPressDryers()
-    // {
-    //     return $this->hasMany(ValidasiPressDryer::class, 'id_produksi_dryer');
-    // }
+    public function validasiPressDryers()
+    {
+        return $this->hasMany(ValidasiPressDryer::class, 'id_produksi_dryer');
+    }
 
     public function detailPegawais()
     {

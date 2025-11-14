@@ -6,20 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class DetailHasil extends Model
 {
-    protected $table = 'detail_hasil';
+    protected $table = 'detail_hasils';
 
     protected $fillable = [
         'no_palet',
         'kw',
         'isi',
-        'id_kayu_masuk',
+        'id_ukuran',
         'id_jenis_kayu',
         'id_produksi_dryer',
     ];
 
-    public function kayuMasuk()
+    public function ukuran()
     {
-        return $this->belongsTo(KayuMasuk::class, 'id_kayu_masuk');
+        return $this->belongsTo(Ukuran::class, 'id_ukuran');
     }
 
     public function jenisKayu()
