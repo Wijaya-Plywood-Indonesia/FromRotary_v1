@@ -43,6 +43,8 @@ class DokumenKayusTable
                     ->searchable(),
                 TextColumn::make('alamat_lengkap')
                     ->searchable()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('no_dokumen_legal')
+                    ->searchable()->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('latitude')
                     ->numeric()
                     ->sortable()->toggleable(isToggledHiddenByDefault: true),

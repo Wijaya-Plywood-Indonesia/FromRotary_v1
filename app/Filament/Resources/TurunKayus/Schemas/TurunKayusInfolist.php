@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Filament\Resources\ValidasiHasilDryers\Schemas;
+namespace App\Filament\Resources\TurunKayus\Schemas;
 
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
-class ValidasiHasilDryerForm
+class TurunKayusInfolist
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
             ->components([
-                //
+                TextEntry::make('kendala'),
             ]);
     }
 }

@@ -6,21 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class DetailMasuk extends Model
 {
-    protected $table = 'detail_masuk';
+    protected $table = 'detail_masuks';
 
     protected $fillable = [
         'no_palet',
         'kw',
         'isi',
-        'ukuran',
-        'jenis_kayu',
+        'id_ukuran',
+        'id_jenis_kayu',
         'id_produksi_dryer',
     ];
 
 
-    public function kayuMasuk()
+    public function ukuran()
     {
-        return $this->belongsTo(KayuMasuk::class, 'id_kayu_masuk');
+        return $this->belongsTo(Ukuran::class, 'id_ukuran');
     }
     public function jenisKayu()
     {

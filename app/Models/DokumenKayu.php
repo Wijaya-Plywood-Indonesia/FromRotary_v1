@@ -12,6 +12,7 @@ class DokumenKayu extends Model
     protected $fillable = [
         'nama_legal',
         'dokumen_legal',
+        'no_dokumen_legal',
         'upload_dokumen',
         'upload_ktp',
         'foto_lokasi',

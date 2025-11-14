@@ -18,10 +18,12 @@ use UnitEnum;
 class ValidasiPressDryerResource extends Resource
 {
     protected static ?string $model = ValidasiPressDryer::class;
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-    //grubping
-    protected static string|UnitEnum|null $navigationGroup = 'Dryer';
-    protected static ?int $navigationSort = 1;
+
 
     public static function form(Schema $schema): Schema
     {

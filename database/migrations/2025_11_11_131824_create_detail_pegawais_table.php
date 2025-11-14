@@ -16,16 +16,15 @@ return new class extends Migration {
             $table->string('tugas');
             $table->time('masuk')->nullable();
             $table->time('pulang')->nullable();
-
             $table->string('ijin')->nullable();
             $table->string('ket')->nullable();
 
             $table->foreignId('id_produksi_dryer')
 
-                  ->nullable()
-                  ->constrained('produksi_press_dryers')
-                  ->cascadeOnUpdate()
-                  ->restrictOnDelete();
+                ->nullable()
+                ->constrained('produksi_press_dryers')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
         });
     }
 

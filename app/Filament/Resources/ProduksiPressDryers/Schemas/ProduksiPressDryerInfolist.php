@@ -11,11 +11,9 @@ class ProduksiPressDryerInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('tanggal_produksi')
-                    ->numeric(),
+                TextEntry::make('tanggal_produksi'),
                 TextEntry::make('shift'),
                 TextEntry::make('kendala'),
-
             ]);
     }
 }

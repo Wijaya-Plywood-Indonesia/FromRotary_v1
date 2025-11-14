@@ -58,7 +58,7 @@ class DetailMesinsTable
                     ->relationship('produksiDryer', 'tanggal_produksi')
                     ->getOptionLabelFromRecordUsing(
                         fn($r) =>
-                        $r->tanggal_produksi->format('d M Y') . ' | ' . $r->shift
+                        $r?->tanggal_produksi->format('d M Y') . ' | ' . $r?->shift
                     ),
             ])
             ->recordActions([

@@ -16,6 +16,7 @@ class DokumenKayuInfolist
                     ->schema([
                         TextEntry::make('nama_legal')
                             ->label('Nama Legal'),
+
                         TextEntry::make('nama_tempat')
                             ->label('Nama Tempat'),
                         TextEntry::make('alamat_lengkap')
@@ -27,6 +28,8 @@ class DokumenKayuInfolist
                     ->schema([
                         TextEntry::make('dokumen_legal')
                             ->label('Dokumen Legal'),
+                        TextEntry::make('no_dokumen_legal')
+                            ->label('No Dokumen'),
                         TextEntry::make('upload_dokumen')
                             ->label('Upload Dokumen')
                             ->badge()

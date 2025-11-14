@@ -30,8 +30,12 @@ class DokumenKayuForm
                                 'SHM' => 'Sertifikat Hak Milik (SHM)',
                                 'Letter C' => 'Letter C',
                             ])
-                            ->required()
+
                             ->native(false),
+
+                        TextInput::make('no_dokumen_legal')
+                            ->label('No di Dokumen Legal')
+                        ,
 
                         FileUpload::make('upload_dokumen')
                             ->label('Upload Dokumen Legal')
@@ -39,7 +43,7 @@ class DokumenKayuForm
                             ->directory('sumber-kayu/dokumen')
                             ->nullable()
                             ->preserveFilenames()
-                            ->required(),
+                        ,
 
                         FileUpload::make('upload_ktp')
                             ->label('Upload KTP Pemilik')

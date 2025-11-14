@@ -17,6 +17,9 @@ class TurunKayu extends Model
         'tanggal',
         'kendala'
     ];
+    protected $casts = [
+        'tanggal' => 'datetime',
+    ];
 
     public function kayuMasuk()
     {
@@ -26,7 +29,6 @@ class TurunKayu extends Model
     {
         return $this->hasMany(DetailTurunKayu::class, 'id_turun_kayu');
     }
-
     public function tempatKayu(): HasMany
     {
         return $this->hasMany(TempatKayu::class, 'id_turun_kayu');

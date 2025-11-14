@@ -18,9 +18,12 @@ use Filament\Tables\Table;
 class PegawaiDryerResource extends Resource
 {
     protected static ?string $model = DetailPegawai::class;
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
-    protected static string|UnitEnum|null $navigationGroup = 'Dryer';
 
     public static function form(Schema $schema): Schema
     {
