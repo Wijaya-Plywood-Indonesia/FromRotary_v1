@@ -21,7 +21,7 @@ class UserResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserCircle;
     //Ngelompokin.
-    protected static string|UnitEnum|null $navigationGroup = 'Pengguna';
+    protected static string|UnitEnum|null $navigationGroup = 'Akses Pengguna';
 
     public static function form(Schema $schema): Schema
     {

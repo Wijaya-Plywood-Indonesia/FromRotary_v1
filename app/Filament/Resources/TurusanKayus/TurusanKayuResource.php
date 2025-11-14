@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class TurusanKayuResource extends Resource
 {
@@ -22,6 +23,7 @@ class TurusanKayuResource extends Resource
     protected static ?string $navigationLabel = 'Turusan Kayu';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|UnitEnum|null $navigationGroup = 'Kayu';
 
     public static function form(Schema $schema): Schema
     {

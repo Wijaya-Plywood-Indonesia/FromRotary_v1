@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class DetailMesinResource extends Resource
 {
@@ -20,6 +21,7 @@ class DetailMesinResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Dryer';
     public static function form(Schema $schema): Schema
     {
         return DetailMesinForm::configure($schema);

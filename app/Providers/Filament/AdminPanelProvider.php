@@ -69,28 +69,40 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->plugins([
-                FilamentShieldPlugin::make(),
+                FilamentShieldPlugin::make()
+                    ->navigationGroup('Akses Pengguna'),
             ])
             ->authMiddleware([
                 Authenticate::class,
             ])
             ->sidebarCollapsibleOnDesktop()
-            // ->navigation(function () {
-            //     return [
-            //         NavigationGroup::make()
-            //             ->label('Data Master')
-            //             ->icon('heroicon-o-rectangle-stack')
-            //             ->collapsible(false)
-            //             ->items([
-            //                 PegawaiResource::getNavigationItem(),
-            //                 MesinResource::getNavigationItem(),
-            //                 KategoriMesinResource::getNavigationItem(),
-            //                 JenisKayuResource::getNavigationItem(),
-            //                 UkuranResource::getNavigationItem(),
-            //                 LahanResource::getNavigationItem(),
-            //             ]),
-            //     ];
-            // })
+
+            ->navigationGroups([
+
+                //Kategori Menu Produksi
+
+                NavigationGroup::make('Rotary')
+                    ->icon('heroicon-o-cog'),
+
+                NavigationGroup::make('Dryer')
+                    ->icon('heroicon-o-fire'),
+
+                NavigationGroup::make('Kayu')
+                    ->icon('heroicon-o-circle-stack'),
+                //Laporan 
+                NavigationGroup::make('Laporan')
+                    ->icon('heroicon-o-clipboard-document-list'),
+
+                // Kategori Per Master-an
+                NavigationGroup::make('Master')
+                    ->icon('heroicon-o-swatch'),
+
+                NavigationGroup::make('Master Akun')
+                    ->icon('heroicon-o-inbox-stack'),
+
+                NavigationGroup::make('Akses Pengguna')
+                    ->icon('heroicon-o-lock-closed'),
+            ])
         ;
 
     }
