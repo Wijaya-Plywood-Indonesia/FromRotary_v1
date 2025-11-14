@@ -15,7 +15,8 @@ class DetailTurunKayu extends Model
         'id_pegawai',
         'id_kayu_masuk',
         'status',
-        'foto'
+        'foto',
+        'nama_supir'
     ];
     protected $casts = [
         'id_turun_kayus' => 'integer',
