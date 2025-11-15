@@ -22,6 +22,7 @@ use Illuminate\Validation\ValidationException;
 
 class DetailPegawaisRelationManager extends RelationManager
 {
+        protected static ?string $title = 'Pegawai';
     protected static string $relationship = 'detailPegawais';   
 
     public static function timeOptions(): array
@@ -50,10 +51,16 @@ class DetailPegawaisRelationManager extends RelationManager
                     ->searchable()
                     ->required(),
 
-            TextInput::make('tugas')
+            Select::make('tugas')
                 ->label('Tugas')
+                ->options([
+                        'operator' => 'Operator',
+                        'asistenoperator' => 'Asisten Operator',
+                        'dll' => 'Dll',
+                    ])
                 ->required()
-                ->maxLength(255),
+                ->native(false)
+                ->searchable(),
 
             Select::make('masuk')
                     ->label('Jam Masuk')
@@ -115,13 +122,15 @@ class DetailPegawaisRelationManager extends RelationManager
                 ->time('H:i'), // Format waktu agar rapi
             
             TextColumn::make('ijin')
-                ->searchable(),
+                ->searchable()
+                ->toggleable(isToggledHiddenByDefault: true),
             
             TextColumn::make('ket')
                 ->label('Keterangan')
                 ->limit(50) // Batasi teks agar tidak terlalu panjang
                 ->tooltip(fn ($record) => $record->ket) // Tampilkan teks penuh saat di-hover
-                ->searchable(),
+                ->searchable()
+                ->toggleable(isToggledHiddenByDefault: true),
         ])
         ->filters([
             // Tempat filter jika Anda membutuhkannya

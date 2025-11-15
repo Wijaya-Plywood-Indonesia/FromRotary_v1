@@ -15,11 +15,20 @@ class ProduksiPressDryerForm
     {
         return $schema
             ->components([
-                DatePicker::make('tgl_produksi')
+                DatePicker::make('tanggal_produksi')
                     ->label('Tanggal Produksi')
                     ->default(fn() => now()->addDay()) // 👈 default besok
                     ->displayFormat('d F Y') // 👈 tampil seperti: 01 Januari 2025
                     ->required(),
+                    
+                Select::make('shift')
+                ->label('Shift')
+                ->options([
+                    'PAGI' => 'Pagi',
+                    'MALAM' => 'Malam',
+                ])
+                ->required()
+                ->native(false),
             ]);
     }
 }

@@ -19,6 +19,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class ValidasiPressDryersRelationManager extends RelationManager
 {
+        protected static ?string $title = 'Validasi';
     protected static string $relationship = 'validasiPressDryers';
 
     public function form(Schema $schema): Schema

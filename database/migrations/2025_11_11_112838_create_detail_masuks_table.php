@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('detail_masuk', function (Blueprint $table) {
             $table->id();
-            $table->string('no_palet');
+            $table->integer('no_palet');
             $table->string('kw');
             $table->string('isi');
             $table->foreignId('id_ukuran')

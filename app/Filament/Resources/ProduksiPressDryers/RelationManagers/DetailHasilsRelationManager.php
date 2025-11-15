@@ -19,6 +19,7 @@ use App\Models\Ukuran;
 
 class DetailHasilsRelationManager extends RelationManager
 {
+    protected static ?string $title = 'Hasil';
     protected static string $relationship = 'detailHasils';
 
     public function form(Schema $schema): Schema
@@ -27,31 +28,37 @@ class DetailHasilsRelationManager extends RelationManager
             ->schema([
                 TextInput::make('no_palet')
                     ->label('Nomor Palet')
-                    ->required()
-                    ->maxLength(255),
+                    ->numeric()
+                    ->required(),
 
                 // Relasi ke Ukuran (id_ukuran)
                 Select::make('id_ukuran')
                     ->label('Ukuran Kayu')
-                    ->relationship('ukuran', 'id')
-                    ->getOptionLabelFromRecordUsing(fn($record) => $record->nama_ukuran)
-                    ->searchable()
-                    ->preload()
-                    ->getSearchResultsUsing(function ($query) {
-                        return Ukuran::where('panjang', 'like', "%{$query}%")
-                            ->orWhere('lebar', 'like', "%{$query}%")
-                            ->orWhere('tebal', 'like', "%{$query}%")
+                    ->options(function () {
+                        $produksi = $this->getOwnerRecord();
+
+                        return \App\Models\DetailMasuk::where('id_produksi_dryer', $produksi->id)
+                            ->with('ukuran')
                             ->get()
-                            ->mapWithKeys(fn($item) => [$item->id => $item->nama_ukuran]);
+                            ->pluck('ukuran.nama_ukuran', 'id_ukuran')
+                            ->unique();
                     })
+                    ->searchable()
                     ->required(),
 
                 // Relasi ke Jenis Kayu (id_jenis_kayu)
                 Select::make('id_jenis_kayu')
                     ->label('Jenis Kayu')
-                    ->relationship('jenisKayu', 'nama_kayu')
+                    ->options(function () {
+                        $produksi = $this->getOwnerRecord();
+
+                        return \App\Models\DetailMasuk::where('id_produksi_dryer', $produksi->id)
+                            ->with('jenisKayu')
+                            ->get()
+                            ->pluck('jenisKayu.nama_kayu', 'id_jenis_kayu')
+                            ->unique();
+                    })
                     ->searchable()
-                    ->preload()
                     ->required(),
 
                 TextInput::make('kw')

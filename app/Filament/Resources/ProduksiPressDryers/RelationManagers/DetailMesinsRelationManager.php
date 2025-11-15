@@ -18,6 +18,7 @@ use Filament\Tables\Table;
 
 class DetailMesinsRelationManager extends RelationManager
 {
+        protected static ?string $title = 'Mesin Dryer';
     protected static string $relationship = 'detailMesins';
 
     public function form(Schema $schema): Schema

@@ -18,6 +18,7 @@ use App\Models\Ukuran;
 
 class DetailMasuksRelationManager extends RelationManager
 {
+        protected static ?string $title = 'Modal';
     protected static string $relationship = 'detailMasuks';
 
     public function form(Schema $schema): Schema
@@ -26,8 +27,8 @@ class DetailMasuksRelationManager extends RelationManager
             ->schema([
                 TextInput::make('no_palet')
                     ->label('Nomor Palet')
-                    ->required()
-                    ->maxLength(255),
+                    ->numeric()
+                    ->required(),
 
                 // Relasi ke Jenis Kayu
                 Select::make('id_jenis_kayu')
@@ -40,18 +41,12 @@ class DetailMasuksRelationManager extends RelationManager
                 // Relasi ke Kayu Masuk (Optional)
                 Select::make('id_ukuran')
                     ->label('Ukuran')
-                    ->relationship('ukuran', 'id')
-                    ->getOptionLabelFromRecordUsing(fn($record) => $record->nama_ukuran)
+                    ->options(
+                        Ukuran::all()
+                            ->pluck('dimensi', 'id') // ← memanggil accessor getDimensiAttribute()
+                    )
                     ->searchable()
-                    ->preload()
-                    ->getSearchResultsUsing(function ($query) {
-                        return Ukuran::where('panjang', 'like', "%{$query}%")
-                            ->orWhere('lebar', 'like', "%{$query}%")
-                            ->orWhere('tebal', 'like', "%{$query}%")
-                            ->get()
-                            ->mapWithKeys(fn ($item) => [$item->id => $item->nama_ukuran]);
-                    })
-                    ->nullable(), // Sesuai dengan migrasi
+                    ->required(), // Sesuai dengan migrasi
 
                 TextInput::make('kw')
                     ->label('KW (Kualitas)')
