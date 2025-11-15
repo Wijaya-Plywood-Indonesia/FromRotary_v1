@@ -2,10 +2,13 @@
 
 namespace App\Filament\Resources\HargaKayus\Schemas;
 
+use App\Models\HargaKayu;
 use App\Models\JenisKayu;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Utilities\Get;
 
 class HargaKayuForm
 {
@@ -30,7 +33,56 @@ class HargaKayuForm
                     ->numeric(),
                 TextInput::make('diameter_terbesar')
                     ->label('Diameter Terbesar (cm)')
-                    ->numeric(),
+                    ->numeric()
+                    ->required()
+                    ->rule(function (Get $get) {
+                        return function (string $attribute, $value, \Closure $fail) use ($get) {
+
+                            $jenis = $get('id_jenis_kayu');
+                            $grade = $get('grade');
+                            $panjang = $get('panjang');
+                            $min = $get('diameter_terkecil');
+                            $max = $value;
+
+                            if (!$jenis || !$grade || !$panjang || !$min || !$max) {
+                                return;
+                            }
+
+                            $overlap = HargaKayu::query()
+                                ->where('id_jenis_kayu', $jenis)
+                                ->where('grade', $grade)
+                                ->where('panjang', $panjang)
+                                ->where(function ($q) use ($min, $max) {
+                                    $q->whereBetween('diameter_terkecil', [$min, $max])
+                                        ->orWhereBetween('diameter_terbesar', [$min, $max])
+                                        ->orWhere(function ($q2) use ($min, $max) {
+                                            $q2->where('diameter_terkecil', '<=', $min)
+                                                ->where('diameter_terbesar', '>=', $max);
+                                        });
+                                })
+                                ->when($get('id'), fn($q) => $q->where('id', '!=', $get('id')))
+                                ->first();
+
+                            if ($overlap) {
+
+                                // 🔥 NOTIFIKASI DETAIL HARGA YANG BENTROK
+                                Notification::make()
+                                    ->title('Harga sudah terdaftar!')
+                                    ->body("
+                        Terbentur dengan data:
+                        <br>Diameter: {$overlap->diameter_terkecil} - {$overlap->diameter_terbesar} cm
+                        <br>Harga: Rp " . number_format($overlap->harga_beli, 0, ',', '.') . "
+                    ")
+                                    ->danger()
+                                    ->persistent() // agar tidak hilang sendiri
+                                    ->send();
+
+                                // ❌ GAGALKAN VALIDSASI
+                                $fail('Range diameter ini bertumpukan dengan data harga yang sudah ada.');
+                            }
+                        };
+                    })
+                ,
                 TextInput::make('harga_beli')
                     ->label('Harga Beli Per Batang')
                     ->required()

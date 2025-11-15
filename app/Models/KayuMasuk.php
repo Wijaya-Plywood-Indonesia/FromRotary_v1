@@ -74,4 +74,8 @@ class KayuMasuk extends Model
     {
         return $this->hasMany(DetailMasuk::class, 'id_kayu_masuk');
     }
+    public function notakayu()
+    {
+        return $this->hasMany(DetailMasuk::class, 'id_kayu_masuk');
+    }
 }

@@ -6,6 +6,7 @@ use App\Filament\Resources\NotaKayus\Pages\CreateNotaKayu;
 use App\Filament\Resources\NotaKayus\Pages\EditNotaKayu;
 use App\Filament\Resources\NotaKayus\Pages\ListNotaKayus;
 use App\Filament\Resources\NotaKayus\Pages\ViewNotaKayu;
+use App\Filament\Resources\NotaKayus\RelationManagers\KayuMasukRelationManager;
 use App\Filament\Resources\NotaKayus\Schemas\NotaKayuForm;
 use App\Filament\Resources\NotaKayus\Schemas\NotaKayuInfolist;
 use App\Filament\Resources\NotaKayus\Tables\NotaKayusTable;
@@ -41,7 +42,8 @@ class NotaKayuResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+                //
+            KayuMasukRelationManager::class,
         ];
     }
 
