@@ -22,6 +22,12 @@ class DetailHasilsRelationManager extends RelationManager
     protected static ?string $title = 'Hasil';
     protected static string $relationship = 'detailHasils';
 
+    // FUNGSI BARU UNTUK MEMUNCULKAN TOMBOL DI HALAMAN VIEW
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema

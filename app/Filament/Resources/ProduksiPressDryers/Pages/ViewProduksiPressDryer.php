@@ -10,6 +10,12 @@ class ViewProduksiPressDryer extends ViewRecord
 {
     protected static string $resource = ProduksiPressDryerResource::class;
 
+    // 🔥 WAJIB: tampilkan relation manager di halaman View
+    protected static bool $showRelationManagers = true;
+
+    // 🔥 WAJIB: izinkan tombol-tombol header tampil (termasuk CREATE)
+    protected static bool $canViewAny = true;
+
     protected function getHeaderActions(): array
     {
         return [
