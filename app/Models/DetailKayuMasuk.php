@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class DetailKayuMasuk extends Model
 {
@@ -18,7 +19,28 @@ class DetailKayuMasuk extends Model
         'grade',
         'jumlah_batang',
         'keterangan',
+        'created_by',
+        'updated_by',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (Auth::check()) {
+                $model->created_by = Auth::id();
+                $model->updated_by = Auth::id();
+            }
+        });
+
+        static::updating(function ($model) {
+            if (Auth::check()) {
+                $model->updated_by = Auth::id();
+            }
+        });
+    }
+
 
     /**
      * Relasi ke model KayuMasuk
@@ -97,5 +119,15 @@ class DetailKayuMasuk extends Model
             'total_kubikasi' => $totalKubikasi,
         ];
     }
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
 
 }

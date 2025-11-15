@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('detail_hasil', function (Blueprint $table) {
+        Schema::create('detail_hasils', function (Blueprint $table) {
             $table->id();
             $table->integer('no_palet');
             $table->integer('kw');
@@ -39,6 +39,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('detail_hasil');
+        Schema::dropIfExists('detail_hasils');
     }
 };
