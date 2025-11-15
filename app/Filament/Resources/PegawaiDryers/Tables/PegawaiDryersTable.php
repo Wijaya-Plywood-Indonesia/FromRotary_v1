@@ -33,11 +33,13 @@ class PegawaiDryersTable
                     ->dateTime('d M Y H:i'),
 
                 TextColumn::make('ijin')
-                    ->label('Ijin'),
+                    ->label('Ijin')
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 TextColumn::make('ket')
                     ->label('Keterangan')
-                    ->limit(30),
+                    ->limit(30)
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

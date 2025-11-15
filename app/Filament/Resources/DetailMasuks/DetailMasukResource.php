@@ -18,6 +18,10 @@ use UnitEnum;
 class DetailMasukResource extends Resource
 {
     protected static ?string $model = DetailMasuk::class;
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     protected static string|UnitEnum|null $navigationGroup = 'Dryer';

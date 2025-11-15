@@ -2,18 +2,19 @@
 
 namespace App\Filament\Resources\ProduksiPressDryers\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
-use Filament\Forms\Components\DatePicker;
-use Filament\Notifications\Notification;
-use Filament\Actions\Action;
-use Filament\Actions\ViewAction;
-use Filament\Actions\DeleteAction;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Textarea;
+use Filament\Notifications\Notification;
 
 class ProduksiPressDryersTable
 {
@@ -24,53 +25,58 @@ class ProduksiPressDryersTable
                 TextColumn::make('tanggal_produksi')
                     ->date()
                     ->sortable(),
+
                 TextColumn::make('shift')
                     ->label('Shift')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'PAGI' => 'success',
+                        'MALAM' => 'gray',
+                    })
                     ->searchable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make('updated_at')
-                    ->dateTime()
+                TextColumn::make('kendala')
+                    ->label('Kendala')
+                    ->limit(50)
+                    ->tooltip(fn (string $state): string => $state)
+                    ->toggleable(isToggledHiddenByDefault: true),
+                
+                TextColumn::make('created_at')
+                    ->label('Dibuat Pada')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Filter::make('tanggal_produksi')
-                    ->schema([
-                        DatePicker::make('from')
-                            ->label('Dari Tanggal'),
-                        DatePicker::make('until')
-                            ->label('Sampai Tanggal'),
+                SelectFilter::make('shift')
+                    ->options([
+                        'PAGI' => 'Pagi',
+                        'MALAM' => 'Malam',
                     ])
-                    ->query(function ($query, array $data): void {
-                        $query
+                    ->label('Filter Shift'),
+                
+                Filter::make('tanggal_produksi')
+                    ->form([
+                        \Filament\Forms\Components\DatePicker::make('from')
+                            ->placeholder('Dari Tanggal'),
+                        \Filament\Forms\Components\DatePicker::make('until')
+                            ->placeholder('Sampai Tanggal'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
                             ->when(
                                 $data['from'],
-                                fn($query, $date) => $query->whereDate('tanggal_produksi', '>=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('tanggal_produksi', '>=', $date),
                             )
                             ->when(
                                 $data['until'],
-                                fn($query, $date) => $query->whereDate('tanggal_produksi', '<=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('tanggal_produksi', '<=', $date),
                             );
-                    })
-                    ->indicateUsing(function (array $data): array {
-                        $indicators = [];
-
-                        if ($data['from'] ?? null) {
-                            $indicators['from'] = 'Dari: ' . \Carbon\Carbon::parse($data['from'])->format('d M Y');
-                        }
-
-                        if ($data['until'] ?? null) {
-                            $indicators['until'] = 'Sampai: ' . \Carbon\Carbon::parse($data['until'])->format('d M Y');
-                        }
-
-                        return $indicators;
                     }),
             ])
             ->recordActions([
+                //  ViewAction::make(),
+                //   EditAction::make(),
                 Action::make('kelola_kendala')
                     ->label(fn($record) => $record->kendala ? 'Perbarui Kendala' : 'Tambah Kendala')
                     ->icon(fn($record) => $record->kendala ? 'heroicon-o-pencil-square' : 'heroicon-o-plus')

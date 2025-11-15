@@ -2,9 +2,6 @@
 
 namespace App\Filament\Resources\DetailHasils\Schemas;
 
-use App\Models\KayuMasuk;
-use App\Models\JenisKayu;
-use App\Models\ProduksiPressDryer;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;

@@ -6,6 +6,8 @@ use App\Models\DetailMesin;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -14,55 +16,33 @@ class DetailMesinsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('id')
-            ->query(DetailMesin::query())
             ->columns([
-                // MESIN DRYER
-                TextColumn::make('mesin.nama_mesin')
-                    ->label('Mesin')
-                    ->formatStateUsing(
-                        fn($state, $record) =>
-                        $record->mesin
-                        ? $state . ' (' . $record->mesin->kategoriMesin?->nama_kategori_mesin . ')'
-                        : '-'
-                    )
+                TextColumn::make('mesin.nama_mesin') // Asumsi: relasi 'mesinDryer' & kolom 'nama'
+                    ->label('Mesin Dryer')
                     ->searchable()
-                    ->sortable(),
+                    ->placeholder('N/A'), // Teks jika mesin tidak dipilih (nullable)
 
-                // KATEGORI (OPSIONAL)
-                TextColumn::make('kategoriMesin.nama_kategori_mesin')
-                    ->label('Kategori')
-                    ->placeholder('-')
-                    ->searchable(),
-
-                // JAM KERJA
                 TextColumn::make('jam_kerja_mesin')
-                    ->label('Jam Kerja')
+                    ->label('Jam Kerja Mesin')
                     ->searchable(),
 
-                // PRODUKSI
-                TextColumn::make('produksiDryer.tanggal_produksi')
-                    ->label('Tanggal')
-                    ->date('d M Y'),
-
-                TextColumn::make('produksiDryer.shift')
-                    ->label('Shift')
-                    ->badge()
-                    ->color(fn($state) => $state === 'PAGI' ? 'success' : 'warning'),
+                TextColumn::make('created_at')
+                    ->label('Dibuat Pada')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true), // Sembunyikan by default
             ])
             ->filters([
-                SelectFilter::make('id_kategori_mesin')
-                    ->relationship('kategoriMesin', 'nama_kategori_mesin'),
-
-                SelectFilter::make('id_produksi_dryer')
-                    ->relationship('produksiDryer', 'tanggal_produksi')
-                    ->getOptionLabelFromRecordUsing(
-                        fn($r) =>
-                        $r->tanggal_produksi->format('d M Y') . ' | ' . $r->shift
-                    ),
+                // Tempat filter jika Anda membutuhkannya
+            ])
+            ->headerActions([
+                // INI ADALAH TOMBOL UNTUK MEMBUAT DATA BARU
+                CreateAction::make(),
             ])
             ->recordActions([
+                // Tombol di setiap baris (Edit, Delete)
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

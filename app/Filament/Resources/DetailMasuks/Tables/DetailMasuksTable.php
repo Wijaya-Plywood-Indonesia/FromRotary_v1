@@ -6,6 +6,8 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Table;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
 
 use App\Models\DetailMasuk;
 use Filament\Tables\Columns\TextColumn;
@@ -16,86 +18,40 @@ class DetailMasuksTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->query(DetailMasuk::query())
             ->columns([
-                // NO PALET
                 TextColumn::make('no_palet')
                     ->label('No. Palet')
-                    ->searchable()
-                    ->sortable()
-                    ->weight('medium'),
-
-                // KW
-                TextColumn::make('kw')
-                    ->label('KW')
-                    ->searchable()
-                    ->sortable(),
-
-                // ISI
-                TextColumn::make('isi')
-                    ->label('Isi')
-                    ->searchable()
-                    ->sortable(),
-
-                // KAYU MASUK (RELASI)
-                TextColumn::make('kayuMasuk.seri')
-                    ->label('Seri Kayu')
-                    ->placeholder('-')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                // JENIS KAYU (RELASI)
-                TextColumn::make('jenisKayu.nama_kayu')
-                    ->label('Jenis Kayu')
-                    ->placeholder('-')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                // PRODUKSI DRYER (RELASI)
-                TextColumn::make('produksiDryer.tanggal_produksi')
-                    ->label('Tanggal Produksi')
-                    ->date('d M Y')
-                    ->sortable()
                     ->searchable(),
 
-                TextColumn::make('produksiDryer.shift')
-                    ->label('Shift')
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'PAGI' => 'success',
-                        'MALAM' => 'warning',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn(string $state): string => $state === 'PAGI' ? 'PAGI' : 'MALAM'),
+                TextColumn::make('jenisKayu.nama_kayu')
+                    ->label('Jenis Kayu')
+                    ->searchable()
+                    ->placeholder('N/A'),
 
-                // TANGGAL DIBUAT
-                TextColumn::make('created_at')
-                    ->label('Dibuat')
-                    ->dateTime('d M Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('Ukuran.nama_ukuran')
+                    ->label('Ukuran')
+                    ->searchable(false)
+                    ->placeholder('Ukuran'),
+
+                TextColumn::make('kw')
+                    ->label('Kualitas (KW)')
+                    ->searchable(),
+
+                TextColumn::make('isi')
+                    ->label('Isi'),
+
             ])
             ->filters([
-                SelectFilter::make('id_produksi_dryer')
-                    ->label('Produksi Dryer')
-                    ->relationship('produksiDryer', 'tanggal_produksi')
-                    ->getOptionLabelFromRecordUsing(
-                        fn($record) =>
-                        $record->tanggal_produksi->format('d M Y') . ' | ' . $record->shift
-                    )
-                    ->searchable()
-                    ->preload(),
-
-                SelectFilter::make('id_jenis_kayu')
-                    ->label('Jenis Kayu')
-                    ->relationship('jenisKayu', 'nama_kayu')
-                    ->searchable()
-                    ->preload(),
+                // Tempat filter jika Anda membutuhkannya
+            ])
+            ->headerActions([
+                // INI ADALAH TOMBOL UNTUK MEMBUAT DATA BARU
+                CreateAction::make(),
             ])
             ->recordActions([
+                // Tombol di setiap baris (Edit, Delete)
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

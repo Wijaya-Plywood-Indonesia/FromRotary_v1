@@ -10,16 +10,21 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('detail_mesin', function (Blueprint $table) {
+        Schema::create('detail_pegawai', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_mesin_dryer')->nullable();
-            $table->integer('jam_kerja_mesin')->default(12);
-            // Foreign Key ke tabel induk
+            $table->unsignedBigInteger('id_pegawai');
+            $table->string('tugas');
+            $table->time('masuk')->nullable();
+            $table->time('pulang')->nullable();
+            $table->string('ijin')->nullable();
+            $table->string('ket')->nullable();
+
             $table->foreignId('id_produksi_dryer')
+
+                ->nullable()
                 ->constrained('produksi_press_dryers')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->timestamps();
         });
     }
 
@@ -28,6 +33,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('detail_mesin');
+        Schema::dropIfExists('detail_pegawai');
     }
 };
