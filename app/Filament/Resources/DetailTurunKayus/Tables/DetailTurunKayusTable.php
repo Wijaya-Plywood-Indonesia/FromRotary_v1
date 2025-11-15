@@ -19,7 +19,7 @@ class DetailTurunKayusTable
             ->query(
                 DetailTurunKayu::query()
                     ->with([
-                        'pegawai',
+                        'pegawaiTurunKayu.pegawai',
                         'kayuMasuk.penggunaanSupplier',
                         'kayuMasuk.penggunaanKendaraanSupplier'
                     ])
@@ -27,20 +27,35 @@ class DetailTurunKayusTable
             ->columns([  // BENAR: columns(), BUKAN components()
 
                 // 1. PEKERJA
-                TextColumn::make('pegawai.nama_pegawai')
+                TextColumn::make('pegawai')
                     ->label('Pekerja')
-                    ->formatStateUsing(function ($record) {
-                        if (!$record->pegawai) {
+                    ->getStateUsing(function ($record) {
+                        $pegawais = $record->pegawaiTurunKayu->pluck('pegawai')->filter();
+
+                        if ($pegawais->isEmpty()) {
                             return '—';
                         }
 
-                        // Tampilkan kode + nama pegawai (hanya 1 pegawai per baris)
-                        return $record->pegawai->kode_pegawai . ' - ' . $record->pegawai->nama_pegawai;
+                        return $pegawais->map(function ($pegawai) {
+                            return $pegawai->kode_pegawai . ' - ' . $pegawai->nama_pegawai;
+                        })->implode(', ');
                     })
                     ->badge()
-                    ->searchable()
-                    ->sortable(),
-
+                    ->searchable(
+                        query: fn($query, $search) => $query->whereHas(
+                            'pegawaiTurunKayu.pegawai',
+                            fn($q) => $q
+                                ->where('nama_pegawai', 'like', "%{$search}%")
+                                ->orWhere('kode_pegawai', 'like', "%{$search}%")
+                        )
+                    )
+                    ->sortable(
+                        query: fn($query, $direction) => $query
+                            ->join('pegawai_turun_kayus', 'detail_turun_kayus.id', '=', 'pegawai_turun_kayus.id_detail_turun_kayu')
+                            ->join('pegawais', 'pegawai_turun_kayus.id_pegawai', '=', 'pegawais.id')
+                            ->orderBy('pegawais.nama_pegawai', $direction)
+                            ->select('detail_turun_kayus.*')
+                    ),
                 // 2. SUPPLIER
                 TextColumn::make('kayuMasuk.penggunaanSupplier.nama_supplier')
                     ->label('Supplier')
@@ -53,6 +68,11 @@ class DetailTurunKayusTable
 
                 TextColumn::make('nama_supir')
                     ->label('Nama Supir')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('jumlah_kayu')
+                    ->label('Jumlah Kayu')
                     ->searchable()
                     ->sortable(),
 

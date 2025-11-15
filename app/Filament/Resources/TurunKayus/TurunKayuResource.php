@@ -9,6 +9,8 @@ use App\Filament\Resources\TurunKayus\RelationManagers\DetailTurunKayuRelationMa
 use App\Filament\Resources\TurunKayus\Schemas\TurunKayuForm;
 use App\Filament\Resources\TurunKayus\Schemas\TurunKayusInfolist;
 use App\Filament\Resources\TurunKayus\Tables\TurunKayusTable;
+use App\Filament\Resources\TurunKayus\Pages\ViewTurunKayu;
+use App\Filament\Resources\TurunKayus\RelationManagers\PegawaiTurunKayuRelationManager;
 use App\Models\TurunKayu;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -42,7 +44,7 @@ class TurunKayuResource extends Resource
     public static function getRelations(): array
     {
         return [
-                //
+            PegawaiTurunKayuRelationManager::class,
             DetailTurunKayuRelationManager::class,
         ];
     }
@@ -52,7 +54,10 @@ class TurunKayuResource extends Resource
         return [
             'index' => ListTurunKayus::route('/'),
             'create' => CreateTurunKayu::route('/create'),
+            'view' => ViewTurunKayu::route('/{record}'),
             'edit' => EditTurunKayu::route('/{record}/edit'),
         ];
     }
 }
+
+
