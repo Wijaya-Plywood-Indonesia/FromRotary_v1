@@ -38,14 +38,16 @@ class NotaKayusTable
                 TextColumn::make('penanggung_jawab')
                     ->label('PJ')
                     ->searchable(),
-                TextColumn::make('total_summary')
-                    ->label('Rekap Turusan')
+
+                //Dari Turusan ROmbongan
+                TextColumn::make('total_summary2')
+                    ->label('Rekap Turusan 1')
                     ->getStateUsing(function ($record) {
                         if (!$record->kayuMasuk) {
                             return "0 Batang\n0.0000 m³";
                         }
 
-                        $total = DetailTurusanKayu::hitungTotalByKayuMasuk($record->kayuMasuk->id);
+                        $total = DetailKayuMasuk::hitungTotalByKayuMasuk($record->kayuMasuk->id);
                         $batang = number_format($total['total_batang']);
                         $kubikasi = number_format($total['total_kubikasi'], 4);
 
@@ -56,14 +58,15 @@ class NotaKayusTable
                     ->formatStateUsing(fn(string $state) => str_replace("\n", '<br>', e($state)))
                     ->html() // penting agar <br> terbaca sebagai baris baru
                     ->alignCenter(),
-                TextColumn::make('total_summary2')
+                //dari turusan manual
+                TextColumn::make('total_summary')
                     ->label('Rekap Turusan 2')
                     ->getStateUsing(function ($record) {
                         if (!$record->kayuMasuk) {
                             return "0 Batang\n0.0000 m³";
                         }
 
-                        $total = DetailKayuMasuk::hitungTotalByKayuMasuk($record->kayuMasuk->id);
+                        $total = DetailTurusanKayu::hitungTotalByKayuMasuk($record->kayuMasuk->id);
                         $batang = number_format($total['total_batang']);
                         $kubikasi = number_format($total['total_kubikasi'], 4);
 
@@ -152,9 +155,9 @@ class NotaKayusTable
                 EditAction::make(),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                // BulkActionGroup::make([
+                //     DeleteBulkAction::make(),
+                // ]),
             ]);
     }
 }
