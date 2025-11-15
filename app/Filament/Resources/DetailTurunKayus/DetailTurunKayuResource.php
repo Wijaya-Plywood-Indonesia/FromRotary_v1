@@ -28,6 +28,10 @@ class DetailTurunKayuResource extends Resource
     {
         return DetailTurunKayusTable::configure($table);
     }
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 
 
     public static function getRelations(): array
