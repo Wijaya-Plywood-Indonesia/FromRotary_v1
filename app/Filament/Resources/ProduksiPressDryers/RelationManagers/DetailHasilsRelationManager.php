@@ -53,10 +53,11 @@ class DetailHasilsRelationManager extends RelationManager
                         $produksi = $this->getOwnerRecord();
 
                         return \App\Models\DetailMasuk::where('id_produksi_dryer', $produksi->id)
-                            ->with('jenisKayu')
-                            ->get()
-                            ->pluck('jenisKayu.nama_kayu', 'id_jenis_kayu')
-                            ->unique();
+    ->select('id_jenis_kayu')
+    ->distinct()
+    ->with('jenisKayu:id,nama_kayu')
+    ->get()
+    ->pluck('jenisKayu.nama_kayu', 'id_jenis_kayu');
                     })
                     ->searchable()
                     ->required(),

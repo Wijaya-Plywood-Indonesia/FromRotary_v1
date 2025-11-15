@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ProduksiPressDryers\RelationManagers;
 use App\Models\Pegawai;
 use App\Models\DetailPegawai;
 use Carbon\CarbonPeriod;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -140,10 +141,24 @@ class DetailPegawaisRelationManager extends RelationManager
             CreateAction::make(),
         ])
         ->recordActions([
-            // Tombol di setiap baris (Edit, Delete)
-            EditAction::make(),
-            DeleteAction::make(),
-        ])
+    EditAction::make(),
+    DeleteAction::make(),
+
+    // ➕ Tambah / Edit Ijin & Keterangan
+    Action::make('aturIjin')
+    ->label(fn($record) => $record->ijin ? 'Edit Ijin' : 'Tambah Ijin')
+    ->icon('heroicon-o-pencil-square')
+    ->form([
+        TextInput::make('ijin')->label('Ijin'),
+        Textarea::make('ket')->label('Keterangan'),
+    ])
+    ->action(function ($record, array $data) {
+        $record->update([
+            'ijin' => $data['ijin'],
+            'ket'  => $data['ket'],
+        ]);
+    })
+])
         ->toolbarActions([
             BulkActionGroup::make([
                 DeleteBulkAction::make(),

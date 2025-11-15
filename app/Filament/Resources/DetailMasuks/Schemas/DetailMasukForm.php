@@ -6,64 +6,51 @@ use Filament\Schemas\Schema;
 use App\Models\KayuMasuk;
 use App\Models\JenisKayu;
 use App\Models\ProduksiPressDryer;
+use App\Models\Ukuran;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+
 class DetailMasukForm
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
-            ->components([
+            ->schema([
                 TextInput::make('no_palet')
-                    ->label('No. Palet')
-                    ->required()
-                    ->maxLength(255)
-                    ->placeholder('PLT-001'),
+                    ->label('Nomor Palet')
+                    ->numeric()
+                    ->required(),
 
-                // KW
+                // Relasi ke Jenis Kayu
+                Select::make('id_jenis_kayu')
+                    ->label('Jenis Kayu')
+                    ->options(
+                        JenisKayu::orderBy('nama_kayu')->pluck('nama_kayu', 'id')
+                    )
+                    ->searchable()
+                    ->required(),
+
+                // Relasi ke Kayu Masuk (Optional)
+                Select::make('id_ukuran')
+                    ->label('Ukuran')
+                    ->options(
+                        Ukuran::all()
+                            ->pluck('dimensi', 'id') // ← memanggil accessor getDimensiAttribute()
+                    )
+                    ->searchable()
+                    ->required(), // Sesuai dengan migrasi
+
                 TextInput::make('kw')
-                    ->label('KW')
+                    ->label('KW (Kualitas)')
                     ->required()
                     ->maxLength(255)
-                    ->placeholder('KW1'),
+                    ->placeholder('Cth: 1, 2, 3,dll.'),
 
-                // ISI
                 TextInput::make('isi')
                     ->label('Isi')
                     ->required()
-                    ->maxLength(255)
-                    ->placeholder('100'),
-
-                // KAYU MASUK (OPSIONAL)
-                Select::make('id_kayu_masuk')
-                    ->label('Kayu Masuk')
-                    ->relationship('kayuMasuk', 'seri')
-                    ->searchable()
-                    ->preload()
-                    ->placeholder('Pilih Kayu Masuk')
-                    ->nullable(),
-
-                // JENIS KAYU (OPSIONAL)
-                Select::make('id_jenis_kayu')
-                    ->label('Jenis Kayu')
-                    ->relationship('jenisKayu', 'nama_kayu')
-                    ->searchable()
-                    ->preload()
-                    ->placeholder('Pilih Jenis Kayu')
-                    ->nullable(),
-
-                // PRODUKSI DRYER (WAJIB)
-                Select::make('id_produksi_dryer')
-                    ->label('Produksi Dryer')
-                    ->relationship('produksiDryer', 'tanggal_produksi')
-                    ->getOptionLabelFromRecordUsing(
-                        fn($record) =>
-                        $record->tanggal_produksi . ' | ' . $record->shift
-                    )
-                    ->searchable()
-                    ->preload()
-                    ->required()
-                    ->placeholder('Pilih Produksi Dryer'),
+                    ->numeric()
+                    ->placeholder('Cth: 1.5 atau 100'),
             ]);
     }
 }

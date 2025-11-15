@@ -13,8 +13,6 @@ class ValidasiPressDryerForm
     {
         return $schema
             ->components([
-                Select::make('id_produksi_dryer')
-                    ->label('Produksi Dryer'),
                 TextInput::make('role')
                     ->label('Role Login')
                     ->default(function () {
