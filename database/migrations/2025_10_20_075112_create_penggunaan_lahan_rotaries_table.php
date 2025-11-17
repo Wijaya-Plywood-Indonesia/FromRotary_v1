@@ -10,31 +10,30 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('pegawai_rotaries', function (Blueprint $table) {
+        Schema::create('penggunaan_lahan_rotaries', function (Blueprint $table) {
             $table->id();
+
+            $table->foreignId('id_lahan')
+                ->constrained('lahans')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
 
             $table->foreignId('id_produksi')
                 ->constrained('produksi_rotaries')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
 
-            $table->foreignId('id_pegawai')
-                ->constrained('pegawais')
+            // Kolom tambahan — HAPUS ->after()
+            $table->foreignId('id_jenis_kayu')
+                ->nullable()
+                ->constrained('jenis_kayus')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
 
-            $table->string('role')->nullable();
-
-            $table->time('jam_masuk');
-            $table->time('jam_pulang');
-
-            // Kolom baru
-            $table->string('izin')->nullable();
-            $table->text('keterangan')->nullable();
+            $table->integer('jumlah_batang')->default(0);
 
             $table->timestamps();
         });
-
     }
 
     /**
@@ -42,6 +41,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('pegawai_rotaries');
+        Schema::dropIfExists('penggunaan_lahan_rotaries');
     }
 };

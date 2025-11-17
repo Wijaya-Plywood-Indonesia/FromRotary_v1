@@ -6,6 +6,7 @@ use App\Filament\Resources\TurunKayus\Pages\CreateTurunKayu;
 use App\Filament\Resources\TurunKayus\Pages\EditTurunKayu;
 use App\Filament\Resources\TurunKayus\Pages\ListTurunKayus;
 use App\Filament\Resources\TurunKayus\RelationManagers\DetailTurunKayuRelationManager;
+use App\Filament\Resources\TurunKayus\RelationManagers\PegawaiTurunKayuRelationManager;
 use App\Filament\Resources\TurunKayus\Schemas\TurunKayuForm;
 use App\Filament\Resources\TurunKayus\Schemas\TurunKayusInfolist;
 use App\Filament\Resources\TurunKayus\Tables\TurunKayusTable;
@@ -44,6 +45,7 @@ class TurunKayuResource extends Resource
         return [
                 //
             DetailTurunKayuRelationManager::class,
+            PegawaiTurunKayuRelationManager::class,
         ];
     }
 

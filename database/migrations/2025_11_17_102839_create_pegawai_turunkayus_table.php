@@ -10,17 +10,20 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('penggunaan_lahan_rotaries', function (Blueprint $table) {
+        Schema::create('pegawai_turun_kayus', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_lahan')
-                ->constrained('lahans')
+            $table->foreignId('id_turun_kayu')
+                ->constrained('turun_kayus')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->foreignId('id_produksi')
-                ->constrained('produksi_rotaries')
+            $table->foreignId('id_pegawai')
+                ->constrained('pegawais')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->integer('jumlah_batang')->default(0);
+            $table->time('jam_masuk');
+            $table->time('jam_pulang');
+            $table->string('izin')->nullable();
+            $table->string('ket')->nullable();
             $table->timestamps();
         });
     }
@@ -30,6 +33,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('penggunaan_lahan_rotaries');
+        Schema::dropIfExists('pegawai_turun_kayus');
     }
 };

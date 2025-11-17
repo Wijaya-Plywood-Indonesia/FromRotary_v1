@@ -12,12 +12,17 @@ return new class extends Migration {
     {
         Schema::create('produksi_rotaries', function (Blueprint $table) {
             $table->id();
+
             $table->foreignId('id_mesin')
                 ->constrained('mesins')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
+
             $table->date('tgl_produksi');
+            $table->integer('jam_kerja')->default(10); // Kolom baru
+
             $table->text('kendala')->nullable();
+
             $table->timestamps();
         });
     }
