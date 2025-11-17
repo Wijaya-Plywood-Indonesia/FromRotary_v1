@@ -13,6 +13,12 @@ class ValidasiPressDryersRelationManager extends RelationManager
         protected static ?string $title = 'Validasi';
     protected static string $relationship = 'validasiPressDryers';
 
+    // FUNGSI BARU UNTUK MEMUNCULKAN TOMBOL DI HALAMAN VIEW
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
+
     public function form(Schema $schema): Schema
     {
         return ValidasiHasilRotaryForm::configure($schema);
