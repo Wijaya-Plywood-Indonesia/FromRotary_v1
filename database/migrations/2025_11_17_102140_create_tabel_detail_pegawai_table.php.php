@@ -10,27 +10,29 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('detail_masuk', function (Blueprint $table) {
+        Schema::create('detail_pegawais', function (Blueprint $table) {
             $table->id();
-            $table->string('no_palet');
-            $table->string('kw');
-            $table->string('isi');
-            $table->foreignId('id_ukuran')
+
+            $table->foreignId('id_pegawai')
                 ->nullable()
-                ->constrained('ukurans')
+                ->constrained('pegawais')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->foreignId('id_jenis_kayu')
-                ->nullable()
-                ->constrained('jenis_kayus')
-                ->cascadeOnUpdate()
-                ->restrictOnDelete();
+
+            $table->string('tugas');
+            $table->time('masuk')->nullable();
+            $table->time('pulang')->nullable();
+
+            $table->string('ijin')->nullable();
+            $table->string('ket')->nullable();
+
             $table->foreignId('id_produksi_dryer')
+                ->nullable()
                 ->constrained('produksi_press_dryers')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->timestamps();
 
+            $table->timestamps();
         });
     }
 
@@ -39,6 +41,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('detail_masuk');
+        Schema::dropIfExists('detail_pegawais');
     }
 };
