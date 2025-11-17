@@ -22,7 +22,6 @@ return new class extends Migration {
             // Relasi ke penggunaan_lahan_rotaries
             $table->foreignId('id_penggunaan_lahan')
                 ->nullable()
-                ->after('id_produksi')
                 ->constrained('penggunaan_lahan_rotaries')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();

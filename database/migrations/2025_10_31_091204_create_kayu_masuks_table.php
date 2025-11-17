@@ -21,21 +21,18 @@ return new class extends Migration {
             // Relasi supplier, kendaraan, dokumen
             $table->foreignId('id_supplier_kayus')
                 ->nullable()
-                ->after('seri')
                 ->constrained('supplier_kayus')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
 
             $table->foreignId('id_kendaraan_supplier_kayus')
                 ->nullable()
-                ->after('id_supplier_kayus')
                 ->constrained('kendaraan_supplier_kayus')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
 
             $table->foreignId('id_dokumen_kayus')
                 ->nullable()
-                ->after('id_kendaraan_supplier_kayus')
                 ->constrained('dokumen_kayus')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();

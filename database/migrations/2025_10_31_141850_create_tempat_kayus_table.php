@@ -26,7 +26,6 @@ return new class extends Migration {
             // Relasi tambahan ke lahans
             $table->foreignId('id_lahan')
                 ->nullable()
-                ->after('id_kayu_masuk')
                 ->constrained('lahans')
                 ->nullOnDelete();
 

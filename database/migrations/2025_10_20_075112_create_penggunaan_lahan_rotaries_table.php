@@ -23,10 +23,9 @@ return new class extends Migration {
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
 
-            // Kolom tambahan dari migration kedua
+            // Kolom tambahan — HAPUS ->after()
             $table->foreignId('id_jenis_kayu')
-                ->nullable()            // dibuat nullable agar tidak error jika tabel sudah berisi data
-                ->after('id_produksi')
+                ->nullable()
                 ->constrained('jenis_kayus')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();

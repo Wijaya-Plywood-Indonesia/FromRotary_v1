@@ -5,45 +5,42 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('targets', function (Blueprint $table) {
-            $table->id('id_target'); // custom PK
-
-            $table->foreignId('id_mesin')
-                ->constrained('mesins')
-                ->restrictOnDelete()
-                ->cascadeOnUpdate();
-
-            $table->foreignId('id_ukuran')
-                ->constrained('ukurans')
-                ->restrictOnDelete()
-                ->cascadeOnUpdate();
-
-            $table->foreignId('id_jenis_kayu')
+        Schema::create('detail_turusan_kayus', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('id_kayu_masuk')
+                ->nullable()
+                ->constrained('kayu_masuks')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->integer('nomer_urut');
+            $table->foreignId('lahan_id')
+                ->nullable()
+                ->constrained('lahans')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->foreignId('jenis_kayu_id')
+                ->nullable()
                 ->constrained('jenis_kayus')
-                ->restrictOnDelete()
-                ->cascadeOnUpdate();
-
-            $table->string('kode_ukuran')->nullable();
-            $table->integer('target');
-            $table->integer('orang');
-            $table->integer('jam');
-
-            $table->decimal('targetperjam', 15, 2)->virtualAs('`target` / `jam`');
-            $table->decimal('targetperorang', 15, 2)->virtualAs('`target` / `orang`');
-
-            $table->decimal('gaji', 15, 2);
-            $table->decimal('potongan', 15, 2)->virtualAs('`gaji` / `targetperorang`');
-
-            $table->string('status')->default('diajukan');
-
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->integer('panjang');
+            $table->integer('grade');
+            $table->integer('diameter');
+            $table->integer('kuantitas')->default('1');
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('targets');
+        Schema::dropIfExists('detail_turusan_kayus');
     }
 };
