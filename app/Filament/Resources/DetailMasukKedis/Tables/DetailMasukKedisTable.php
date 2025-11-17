@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\PegawaiRotaries\Tables;
+namespace App\Filament\Resources\DetailMasukKedis\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -8,24 +8,32 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class PegawaiRotariesTable
+class DetailMasukKedisTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-
-                TextColumn::make('pegawai.nama_pegawai')
-                    ->label('Pegawai')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('role')
-                    ->searchable(),
-                TextColumn::make('jam_masuk')
-                    ->time()
+                TextColumn::make('no_palet')
+                    ->numeric()
                     ->sortable(),
-                TextColumn::make('jam_pulang')
-                    ->time()
+                TextColumn::make('id_ukuran')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('id_jenis_kayu')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('kw')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('jumlah')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('rencana_bongkar')
+                    ->date()
+                    ->sortable(),
+                TextColumn::make('id_produksi_kedi')
+                    ->numeric()
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()

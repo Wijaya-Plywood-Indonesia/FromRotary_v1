@@ -14,17 +14,17 @@ class ProduksiKedi extends Model
         'status',
     ];
 
-    public function detailMasuk()
+    public function detailMasukKedi()
     {
         return $this->hasMany(DetailMasukKedi::class, 'id_produksi_kedi');
     }
 
-    public function detailBongkar()
+    public function detailBongkarKedi()
     {
         return $this->hasMany(DetailBongkarKedi::class, 'id_produksi_kedi');
     }
 
-    public function validasi()
+    public function validasiKedi()
     {
         return $this->hasMany(ValidasiKedi::class, 'id_produksi_kedi');
     }
