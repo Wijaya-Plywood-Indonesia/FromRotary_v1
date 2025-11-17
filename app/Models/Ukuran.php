@@ -35,6 +35,16 @@ class Ukuran extends Model
         return $this->hasMany(DetailMasukStik::class, 'id_ukuran');
     }
 
+    public function detailMasukKedi()
+    {
+        return $this->hasMany(DetailMasukKedi::class, 'id_ukuran');
+    }
+
+    public function detailBongkarKedi()
+    {
+        return $this->hasMany(DetailBongkarkedi::class, 'id_ukuran');
+    }
+
     public function detailHasilStik()
     {
         return $this->hasMany(DetailHasilStik::class, 'id_ukuran');
