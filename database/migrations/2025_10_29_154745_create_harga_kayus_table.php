@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->decimal('diameter_terkecil', 3, 2)->nullable();
             $table->decimal('diameter_terbesar', 3, 2)->nullable();
             $table->integer('harga_beli');
-
+            $table->integer('grade');
             $table->foreignId('id_jenis_kayu')
                 ->constrained('jenis_kayus')
                 ->cascadeOnUpdate()
