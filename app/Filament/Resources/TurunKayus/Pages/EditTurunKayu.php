@@ -10,10 +10,4 @@ class EditTurunKayu extends EditRecord
 {
     protected static string $resource = TurunKayuResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            DeleteAction::make(),
-        ];
-    }
 }

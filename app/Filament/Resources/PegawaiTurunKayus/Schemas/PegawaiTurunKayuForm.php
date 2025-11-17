@@ -17,7 +17,14 @@ class PegawaiTurunKayuForm
 
                 Select::make('id_pegawai')
                     ->label('Pegawai')
-                    ->relationship('pegawai', 'nama_pegawai')
+                    ->options(
+                        Pegawai::query()
+                            ->get()
+                            ->mapWithKeys(fn($pegawai) => [
+                                $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
+                            ])
+                    )
+                    //   ->multiple() // bisa pilih banyak
                     ->searchable()
                     ->required(),
                 TimePicker::make('jam_masuk')
