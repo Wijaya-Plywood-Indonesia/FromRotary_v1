@@ -12,15 +12,27 @@ return new class extends Migration {
     {
         Schema::create('penggunaan_lahan_rotaries', function (Blueprint $table) {
             $table->id();
+
             $table->foreignId('id_lahan')
                 ->constrained('lahans')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
+
             $table->foreignId('id_produksi')
                 ->constrained('produksi_rotaries')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
+
+            // Kolom tambahan dari migration kedua
+            $table->foreignId('id_jenis_kayu')
+                ->nullable()            // dibuat nullable agar tidak error jika tabel sudah berisi data
+                ->after('id_produksi')
+                ->constrained('jenis_kayus')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+
             $table->integer('jumlah_batang')->default(0);
+
             $table->timestamps();
         });
     }

@@ -5,13 +5,17 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('kendaraan_supplier_kayus', function (Blueprint $table) {
             $table->id();
+
+            // Foreign key supplier
+            $table->foreignId('id_supplier')
+                ->nullable()
+                ->constrained('supplier_kayus')
+                ->nullOnDelete();
+
             $table->string('nopol_kendaraan');
             $table->string('jenis_kendaraan');
             $table->string('pemilik_kendaraan');
@@ -19,9 +23,6 @@ return new class extends Migration {
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('kendaraan_supplier_kayus');

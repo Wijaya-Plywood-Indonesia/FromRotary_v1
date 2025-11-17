@@ -12,10 +12,45 @@ return new class extends Migration {
     {
         Schema::create('kayu_masuks', function (Blueprint $table) {
             $table->id();
+
             $table->string('jenis_dokumen_angkut');
             $table->string('upload_dokumen_angkut');
             $table->dateTime('tgl_kayu_masuk');
             $table->integer('seri');
+
+            // Relasi supplier, kendaraan, dokumen
+            $table->foreignId('id_supplier_kayus')
+                ->nullable()
+                ->after('seri')
+                ->constrained('supplier_kayus')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+
+            $table->foreignId('id_kendaraan_supplier_kayus')
+                ->nullable()
+                ->after('id_supplier_kayus')
+                ->constrained('kendaraan_supplier_kayus')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+
+            $table->foreignId('id_dokumen_kayus')
+                ->nullable()
+                ->after('id_kendaraan_supplier_kayus')
+                ->constrained('dokumen_kayus')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+
+            // Kolom tambahan created_by & updated_by
+            $table->foreignId('created_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->foreignId('updated_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
             $table->timestamps();
         });
     }
