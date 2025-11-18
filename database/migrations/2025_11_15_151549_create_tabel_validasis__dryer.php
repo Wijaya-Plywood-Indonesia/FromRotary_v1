@@ -10,17 +10,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('penggunaan_lahan_rotaries', function (Blueprint $table) {
+        Schema::create('validasis', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_lahan')
-                ->constrained('lahans')
+            $table->foreignId('id_produksi_dryer')
+                ->constrained('produksi_press_dryers')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->foreignId('id_produksi')
-                ->constrained('produksi_rotaries')
-                ->cascadeOnUpdate()
-                ->restrictOnDelete();
-            $table->integer('jumlah_batang')->default(0);
+            $table->string('role');
+            $table->string('status');
             $table->timestamps();
         });
     }
@@ -30,6 +27,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('penggunaan_lahan_rotaries');
+        Schema::dropIfExists('validasis');
     }
 };

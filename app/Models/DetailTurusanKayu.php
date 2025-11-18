@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class DetailTurusanKayu extends Model
 {
@@ -20,7 +21,30 @@ class DetailTurusanKayu extends Model
         'grade',
         'diameter',
         'kuantitas',
+        'created_by',
+        'updated_by',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (Auth::check()) {
+                $model->created_by = Auth::id();
+                $model->updated_by = Auth::id();
+            }
+        });
+
+        static::updating(function ($model) {
+            if (Auth::check()) {
+                $model->updated_by = Auth::id();
+            }
+        });
+    }
+
+
+
     public function kayuMasuk()
     {
         return $this->belongsTo(KayuMasuk::class, 'id_kayu_masuk');
@@ -102,5 +126,14 @@ class DetailTurusanKayu extends Model
             'total_batang' => $totalBatang,
             'total_kubikasi' => $totalKubikasi,
         ];
+    }
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 }

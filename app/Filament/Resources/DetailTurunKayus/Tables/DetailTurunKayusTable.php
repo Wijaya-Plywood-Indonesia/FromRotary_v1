@@ -5,6 +5,7 @@ namespace App\Filament\Resources\DetailTurunKayus\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use App\Models\DetailTurunKayu;
+use Filament\Actions\CreateAction;
 use Illuminate\Support\Facades\Storage;
 
 use Filament\Actions\DeleteBulkAction;
@@ -24,38 +25,7 @@ class DetailTurunKayusTable
                         'kayuMasuk.penggunaanKendaraanSupplier'
                     ])
             )
-            ->columns([  // BENAR: columns(), BUKAN components()
-
-                // 1. PEKERJA
-                TextColumn::make('pegawai')
-                    ->label('Pekerja')
-                    ->getStateUsing(function ($record) {
-                        $pegawais = $record->pegawaiTurunKayu->pluck('pegawai')->filter();
-
-                        if ($pegawais->isEmpty()) {
-                            return '—';
-                        }
-
-                        return $pegawais->map(function ($pegawai) {
-                            return $pegawai->kode_pegawai . ' - ' . $pegawai->nama_pegawai;
-                        })->implode(', ');
-                    })
-                    ->badge()
-                    ->searchable(
-                        query: fn($query, $search) => $query->whereHas(
-                            'pegawaiTurunKayu.pegawai',
-                            fn($q) => $q
-                                ->where('nama_pegawai', 'like', "%{$search}%")
-                                ->orWhere('kode_pegawai', 'like', "%{$search}%")
-                        )
-                    )
-                    ->sortable(
-                        query: fn($query, $direction) => $query
-                            ->join('pegawai_turun_kayus', 'detail_turun_kayus.id', '=', 'pegawai_turun_kayus.id_detail_turun_kayu')
-                            ->join('pegawais', 'pegawai_turun_kayus.id_pegawai', '=', 'pegawais.id')
-                            ->orderBy('pegawais.nama_pegawai', $direction)
-                            ->select('detail_turun_kayus.*')
-                    ),
+            ->columns([
                 // 2. SUPPLIER
                 TextColumn::make('kayuMasuk.penggunaanSupplier.nama_supplier')
                     ->label('Supplier')
@@ -125,18 +95,20 @@ class DetailTurunKayusTable
                     ->openUrlInNewTab(), // Buka di tab baru
 
             ])
+            ->headerActions([
+                CreateAction::make(), // ðŸ‘ˆ ini yang munculkan tombol "Tambah"
+            ])
             ->filters([
                 //
             ])
-            ->actions([
+            ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 DeleteBulkAction::make(),
             ])
-            ->emptyStateHeading('Belum ada detail')
-            ->emptyStateDescription('Tambahkan pekerja dan kayu masuk.')
+
             ->defaultSort('created_at', 'desc');
     }
 }

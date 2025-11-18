@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('ganti_pisau_rotaries', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_produksi')
-                ->constrained('jenis_kayu')
+                ->constrained('jenis_kayus')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->time('jam_mulai_ganti_pisau');

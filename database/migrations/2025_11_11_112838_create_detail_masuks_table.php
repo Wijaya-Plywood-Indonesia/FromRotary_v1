@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('detail_masuk', function (Blueprint $table) {
+        Schema::create('detail_masuks', function (Blueprint $table) {
             $table->id();
             $table->integer('no_palet');
             $table->string('kw');

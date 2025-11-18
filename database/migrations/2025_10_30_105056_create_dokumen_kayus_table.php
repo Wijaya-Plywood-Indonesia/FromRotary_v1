@@ -12,10 +12,12 @@ return new class extends Migration {
     {
         Schema::create('dokumen_kayus', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_legal')->nullable();
+            $table->string('nama_legal');
+            $table->string('upload_ktp')->nullable();
+
             $table->string('dokumen_legal')->nullable();
             $table->string('upload_dokumen')->nullable();
-            $table->string('upload_ktp')->nullable();
+            $table->string('no_dokumen_legal')->nullable();
             $table->string('foto_lokasi')->nullable();
 
             // Kolom untuk Maps

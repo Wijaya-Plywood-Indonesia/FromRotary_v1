@@ -13,8 +13,14 @@ use Filament\Tables\Table;
 
 class DetailMesinsRelationManager extends RelationManager
 {
-        protected static ?string $title = 'Mesin Dryer';
+    protected static ?string $title = 'Mesin Dryer';
     protected static string $relationship = 'detailMesins';
+
+    // FUNGSI BARU UNTUK MEMUNCULKAN TOMBOL DI HALAMAN VIEW
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
 
     public function form(Schema $schema): Schema
     {

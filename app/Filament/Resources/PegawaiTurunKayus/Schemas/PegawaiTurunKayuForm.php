@@ -7,6 +7,7 @@ use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
 use App\Models\Pegawai;
+use Carbon\CarbonPeriod;
 
 class PegawaiTurunKayuForm
 {
@@ -14,28 +15,43 @@ class PegawaiTurunKayuForm
     {
         return $schema
             ->components([
-                Select::make('id_turun_kayu')
-                    ->label('Tanggal Turun Kayu')
-                    ->relationship('turunKayu', 'tanggal', fn($query) => $query->orderBy('tanggal', 'desc'))
-                    ->getOptionLabelFromRecordUsing(fn($record) => $record->tanggal->format('d F Y'))
-                    ->searchable()
-                    ->preload()
-                    ->required(),
+
                 Select::make('id_pegawai')
-                    ->label('Pekerja')
-                    ->relationship('pegawai', 'nama_pegawai')
-                    ->getOptionLabelFromRecordUsing(fn($record) => "{$record->kode_pegawai} - {$record->nama_pegawai}")
-                    ->multiple()
+                    ->label('Pegawai')
+                    ->options(
+                        Pegawai::query()
+                            ->get()
+                            ->mapWithKeys(fn($pegawai) => [
+                                $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
+                            ])
+                    )
+                    //   ->multiple() // bisa pilih banyak
                     ->searchable()
-                    ->preload()
-                    ->required()
-                    ->helperText('Bisa pilih lebih dari satu pegawai'),
-                TimePicker::make('jam_masuk')
+                    ->required(),
+                Select::make('jam_masuk')
                     ->label('Jam Masuk')
-                    ->required(),
-                TimePicker::make('jam_pulang')
+                    ->options(self::timeOptions())
+                    ->default('06:00') // Default: 06:00 (sore)
+                    ->required()
+                    ->searchable()
+                    ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
+                    ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null), // Tampilkan hanya HH:MM,
+                Select::make('jam_pulang')
                     ->label('Jam Pulang')
-                    ->required(),
+                    ->options(self::timeOptions())
+                    ->default('17:00') // Default: 17:00 (sore)
+                    ->required()
+                    ->searchable()
+                    ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
+                    ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null),
             ]);
+    }
+    public static function timeOptions(): array
+    {
+        return collect(CarbonPeriod::create('00:00', '1 hour', '23:00')->toArray())
+            ->mapWithKeys(fn($time) => [
+                $time->format('H:i') => $time->format('H.i'),
+            ])
+            ->toArray();
     }
 }

@@ -31,6 +31,16 @@ class KayuMasuksTable
                 TextColumn::make('seri')->numeric()->sortable(),
                 TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('createdBy.name')
+                    ->label('Dibuat Oleh')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable(),
+                TextColumn::make('updatedBy.name')
+                    ->label('Diubah Oleh')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([

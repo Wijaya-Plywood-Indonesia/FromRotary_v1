@@ -15,6 +15,12 @@ class DetailMasuksRelationManager extends RelationManager
         protected static ?string $title = 'Modal';
     protected static string $relationship = 'detailMasuks';
 
+    // FUNGSI BARU UNTUK MEMUNCULKAN TOMBOL DI HALAMAN VIEW
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
+    
     public function form(Schema $schema): Schema
     {
         return DetailMasukForm::configure($schema);

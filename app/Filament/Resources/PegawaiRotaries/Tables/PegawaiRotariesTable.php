@@ -14,12 +14,11 @@ class PegawaiRotariesTable
     {
         return $table
             ->columns([
-                TextColumn::make('id_produksi')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('id_pegawai')
-                    ->numeric()
-                    ->sortable(),
+
+                TextColumn::make('pegawai.nama_pegawai')
+                    ->label('Pegawai')
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('role')
                     ->searchable(),
                 TextColumn::make('jam_masuk')

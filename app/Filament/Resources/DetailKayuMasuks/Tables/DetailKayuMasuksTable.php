@@ -62,7 +62,6 @@ class DetailKayuMasuksTable
                             2 => 'B',
                             default => '-',
                         };
-
                         return "{$namaKayu} {$panjang} ({$grade})";
                     })
                     ->sortable(['jenisKayu.nama_kayu', 'panjang', 'grade']) // tetap bisa diurutkan
@@ -99,6 +98,16 @@ class DetailKayuMasuksTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->alignRight(),
+                TextColumn::make('createdBy.name')
+                    ->label('Dibuat Oleh')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable(),
+                TextColumn::make('updatedBy.name')
+                    ->label('Diubah Oleh')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
             ])
             ->groups([

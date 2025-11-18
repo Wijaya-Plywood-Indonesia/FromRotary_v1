@@ -19,12 +19,38 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Database\Eloquent\Model;
+
 
 
 class DetailPegawaisRelationManager extends RelationManager
 {
-        protected static ?string $title = 'Pegawai';
-    protected static string $relationship = 'detailPegawais';   
+    protected static ?string $title = 'Pegawai';
+    protected static string $relationship = 'detailPegawais';
+
+    // Izinkan Relation Manager tampil di halaman View
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return true;
+    }
+
+    // IZINKAN TOMBOL CREATE MUNCUL DI VIEW
+    public static function showTableHeaderActionsInView(): bool
+    {
+        return true;
+    }
+
+    // Izinkan membuat data dari View
+    public static function canCreateForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return true;
+    }
+
+    // FUNGSI BARU UNTUK MEMUNCULKAN TOMBOL DI HALAMAN VIEW
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
 
     public static function timeOptions(): array
     {
@@ -38,8 +64,8 @@ class DetailPegawaisRelationManager extends RelationManager
     public function form(Schema $schema): Schema
     {
         return $schema
-        ->components([
-            Select::make('id_pegawai')
+            ->components([
+                Select::make('id_pegawai')
                     ->label('Pegawai')
                     ->options(
                         Pegawai::query()
@@ -52,18 +78,18 @@ class DetailPegawaisRelationManager extends RelationManager
                     ->searchable()
                     ->required(),
 
-            Select::make('tugas')
-                ->label('Tugas')
-                ->options([
+                Select::make('tugas')
+                    ->label('Tugas')
+                    ->options([
                         'operator' => 'Operator',
                         'asistenoperator' => 'Asisten Operator',
                         'dll' => 'Dll',
                     ])
-                ->required()
-                ->native(false)
-                ->searchable(),
+                    ->required()
+                    ->native(false)
+                    ->searchable(),
 
-            Select::make('masuk')
+                Select::make('masuk')
                     ->label('Jam Masuk')
                     ->options(self::timeOptions())
                     ->default('06:00') // Default: 06:00 (sore)
@@ -79,15 +105,7 @@ class DetailPegawaisRelationManager extends RelationManager
                     ->searchable()
                     ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
                     ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null),
-
-            TextInput::make('ijin')
-                ->label('Ijin')
-                ->maxLength(255),
-
-            Textarea::make('ket')
-                ->label('Keterangan')
-                ->rows(1),
-        ]);
+            ]);
     }
 
     protected function mutateFormDataBeforeCreate(array $data): array
@@ -105,64 +123,65 @@ class DetailPegawaisRelationManager extends RelationManager
         return $data;
     }
 
+    
     public function table(Table $table): Table
     {
-    return $table
-        ->columns([
-            TextColumn::make('pegawai.nama_pegawai') // Asumsi: relasi 'pegawai' & kolom 'nama'
-                ->label('Pegawai')
-                ->searchable(),
-            
-            TextColumn::make('tugas')
-                ->searchable(),
-            
-            TextColumn::make('masuk')
-                ->time('H:i'), // Format waktu agar rapi
-            
-            TextColumn::make('pulang')
-                ->time('H:i'), // Format waktu agar rapi
-            
-            TextColumn::make('ijin')
-                ->searchable()
-                ->toggleable(isToggledHiddenByDefault: true),
-            
-            TextColumn::make('ket')
-                ->label('Keterangan')
-                ->limit(50) // Batasi teks agar tidak terlalu panjang
-                ->tooltip(fn ($record) => $record->ket) // Tampilkan teks penuh saat di-hover
-                ->searchable()
-                ->toggleable(isToggledHiddenByDefault: true),
-        ])
-        ->filters([
-            // Tempat filter jika Anda membutuhkannya
-        ])
-        ->headerActions([
-            // INI ADALAH TOMBOL UNTUK MEMBUAT DATA BARU
-            CreateAction::make(),
-        ])
-        ->recordActions([
-    EditAction::make(),
-    DeleteAction::make(),
+        return $table
+            ->columns([
+                TextColumn::make('pegawai.nama_pegawai') // Asumsi: relasi 'pegawai' & kolom 'nama'
+                    ->label('Pegawai')
+                    ->searchable(),
 
-    // ➕ Tambah / Edit Ijin & Keterangan
-    Action::make('aturIjin')
-    ->label(fn($record) => $record->ijin ? 'Edit Ijin' : 'Tambah Ijin')
-    ->icon('heroicon-o-pencil-square')
-    ->form([
-        TextInput::make('ijin')->label('Ijin'),
-        Textarea::make('ket')->label('Keterangan'),
-    ])
-    ->action(function ($record, array $data) {
-        $record->update([
-            'ijin' => $data['ijin'],
-            'ket'  => $data['ket'],
-        ]);
-    })
-])
-        ->toolbarActions([
-            BulkActionGroup::make([
-                DeleteBulkAction::make(),
-            ]),
-        ]);
-}
+                TextColumn::make('tugas')
+                    ->searchable(),
+
+                TextColumn::make('masuk')
+                    ->time('H:i'), // Format waktu agar rapi
+
+                TextColumn::make('pulang')
+                    ->time('H:i'), // Format waktu agar rapi
+
+                TextColumn::make('ijin')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('ket')
+                    ->label('Keterangan')
+                    ->limit(50) // Batasi teks agar tidak terlalu panjang
+                    ->tooltip(fn($record) => $record->ket) // Tampilkan teks penuh saat di-hover
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                // Tempat filter jika Anda membutuhkannya
+            ])
+            ->headerActions([
+                // INI ADALAH TOMBOL UNTUK MEMBUAT DATA BARU
+                CreateAction::make(),
+            ])
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
+
+                // ➕ Tambah / Edit Ijin & Keterangan
+                Action::make('aturIjin')
+                    ->label(fn($record) => $record->ijin ? 'Edit Ijin' : 'Tambah Ijin')
+                    ->icon('heroicon-o-pencil-square')
+                    ->form([
+                        TextInput::make('ijin')->label('Ijin'),
+                        Textarea::make('ket')->label('Keterangan'),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'ijin' => $data['ijin'],
+                            'ket'  => $data['ket'],
+                        ]);
+                    })
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
 }

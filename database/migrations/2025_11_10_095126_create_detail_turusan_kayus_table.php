@@ -33,6 +33,16 @@ return new class extends Migration {
             $table->integer('diameter');
             $table->integer('kuantitas')->default('1');
             $table->timestamps();
+            // Kolom tambahan created_by & updated_by
+            $table->foreignId('created_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->foreignId('updated_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
         });
     }
 

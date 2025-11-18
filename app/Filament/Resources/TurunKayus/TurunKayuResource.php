@@ -6,11 +6,11 @@ use App\Filament\Resources\TurunKayus\Pages\CreateTurunKayu;
 use App\Filament\Resources\TurunKayus\Pages\EditTurunKayu;
 use App\Filament\Resources\TurunKayus\Pages\ListTurunKayus;
 use App\Filament\Resources\TurunKayus\RelationManagers\DetailTurunKayuRelationManager;
+use App\Filament\Resources\TurunKayus\RelationManagers\PegawaiTurunKayuRelationManager;
 use App\Filament\Resources\TurunKayus\Schemas\TurunKayuForm;
 use App\Filament\Resources\TurunKayus\Schemas\TurunKayusInfolist;
 use App\Filament\Resources\TurunKayus\Tables\TurunKayusTable;
 use App\Filament\Resources\TurunKayus\Pages\ViewTurunKayu;
-use App\Filament\Resources\TurunKayus\RelationManagers\PegawaiTurunKayuRelationManager;
 use App\Models\TurunKayu;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -46,6 +46,7 @@ class TurunKayuResource extends Resource
         return [
             PegawaiTurunKayuRelationManager::class,
             DetailTurunKayuRelationManager::class,
+
         ];
     }
 

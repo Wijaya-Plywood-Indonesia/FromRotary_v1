@@ -32,4 +32,9 @@ class Pegawai extends Model
     {
         return $this->hasMany(DetailPegawai::class, 'id_pegawai');
     }
+
+    public function detailPegawaiStik()
+    {
+        return $this->hasMany(DetailPegawaiStik::class, 'id_pegawai');
+    }
 }

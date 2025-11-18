@@ -47,29 +47,19 @@ class KayuMasukForm
                     ->label('Nomor Seri')
                     ->numeric()
                     ->required()
-                    //  ->readOnly()
+                    ->dehydrated(true)
                     ->default(function () {
-                        // Ambil nilai seri terbesar dari database
                         $lastSeri = KayuMasuk::max('seri');
-
-                        // Jika belum ada data, mulai dari 1
-                        if (!$lastSeri) {
-                            $nextSeri = 1;
-                        } else {
-                            // Jika terakhir 1000, kembali ke 1
-                            $nextSeri = ($lastSeri >= 1000) ? 1 : $lastSeri + 1;
-                        }
-
-                        return $nextSeri;
+                        return $lastSeri ? (($lastSeri >= 1000) ? 1 : $lastSeri + 1) : 1;
                     })
                     ->hint(function () {
-                        // Tampilkan hint di bawah input
                         $lastSeri = KayuMasuk::max('seri');
                         return $lastSeri
                             ? "Seri terakhir di database: {$lastSeri}"
                             : "Belum ada seri sebelumnya (akan dimulai dari 1)";
                     })
                     ->hintColor('info'),
+
 
                 Select::make('id_supplier_kayus')
                     ->label('Supplier Kayu')

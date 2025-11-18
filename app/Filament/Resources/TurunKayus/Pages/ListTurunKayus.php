@@ -10,10 +10,4 @@ class ListTurunKayus extends ListRecords
 {
     protected static string $resource = TurunKayuResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            CreateAction::make(),
-        ];
-    }
 }

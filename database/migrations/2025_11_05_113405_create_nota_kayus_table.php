@@ -20,10 +20,13 @@ return new class extends Migration {
                 ->restrictOnDelete();
 
             $table->string('no_nota');
-            $table->string('penanggung_jawab');
+            $table->string('penanggung_jawab')->nullable();
             //  $table->string('pemilik_kayu');
-            $table->string('penerima');
-            $table->string('satpam');
+            $table->string('penerima')->nullable();
+
+            $table->string('satpam')->nullable();
+            $table->string('status')->default('Belum Diperiksa');
+            ;
 
             $table->timestamps();
         });
