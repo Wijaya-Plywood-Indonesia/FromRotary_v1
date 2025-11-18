@@ -9,7 +9,7 @@ class ValidasiPressDryer extends Model
     protected $table = 'validasis';
 
     protected $fillable = [
-        'id_produksi_dryer',
+        'id_produksi_dryer ',
         'role',
         'status',
 

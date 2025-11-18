@@ -40,16 +40,7 @@ class KendaraanSupplierKayuForm
 
                 TextInput::make('pemilik_kendaraan')
                     ->required(),
-                Select::make('kategori_kendaraan')
-                    ->label('Kategori')
-                    ->options([
-                        'supplier' => 'Kendaraan Supplier',
-                        'milik_pabrik-wijaya' => 'Milik Wijaya',
-                    ])
-                    ->required()
-                    ->native(false)
-                    ->default('supplier')
-                    ->searchable(),
+
             ]);
     }
 }

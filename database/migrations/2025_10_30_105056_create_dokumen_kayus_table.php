@@ -17,6 +17,7 @@ return new class extends Migration {
 
             $table->string('dokumen_legal')->nullable();
             $table->string('upload_dokumen')->nullable();
+            $table->string('no_dokumen_legal')->nullable();
             $table->string('foto_lokasi')->nullable();
 
             // Kolom untuk Maps

@@ -62,7 +62,6 @@ class DetailKayuMasuksTable
                             2 => 'B',
                             default => '-',
                         };
-
                         return "{$namaKayu} {$panjang} ({$grade})";
                     })
                     ->sortable(['jenisKayu.nama_kayu', 'panjang', 'grade']) // tetap bisa diurutkan

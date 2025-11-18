@@ -13,13 +13,13 @@ return new class extends Migration {
         Schema::create('supplier_kayus', function (Blueprint $table) {
             $table->id();
             $table->string('nama_supplier');
-            $table->string('no_telepon');
+            $table->string('no_telepon')->nullable();
             $table->string('nik');
             $table->string('upload_ktp')->nullable();
-            $table->boolean('jenis_kelamin_pegawai')->default(0);
+            $table->boolean('jenis_kelamin')->default(0);
             $table->text('alamat')->nullable();
-            $table->string('jenis_bank');
-            $table->string('no_rekening');
+            $table->string('jenis_bank')->nullable();
+            $table->string('no_rekening')->nullable();
             $table->boolean('status_supplier')->default(0);
             $table->timestamps();
         });

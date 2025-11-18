@@ -14,7 +14,6 @@ class KendaraanSupplierKayuInfolist
                 TextEntry::make('nopol_kendaraan'),
                 TextEntry::make('jenis_kendaraan'),
                 TextEntry::make('pemilik_kendaraan'),
-                TextEntry::make('kategori_kendaraan'),
                 TextEntry::make('created_at')
                     ->dateTime(),
                 TextEntry::make('updated_at')

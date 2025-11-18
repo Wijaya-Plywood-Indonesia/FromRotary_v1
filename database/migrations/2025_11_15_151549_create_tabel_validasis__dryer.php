@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('validasis', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_produksi_dyer')
+            $table->foreignId('id_produksi_dryer')
                 ->constrained('produksi_press_dryers')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
