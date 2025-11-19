@@ -17,22 +17,6 @@ class DetailTurunKayuForm
     {
         return $schema
             ->components([
-                Select::make('id_pegawai')
-                    ->label('Pekerja')
-                    ->options(
-                        Pegawai::query()
-                            ->get()
-                            ->mapWithKeys(function ($pegawai) {
-                                return [
-                                    $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
-                                ];
-                            })
-                            ->toArray()
-                    )
-                    ->multiple()
-                    ->searchable()
-                    ->preload()
-                    ->required(),
 
                 Select::make('id_kayu_masuk')
                     ->label('Kayu Masuk')

@@ -55,15 +55,17 @@ class KayuMasuk extends Model
     protected static function booted()
     {
         static::creating(function ($record) {
-            $lastSeri = static::max('seri');
 
-            if (!$lastSeri) {
-                $record->seri = 1;
-            } else {
-                $record->seri = ($lastSeri >= 1000) ? 1 : $lastSeri + 1;
+            // Kalau user mengisi manual, jangan timpa
+            if (!empty($record->seri)) {
+                return;
             }
+
+            $lastSeri = static::max('seri');
+            $record->seri = $lastSeri ? (($lastSeri >= 1000) ? 1 : $lastSeri + 1) : 1;
         });
     }
+
 
     //==Relasi 
     public function penggunaanSupplier()

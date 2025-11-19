@@ -14,7 +14,6 @@ class KendaraanSupplierKayu extends Model
         'nopol_kendaraan',
         'jenis_kendaraan',
         'pemilik_kendaraan',
-        'kategori_kendaraan',
     ];
     public function terdaftarKayuMasuk()
     {

@@ -44,8 +44,9 @@ class TurunKayuResource extends Resource
     {
         return [
                 //
-            DetailTurunKayuRelationManager::class,
             PegawaiTurunKayuRelationManager::class,
+            DetailTurunKayuRelationManager::class,
+
         ];
     }
 

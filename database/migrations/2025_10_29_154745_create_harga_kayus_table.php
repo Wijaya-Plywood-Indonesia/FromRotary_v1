@@ -13,10 +13,10 @@ return new class extends Migration {
         Schema::create('harga_kayus', function (Blueprint $table) {
             $table->id();
             $table->integer('panjang')->default('0');
-            $table->decimal('diameter_terkecil', 3, 2)->nullable();
-            $table->decimal('diameter_terbesar', 3, 2)->nullable();
+            $table->decimal('diameter_terkecil', 10, 2)->nullable();
+            $table->decimal('diameter_terbesar', 10, 2)->nullable();
             $table->integer('harga_beli');
-
+            $table->integer('grade');
             $table->foreignId('id_jenis_kayu')
                 ->constrained('jenis_kayus')
                 ->cascadeOnUpdate()

@@ -20,10 +20,6 @@ class PegawaiTurunKayu extends Model
         'keterangan',
     ];
 
-    protected $casts = [
-        'jam_masuk' => 'datetime:H:i',
-        'jam_pulang' => 'datetime:H:i',
-    ];
 
     // Relasi ke TurunKayu
     public function turunKayu(): BelongsTo

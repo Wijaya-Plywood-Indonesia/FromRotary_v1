@@ -5,6 +5,7 @@ namespace App\Filament\Resources\DetailTurunKayus\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use App\Models\DetailTurunKayu;
+use Filament\Actions\CreateAction;
 use Illuminate\Support\Facades\Storage;
 
 use Filament\Actions\DeleteBulkAction;
@@ -27,19 +28,6 @@ class DetailTurunKayusTable
             ->columns([  // BENAR: columns(), BUKAN components()
 
                 // 1. PEKERJA
-                TextColumn::make('pegawai.nama_pegawai')
-                    ->label('Pekerja')
-                    ->formatStateUsing(function ($record) {
-                        if (!$record->pegawai) {
-                            return '—';
-                        }
-
-                        // Tampilkan kode + nama pegawai (hanya 1 pegawai per baris)
-                        return $record->pegawai->kode_pegawai . ' - ' . $record->pegawai->nama_pegawai;
-                    })
-                    ->badge()
-                    ->searchable()
-                    ->sortable(),
 
                 // 2. SUPPLIER
                 TextColumn::make('kayuMasuk.penggunaanSupplier.nama_supplier')
@@ -105,18 +93,20 @@ class DetailTurunKayusTable
                     ->openUrlInNewTab(), // Buka di tab baru
 
             ])
+            ->headerActions([
+                CreateAction::make(), // ðŸ‘ˆ ini yang munculkan tombol "Tambah"
+            ])
             ->filters([
                 //
             ])
-            ->actions([
+            ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 DeleteBulkAction::make(),
             ])
-            ->emptyStateHeading('Belum ada detail')
-            ->emptyStateDescription('Tambahkan pekerja dan kayu masuk.')
+
             ->defaultSort('created_at', 'desc');
     }
 }

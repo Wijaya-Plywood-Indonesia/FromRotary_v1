@@ -33,8 +33,15 @@ class SupplierKayuInfolist
                 TextEntry::make('jenis_bank'),
                 TextEntry::make('no_rekening'),
                 TextEntry::make('status_supplier')
-                    ->default(fn($get) => $get('status_supplier') ? 'Tidak Aktif' : 'Aktif')
-                ,
+                    ->label('Status Supplier')
+                    ->formatStateUsing(function ($state) {
+                        return [
+                            0 => 'Tidak Aktif',
+                            1 => 'Aktif',
+                        ][$state] ?? '-';
+                    })
+                    ->badge() // opsional → agar tampil seperti badge
+                    ->color(fn($state) => $state == 1 ? 'success' : 'danger'),
                 TextEntry::make('created_at')
                     ->dateTime(),
                 TextEntry::make('updated_at')

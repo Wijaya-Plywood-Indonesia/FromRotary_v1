@@ -42,7 +42,7 @@ class SupplierKayuForm
                         '1' => 'Laki-laki',
                     ])
 
-                    ->default('0')
+                    ->default('1')
                     ->native(false),
 
                 Textarea::make('alamat')
@@ -50,6 +50,7 @@ class SupplierKayuForm
                 Select::make('jenis_bank')
                     ->label('Jenis Bank')
                     ->options([
+                        'Tunai' => 'Tunai',
                         'BCA' => 'BCA (Bank Central Asia)',
                         'BRI' => 'BRI (Bank Rakyat Indonesia)',
                         'BNI' => 'BNI (Bank Negara Indonesia)',
@@ -60,15 +61,10 @@ class SupplierKayuForm
                         'Lainnya' => 'Lainnya (Ketik manual)',
                     ])
                     ->searchable()
-                    ->live() // supaya bisa reaktif
-
-                    ->reactive()
-                    ->afterStateUpdated(function ($state, callable $set) {
-                        if ($state !== 'Lainnya') {
-                            $set('bank_lainnya', null); // reset input custom kalau pilih bank umum
-                        }
-                    }),
-                TextInput::make('no_rekening'),
+                    ->default('Tunai')
+                    ->live(), // supaya bisa reaktif,
+                TextInput::make('no_rekening')
+                    ->nullable(),
 
                 Select::make('status_supplier')
                     ->label('Status Supplier')
@@ -77,7 +73,7 @@ class SupplierKayuForm
                         1 => 'Aktif',
                     ])
 
-                    ->default('0')
+                    ->default('1')
                     ->native(false),
 
 
