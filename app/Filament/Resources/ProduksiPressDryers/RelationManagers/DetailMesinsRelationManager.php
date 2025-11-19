@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\ProduksiPressDryers\RelationManagers;
 
-use App\Filament\Resources\DetailMesins\Schemas\DetailMesinsForm;
+use App\Filament\Resources\DetailMesins\Schemas\DetailMesinForm;
 use App\Filament\Resources\DetailMesins\Tables\DetailMesinsTable;
 
 use Filament\Resources\RelationManagers\RelationManager;
@@ -24,7 +24,7 @@ class DetailMesinsRelationManager extends RelationManager
 
     public function form(Schema $schema): Schema
     {
-        return DetailMesinsForm::configure($schema);
+        return DetailMesinForm::configure($schema);
     }
 
     public function table(Table $table): Table

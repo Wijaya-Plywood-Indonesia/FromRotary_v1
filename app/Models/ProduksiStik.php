@@ -13,23 +13,28 @@ class ProduksiStik extends Model
         'kendala',
     ];
 
-    public function detailPegawai()
+    public function detailPegawaiStik()
     {
         return $this->hasMany(DetailPegawaiStik::class, 'id_produksi_stik');
     }
 
-    public function detailMasuk()
+    public function detailMasukStik()
     {
         return $this->hasMany(DetailMasukStik::class, 'id_produksi_stik');
     }
 
-    public function detailHasil()
+    public function detailHasilStik()
     {
         return $this->hasMany(DetailHasilStik::class, 'id_produksi_stik');
     }
 
-    public function validasi()
+    public function validasiStik()
     {
         return $this->hasMany(ValidasiStik::class, 'id_produksi_stik');
+    }
+
+    public function validasiTerakhir()
+    {
+        return $this->hasOne(ValidasiPressDryer::class, 'id_produksi_dryer')->latestOfMany();
     }
 }

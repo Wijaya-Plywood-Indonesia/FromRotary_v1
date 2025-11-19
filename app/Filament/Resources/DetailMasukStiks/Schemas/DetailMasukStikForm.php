@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\DetailMasuks\Schemas;
+namespace App\Filament\Resources\DetailMasukStiks\Schemas;
 
 use Filament\Schemas\Schema;
 use App\Models\JenisKayu;
@@ -8,7 +8,7 @@ use App\Models\Ukuran;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 
-class DetailMasukForm
+class DetailMasukStikForm
 {
     public static function configure(Schema $schema): Schema
     {
@@ -48,6 +48,7 @@ class DetailMasukForm
 
                 TextInput::make('kw')
                     ->label('KW (Kualitas)')
+                    ->numeric()
                     ->required()
                     ->maxLength(255)
                     ->placeholder('Cth: 1, 2, 3,dll.'),

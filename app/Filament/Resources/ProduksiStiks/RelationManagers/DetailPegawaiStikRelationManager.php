@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\ProduksiPressDryers\RelationManagers;
+namespace App\Filament\Resources\ProduksiStiks\RelationManagers;
 
 use App\Models\Pegawai;
 use App\Models\DetailPegawai;
@@ -19,38 +19,11 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Database\Eloquent\Model;
 
-
-
-class DetailPegawaisRelationManager extends RelationManager
+class DetailPegawaiStikRelationManager extends RelationManager
 {
     protected static ?string $title = 'Pegawai';
-    protected static string $relationship = 'detailPegawais';
-
-    // Izinkan Relation Manager tampil di halaman View
-    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
-    {
-        return true;
-    }
-
-    // IZINKAN TOMBOL CREATE MUNCUL DI VIEW
-    public static function showTableHeaderActionsInView(): bool
-    {
-        return true;
-    }
-
-    // Izinkan membuat data dari View
-    public static function canCreateForRecord(Model $ownerRecord, string $pageClass): bool
-    {
-        return true;
-    }
-
-    // FUNGSI BARU UNTUK MEMUNCULKAN TOMBOL DI HALAMAN VIEW
-    public function isReadOnly(): bool
-    {
-        return false;
-    }
+    protected static string $relationship = 'detailPegawaiStik';
 
     public static function timeOptions(): array
     {
@@ -59,6 +32,11 @@ class DetailPegawaisRelationManager extends RelationManager
                 $time->format('H:i') => $time->format('H.i'),
             ])
             ->toArray();
+    }
+
+    public function isReadOnly(): bool
+    {
+        return false;
     }
 
     public function form(Schema $schema): Schema
@@ -78,16 +56,9 @@ class DetailPegawaisRelationManager extends RelationManager
                     ->searchable()
                     ->required(),
 
-                Select::make('tugas')
+                TextInput::make('tugas')
                     ->label('Tugas')
-                    ->options([
-                        'operator' => 'Operator',
-                        'asistenoperator' => 'Asisten Operator',
-                        'dll' => 'Dll',
-                    ])
-                    ->required()
-                    ->native(false)
-                    ->searchable(),
+                    ->maxLength(255),
 
                 Select::make('masuk')
                     ->label('Jam Masuk')
@@ -123,83 +94,89 @@ class DetailPegawaisRelationManager extends RelationManager
         return $data;
     }
 
-    
     public function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('pegawai.nama_pegawai') // Asumsi: relasi 'pegawai' & kolom 'nama'
+                TextColumn::make('pegawai.nama_pegawai')
                     ->label('Pegawai')
+                    ->sortable()
                     ->searchable(),
 
                 TextColumn::make('tugas')
+                    ->label('Tugas')
                     ->searchable(),
 
                 TextColumn::make('masuk')
-                    ->time('H:i'), // Format waktu agar rapi
+                    ->label('Masuk')
+                    ->dateTime('H:i'),
 
                 TextColumn::make('pulang')
-                    ->time('H:i'), // Format waktu agar rapi
+                    ->label('Pulang')
+                    ->dateTime('H:i'),
 
                 TextColumn::make('ijin')
-                    ->searchable()
+                    ->label('Izin')
                     ->toggleable(isToggledHiddenByDefault: false),
 
                 TextColumn::make('ket')
                     ->label('Keterangan')
-                    ->limit(50) // Batasi teks agar tidak terlalu panjang
-                    ->tooltip(fn($record) => $record->ket) // Tampilkan teks penuh saat di-hover
-                    ->searchable()
+                    ->limit(30)
                     ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
-                // Tempat filter jika Anda membutuhkannya
+                //
             ])
             ->headerActions([
                 // Create Action — HILANG jika status sudah divalidasi
-            CreateAction::make()
-                ->hidden(fn($livewire) =>
-                    $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                ),
+                CreateAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
             ])
             ->recordActions([
                 // Edit Action — HILANG jika status sudah divalidasi
-            EditAction::make()
-                ->hidden(fn($livewire) =>
-                    $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                ),
-
-            // Delete Action — HILANG jika status sudah divalidasi
-            DeleteAction::make()
-                ->hidden(fn($livewire) =>
-                    $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                ),
-
-            // Atur Ijin — HILANG jika status sudah divalidasi
-            Action::make('aturIjin')
-                ->label(fn($record) => $record->ijin ? 'Edit Ijin' : 'Tambah Ijin')
-                ->icon('heroicon-o-pencil-square')
-                ->form([
-                    TextInput::make('ijin')->label('Ijin'),
-                    Textarea::make('ket')->label('Keterangan'),
-                ])
-                ->action(function ($record, array $data) {
-                    $record->update([
-                        'ijin' => $data['ijin'],
-                        'ket'  => $data['ket'],
-                    ]);
-                })
-                ->hidden(fn($livewire) =>
-                    $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                ),
-            ])
-            ->toolbarActions([
-            BulkActionGroup::make([
-                DeleteBulkAction::make()
-                    ->hidden(fn($livewire) =>
+                EditAction::make()
+                    ->hidden(
+                        fn($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
-            ]),
+
+                // Delete Action — HILANG jika status sudah divalidasi
+                DeleteAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
+
+                // ➕ Tambah / Edit Ijin & Keterangan
+                Action::make('aturIjin')
+                    ->label(fn($record) => $record->ijin ? 'Edit Ijin' : 'Tambah Ijin')
+                    ->icon('heroicon-o-pencil-square')
+                    ->form([
+                        TextInput::make('ijin')->label('Izin'),
+                        Textarea::make('ket')->label('Keterangan'),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'ijin' => $data['ijin'],
+                            'ket'  => $data['ket'],
+                        ]);
+                    })
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
+                        ->hidden(
+                            fn($livewire) =>
+                            $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                        ),
+                ]),
             ]);
     }
 }

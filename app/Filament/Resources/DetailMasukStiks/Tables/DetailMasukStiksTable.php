@@ -1,37 +1,42 @@
 <?php
 
-namespace App\Filament\Resources\DetailMesins\Tables;
+namespace App\Filament\Resources\DetailMasukStiks\Tables;
 
-use App\Models\DetailMesin;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Table;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
-use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 
-class DetailMesinsTable
+class DetailMasukStiksTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('mesin.nama_mesin') // Asumsi: relasi 'mesinDryer' & kolom 'nama'
-                    ->label('Mesin Dryer')
-                    ->searchable()
-                    ->placeholder('N/A'), // Teks jika mesin tidak dipilih (nullable)
-
-                TextColumn::make('jam_kerja_mesin')
-                    ->label('Jam Kerja Mesin')
+                TextColumn::make('no_palet')
+                    ->label('No. Palet')
                     ->searchable(),
 
-                TextColumn::make('created_at')
-                    ->label('Dibuat Pada')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true), // Sembunyikan by default
+                TextColumn::make('jenisKayu.nama_kayu')
+                    ->label('Jenis Kayu')
+                    ->searchable()
+                    ->placeholder('N/A'),
+
+                TextColumn::make('Ukuran.nama_ukuran')
+                    ->label('Ukuran')
+                    ->searchable(false)
+                    ->placeholder('Ukuran'),
+
+                TextColumn::make('kw')
+                    ->label('Kualitas (KW)')
+                    ->searchable(),
+
+                TextColumn::make('isi')
+                    ->label('Isi'),
+
             ])
             ->filters([
                 // Tempat filter jika Anda membutuhkannya

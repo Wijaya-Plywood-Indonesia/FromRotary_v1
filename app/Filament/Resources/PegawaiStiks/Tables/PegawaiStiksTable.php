@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\PegawaiDryers\Tables;
+namespace App\Filament\Resources\PegawaiStiks\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -8,8 +8,7 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 
-
-class PegawaiDryersTable
+class PegawaiStiksTable
 {
     public static function configure(Table $table): Table
     {
@@ -33,7 +32,7 @@ class PegawaiDryersTable
                     ->dateTime('d M Y H:i'),
 
                 TextColumn::make('ijin')
-                    ->label('Ijin')
+                    ->label('Izin')
                     ->toggleable(isToggledHiddenByDefault: false),
 
                 TextColumn::make('ket')

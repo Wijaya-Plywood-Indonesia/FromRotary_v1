@@ -1,20 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\ProduksiPressDryers\Pages;
+namespace App\Filament\Resources\ProduksiStiks\Pages;
 
-use App\Filament\Resources\ProduksiPressDryers\ProduksiPressDryerResource;
+use App\Filament\Resources\ProduksiStiks\ProduksiStikResource;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 
-class ViewProduksiPressDryer extends ViewRecord
+class ViewProduksiStik extends ViewRecord
 {
-    protected static string $resource = ProduksiPressDryerResource::class;
-
-    // 🔥 WAJIB: tampilkan relation manager di halaman View
-    protected static bool $showRelationManagers = true;
-
-    // 🔥 WAJIB: izinkan tombol-tombol header tampil (termasuk CREATE)
-    protected static bool $canViewAny = true;
+    protected static string $resource = ProduksiStikResource::class;
 
     protected function getHeaderActions(): array
     {

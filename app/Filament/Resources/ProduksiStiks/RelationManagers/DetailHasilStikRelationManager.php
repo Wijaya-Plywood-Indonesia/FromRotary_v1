@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\ProduksiPressDryers\RelationManagers;
+namespace App\Filament\Resources\ProduksiStiks\RelationManagers;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -8,18 +8,17 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Select;
 
-class DetailHasilsRelationManager extends RelationManager
+class DetailHasilStikRelationManager extends RelationManager
 {
     protected static ?string $title = 'Hasil';
-    protected static string $relationship = 'detailHasils';
+    protected static string $relationship = 'detailHasilStik';
 
-    // FUNGSI BARU UNTUK MEMUNCULKAN TOMBOL DI HALAMAN VIEW
     public function isReadOnly(): bool
     {
         return false;
@@ -34,32 +33,13 @@ class DetailHasilsRelationManager extends RelationManager
                     ->numeric()
                     ->required(),
 
-                // Relasi ke Ukuran (id_ukuran)
-                Select::make('id_ukuran')
-                    ->label('Ukuran Kayu')
-                    ->options(function () {
-                        $produksi = $this->getOwnerRecord();
-
-                        return \App\Models\DetailMasuk::where('id_produksi_dryer', $produksi->id)
-                            ->with('ukuran')
-                            ->get()
-                            ->pluck('ukuran.nama_ukuran', 'id_ukuran')
-                            ->unique();
-                    })
-                    ->searchable()
-                    ->afterStateUpdated(function ($state) {
-                        session(['last_ukuran' => $state]);
-                    })
-                    ->default(fn() => session('last_ukuran'))
-                    ->required(),
-
                 // Relasi ke Jenis Kayu (id_jenis_kayu)
                 Select::make('id_jenis_kayu')
                     ->label('Jenis Kayu')
                     ->options(function () {
                         $produksi = $this->getOwnerRecord();
 
-                        return \App\Models\DetailMasuk::where('id_produksi_dryer', $produksi->id)
+                        return \App\Models\DetailMasukStik::where('id_produksi_stik', $produksi->id)
                             ->select('id_jenis_kayu')
                             ->distinct()
                             ->with('jenisKayu:id,nama_kayu')
@@ -73,6 +53,25 @@ class DetailHasilsRelationManager extends RelationManager
                     ->default(fn() => session('last_jenis_kayu'))
                     ->required(),
 
+                // Relasi ke Ukuran (id_ukuran)
+                Select::make('id_ukuran')
+                    ->label('Ukuran Kayu')
+                    ->options(function () {
+                        $produksi = $this->getOwnerRecord();
+
+                        return \App\Models\DetailMasukStik::where('id_produksi_stik', $produksi->id)
+                            ->with('ukuran')
+                            ->get()
+                            ->pluck('ukuran.nama_ukuran', 'id_ukuran')
+                            ->unique();
+                    })
+                    ->searchable()
+                    ->afterStateUpdated(function ($state) {
+                        session(['last_ukuran' => $state]);
+                    })
+                    ->default(fn() => session('last_ukuran'))
+                    ->required(),
+
                 TextInput::make('kw')
                     ->label('Kualitas (KW)')
                     ->numeric()          // memastikan input angka
@@ -80,8 +79,8 @@ class DetailHasilsRelationManager extends RelationManager
                     ->required()
                     ->placeholder('Cth: 1, 2, 3 dll.'),
 
-                TextInput::make('isi')
-                    ->label('Isi')
+                TextInput::make('total_lembar')
+                    ->label('Total Lembar')
                     ->required()
                     ->numeric()
                     ->placeholder('Cth: 1.5 atau 100'),
@@ -110,8 +109,8 @@ class DetailHasilsRelationManager extends RelationManager
                     ->label('Kualitas (KW)')
                     ->searchable(),
 
-                TextColumn::make('isi')
-                    ->label('Isi'),
+                TextColumn::make('total_lembar')
+                    ->label('Total Lembar'),
 
                 TextColumn::make('created_at')
                     ->label('Tanggal Input')
@@ -119,7 +118,7 @@ class DetailHasilsRelationManager extends RelationManager
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                // Tempat filter jika Anda membutuhkannya
+                //
             ])
             ->headerActions([
                 // Create Action — HILANG jika status sudah divalidasi

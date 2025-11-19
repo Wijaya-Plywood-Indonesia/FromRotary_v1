@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\ProduksiPressDryers\Tables;
+namespace App\Filament\Resources\ProduksiStiks\Tables;
 
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -17,7 +17,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Tables;
 
-class ProduksiPressDryersTable
+class ProduksiStiksTable
 {
     public static function configure(Table $table): Table
     {
@@ -26,15 +26,6 @@ class ProduksiPressDryersTable
                 TextColumn::make('tanggal_produksi')
                     ->date()
                     ->sortable(),
-
-                TextColumn::make('shift')
-                    ->label('Shift')
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'PAGI' => 'success',
-                        'MALAM' => 'gray',
-                    })
-                    ->searchable(),
 
                 TextColumn::make('kendala')
                     ->label('Kendala')
@@ -57,7 +48,6 @@ class ProduksiPressDryersTable
                     ->sortable()
                     ->searchable(),
 
-
                 TextColumn::make('created_at')
                     ->label('Dibuat Pada')
                     ->dateTime('d/m/Y H:i')
@@ -65,13 +55,6 @@ class ProduksiPressDryersTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('shift')
-                    ->options([
-                        'PAGI' => 'Pagi',
-                        'MALAM' => 'Malam',
-                    ])
-                    ->label('Filter Shift'),
-
                 Filter::make('tanggal_produksi')
                     ->form([
                         \Filament\Forms\Components\DatePicker::make('from')
@@ -83,11 +66,11 @@ class ProduksiPressDryersTable
                         return $query
                             ->when(
                                 $data['from'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal_produksi', '>=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('tanggal_produksi', '>=', $date),
                             )
                             ->when(
                                 $data['until'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal_produksi', '<=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('tanggal_produksi', '<=', $date),
                             );
                     }),
             ])
