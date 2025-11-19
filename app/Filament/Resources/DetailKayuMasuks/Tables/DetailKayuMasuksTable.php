@@ -146,7 +146,7 @@ class DetailKayuMasuksTable
                 //
             ])
             ->headerActions([
-                // CreateAction::make(),
+                CreateAction::make(),
                 // Action::make('total_kubikasi')
                 //     ->label(function () {
                 //         // Ambil semua data DetailKayuMasuk
