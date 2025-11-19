@@ -14,9 +14,11 @@ class ProduksiKediForm
         return $schema
             ->components([
                 DatePicker::make('tanggal')
+                    ->label('Tanggal Produksi')
+                    ->default(fn() => now()->addDay()) // 👈 default besok
+                    ->displayFormat('d M Y') // 👈 tampil seperti: 01 Januari 2025
                     ->required(),
-                Textarea::make('kendala')
-                    ->columnSpanFull(),
+
                 Select::make('status')
                     ->options(['bongkar' => 'Bongkar', 'masuk' => 'Masuk'])
                     ->required(),

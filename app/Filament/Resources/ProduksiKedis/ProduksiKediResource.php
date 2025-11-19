@@ -39,7 +39,31 @@ class ProduksiKediResource extends Resource
     {
         return ProduksiKedisTable::configure($table);
     }
+    // public static function getRelations(): array
+    // {
+    //     // Ambil instance record dari Filament Livewire
+    //     $livewire = filament()->getCurrentPanel()->getCurrentPage();
 
+    //     if (!$livewire || !method_exists($livewire, 'getRecord')) {
+    //         return [];
+    //     }
+
+    //     $record = $livewire->getRecord();
+
+    //     if (!$record) {
+    //         return [];
+    //     }
+
+    //     return match ($record->status) {
+    //         'masuk' => [
+    //             DetailMasukKediRelationManager::class,
+    //         ],
+    //         'bongkar' => [
+    //             DetailBongkarRelationManager::class,
+    //         ],
+    //         default => [],
+    //     };
+    // }
     public static function getRelations(): array
     {
         return [
