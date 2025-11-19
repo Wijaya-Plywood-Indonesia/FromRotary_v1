@@ -64,6 +64,7 @@ class Ukuran extends Model
         return "{$this->panjang}m x {$this->lebar}m x {$this->tebal}cm";
     }
 
+
     protected $appends = ['kubikasi', 'nama_ukuran'];
     public function getKubikasiAttribute()
     {

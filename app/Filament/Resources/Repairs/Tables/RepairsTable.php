@@ -5,9 +5,12 @@ namespace App\Filament\Resources\Repairs\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Actions\DeleteAction;
+use Filament\Forms\Components\DatePicker;
 
 class RepairsTable
 {
@@ -15,64 +18,33 @@ class RepairsTable
     {
         return $table
             ->columns([
-
-
-                TextColumn::make('ukuran.full_ukuran')
-                    ->label('Ukuran Kayu')
-                    ->formatStateUsing(
-                        fn($record) =>
-                        $record->ukuran
-                        ? "{$record->ukuran->panjang} × {$record->ukuran->lebar} × {$record->ukuran->tebal} cm"
-                        : '—'
-                    )
-                    ->searchable(['ukurans.panjang', 'ukurans.lebar', 'ukurans.tebal'])
+                TextColumn::make('tanggal')
+                    ->label('Tanggal')
+                    ->date('d F Y')
                     ->sortable()
-                    ->wrap(),
-
-                TextColumn::make('jenisKayu.kode_kayu')
-                    ->label('Jenis Kayu')
-                    ->badge()
-                    ->color('info')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('kualitas')
                     ->searchable(),
-                TextColumn::make('total_lembar')
-                    ->label('Lembar')
-                    ->numeric(locale: 'id')
-                    ->sortable(),
-                TextColumn::make('jam_kerja')
-                    ->time()
-                    ->sortable(),
-                TextColumn::make('target')
-                    ->label('Target')
-                    ->numeric(locale: 'id')
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
+                TextColumn::make('jumlah_meja')
+                    ->label('Jumlah Meja')
+                    ->numeric()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(),
             ])
             ->filters([
-                SelectFilter::make('kualitas')
-                    ->options([
-                        'KW1' => 'KW1',
-                        'KW2' => 'KW2',
-                        'KW3' => 'KW3',
-                        'KW4' => 'KW4',
-                    ]),
-                SelectFilter::make('jenis_kayu')
-                    ->relationship('jenisKayu', 'kode_kayu')
-                    ->searchable()
-                    ->preload(),
+                Filter::make('tanggal')
+                    ->form([
+                        DatePicker::make('dari'),
+                        DatePicker::make('sampai'),
+                    ])
+                    ->query(function ($query, $data) {
+                        return $query
+                            ->when($data['dari'], fn($q) => $q->whereDate('tanggal', '>=', $data['dari']))
+                            ->when($data['sampai'], fn($q) => $q->whereDate('tanggal', '<=', $data['sampai']));
+                    }),
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
