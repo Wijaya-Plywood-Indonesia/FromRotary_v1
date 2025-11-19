@@ -19,6 +19,10 @@ class DetailBongkarRelationManager extends RelationManager
     {
         return DetailBongkarKediForm::configure($schema);
     }
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
 
     public function table(Table $table): Table
     {

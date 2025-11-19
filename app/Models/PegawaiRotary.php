@@ -15,6 +15,8 @@ class PegawaiRotary extends Model
         'role',
         'jam_masuk',
         'jam_pulang',
+        'izin',
+        'keterangan',
     ];
     public function produksi()
     {

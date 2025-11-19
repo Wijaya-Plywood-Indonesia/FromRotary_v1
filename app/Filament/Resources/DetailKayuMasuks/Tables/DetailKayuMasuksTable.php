@@ -73,7 +73,7 @@ class DetailKayuMasuksTable
                         default => 'gray',
                     }),
                 TextColumn::make('diameter')
-                    ->label('D')
+                    ->label('Diameter')
                     ->numeric()
                     ->sortable(),
 
@@ -146,61 +146,61 @@ class DetailKayuMasuksTable
                 //
             ])
             ->headerActions([
-                CreateAction::make(),
-                Action::make('total_kubikasi')
-                    ->label(function () {
-                        // Ambil semua data DetailKayuMasuk
-                        $totalKubikasi = DetailKayuMasuk::all()
-                            ->sum(
-                                fn($item) =>
-                                ($item->diameter ?? 0) * ($item->jumlah_batang ?? 0) * 0.785 / 1_000_000
-                            );
+                // CreateAction::make(),
+                // Action::make('total_kubikasi')
+                //     ->label(function () {
+                //         // Ambil semua data DetailKayuMasuk
+                //         $totalKubikasi = DetailKayuMasuk::all()
+                //             ->sum(
+                //                 fn($item) =>
+                //                 ($item->diameter ?? 0) * ($item->jumlah_batang ?? 0) * 0.785 / 1_000_000
+                //             );
 
-                        return 'Total Kubikasi = ' . number_format($totalKubikasi, 6, ',', '.') . ' m³';
-                    })
-                    ->disabled() // Tidak bisa diklik
-                    ->color('gray')
-                    ->button() // Supaya tampil seperti label di header
-                    ->outlined()
-                    ->icon('heroicon-o-cube'),
+                //         return 'Total Kubikasi = ' . number_format($totalKubikasi, 6, ',', '.') . ' m³';
+                //     })
+                //     ->disabled() // Tidak bisa diklik
+                //     ->color('gray')
+                //     ->button() // Supaya tampil seperti label di header
+                //     ->outlined()
+                //     ->icon('heroicon-o-cube'),
 
-                Action::make('sinkron_kubikasi')
-                    ->label('Sinkron Total Kubikasi')
-                    ->icon('heroicon-o-arrow-path')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->action(function (RelationManager $livewire) {
-                        $record = $livewire->ownerRecord; // model KayuMasuk (parent)
-            
-                        // Pastikan kita mendapatkan collection (bukan null)
-                        $details = $record->detailMasukanKayu()->get();
+                // Action::make('sinkron_kubikasi')
+                //     ->label('Sinkron Total Kubikasi')
+                //     ->icon('heroicon-o-arrow-path')
+                //     ->color('success')
+                //     ->requiresConfirmation()
+                //     ->action(function (RelationManager $livewire) {
+                //         $record = $livewire->ownerRecord; // model KayuMasuk (parent)
 
-                        $totalKubikasi = $details->sum(function ($item) {
-                            return ($item->diameter ?? 0) * ($item->jumlah_batang ?? 0) * 0.785 / 1000000;
-                        });
+                //         // Pastikan kita mendapatkan collection (bukan null)
+                //         $details = $record->detailMasukanKayu()->get();
 
-                        // Pastikan tidak null (cast ke float)
-                        $totalKubikasi = (float) $totalKubikasi;
+                //         $totalKubikasi = $details->sum(function ($item) {
+                //             return ($item->diameter ?? 0) * ($item->jumlah_batang ?? 0) * 0.785 / 1000000;
+                //         });
 
-                        $record->update(['kubikasi' => $totalKubikasi]);
+                //         // Pastikan tidak null (cast ke float)
+                //         $totalKubikasi = (float) $totalKubikasi;
 
-                        Notification::make()
-                            ->title('Total kubikasi berhasil disinkronkan!')
-                            ->body('Total: ' . number_format($totalKubikasi, 6, ',', '.') . ' m³')
-                            ->success()
-                            ->send();
+                //         $record->update(['kubikasi' => $totalKubikasi]);
 
-                        // 🔄 Refresh halaman setelah update
-                        // $livewire->dispatchBrowserEvent('reload');
-            
-                    })
-                    ->after(function ($livewire) {
-                        // Setelah aksi selesai, reload komponen saat ini (bukan full page)
-                        $livewire->dispatch('$refresh');
+                //         Notification::make()
+                //             ->title('Total kubikasi berhasil disinkronkan!')
+                //             ->body('Total: ' . number_format($totalKubikasi, 6, ',', '.') . ' m³')
+                //             ->success()
+                //             ->send();
 
-                        // Kalau mau full reload (halaman benar-benar segar):
-                        $livewire->js('window.location.reload()');
-                    }),
+                //         // 🔄 Refresh halaman setelah update
+                //         // $livewire->dispatchBrowserEvent('reload');
+
+                //     })
+                //     ->after(function ($livewire) {
+                //         // Setelah aksi selesai, reload komponen saat ini (bukan full page)
+                //         $livewire->dispatch('$refresh');
+
+                //         // Kalau mau full reload (halaman benar-benar segar):
+                //         $livewire->js('window.location.reload()');
+                //     }),
 
             ])
             ->recordActions([

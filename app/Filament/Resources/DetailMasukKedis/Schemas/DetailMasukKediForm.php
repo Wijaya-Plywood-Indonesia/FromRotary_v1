@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\DetailMasukKedis\Schemas;
 
+use App\Models\JenisKayu;
 use App\Models\Ukuran;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -15,6 +16,7 @@ class DetailMasukKediForm
         return $schema
             ->components([
                 TextInput::make('no_palet')
+                    ->label('No Palet Basah')
                     ->required()
                     ->numeric(),
 
@@ -26,19 +28,31 @@ class DetailMasukKediForm
                     )
                     ->searchable()
                     ->required(),
-                TextInput::make('id_jenis_kayu')
-                    ->numeric(),
+
+                Select::make('id_jenis_kayu')
+                    ->label('Jenis Kayu')
+                    ->options(
+                        JenisKayu::query()
+                            ->get()
+                            ->mapWithKeys(function ($JenisKayu) {
+                                return [
+                                    $JenisKayu->id => "{$JenisKayu->kode_kayu} - {$JenisKayu->nama_kayu}",
+                                ];
+                            })
+                    )
+                    ->searchable()
+                    ->required(),
+
                 TextInput::make('kw')
                     ->required()
                     ->numeric(),
+
                 TextInput::make('jumlah')
                     ->required()
                     ->numeric(),
+
                 DatePicker::make('rencana_bongkar')
                     ->required(),
-                TextInput::make('id_produksi_kedi')
-                    ->required()
-                    ->numeric(),
             ]);
     }
 }

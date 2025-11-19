@@ -19,7 +19,10 @@ class YesRelationManager extends RelationManager
     {
         return ValidasiKediForm::configure($schema);
     }
-
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
     public function table(Table $table): Table
     {
         return ValidasiKedisTable::configure($table)

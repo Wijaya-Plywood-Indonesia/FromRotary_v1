@@ -123,7 +123,7 @@ class DetailPegawaisRelationManager extends RelationManager
         return $data;
     }
 
-    
+
     public function table(Table $table): Table
     {
         return $table
@@ -174,9 +174,9 @@ class DetailPegawaisRelationManager extends RelationManager
                     ->action(function ($record, array $data) {
                         $record->update([
                             'ijin' => $data['ijin'],
-                            'ket'  => $data['ket'],
+                            'ket' => $data['ket'],
                         ]);
-                    })
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

@@ -16,8 +16,7 @@ class KayuPecahRotary extends Model
     protected $fillable = [
         'id_produksi',
         'id_penggunaan_lahan',
-        'panjang',
-        'diameter',
+        'ukuran',
         'foto',
     ];
     public function penggunaanLahan()

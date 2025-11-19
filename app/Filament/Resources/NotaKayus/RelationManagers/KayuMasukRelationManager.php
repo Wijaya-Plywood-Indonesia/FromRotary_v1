@@ -54,14 +54,18 @@ class KayuMasukRelationManager extends RelationManager
 
                         return "{$namaKayu} - {$kodeLahan} - {$panjang}";
                     })
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->sortable(),
 
                 TextColumn::make('diameter')
+                    ->sortable()
                     ->suffix(' cm'),
 
 
                 TextColumn::make('detail_jumlah')->label('Turus 1'),
-                TextColumn::make('turusan_jumlah')->label('Turus 2'),
+                TextColumn::make('turusan_jumlah')->label('Turuss 2'),
+                TextColumn::make('grade')->label('Grade'),
+
                 TextColumn::make('selisih')
                     ->label('Selisih')
                     ->badge()
