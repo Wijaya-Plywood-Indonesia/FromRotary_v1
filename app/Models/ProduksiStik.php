@@ -35,6 +35,6 @@ class ProduksiStik extends Model
 
     public function validasiTerakhir()
     {
-        return $this->hasOne(ValidasiPressDryer::class, 'id_produksi_dryer')->latestOfMany();
+        return $this->hasOne(ValidasiStik::class, 'id_produksi_stik')->latestOfMany();
     }
 }

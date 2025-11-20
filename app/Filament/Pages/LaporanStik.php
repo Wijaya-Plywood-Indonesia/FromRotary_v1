@@ -47,7 +47,6 @@ class LaporanStik extends Page
         return [
             DatePicker::make('tanggal')
                 ->label('Pilih Tanggal')
-                ->default(now())
                 ->reactive()
                 ->afterStateUpdated(function ($state) {
                     $this->tanggal = $state;
@@ -105,10 +104,10 @@ class LaporanStik extends Page
         $this->dataStik = [];
 
         foreach ($produksiList as $produksi) {
-            $tanggalFormat = \Carbon\Carbon::parse($produksi->tgl_produksi)->format('d/m/Y');
+            $tanggalFormat = \Carbon\Carbon::parse($produksi->tanggal_produksi)->format('d/m/Y');
             
             // Asumsi: Di tabel produksi_stiks ada kolom 'hasil_produksi' atau sejenisnya
-            $hasil = $produksi->hasil_produksi ?? 0; 
+            $hasil = $produksi->detailHasilStik->sum('total_lembar') ?? 0;
             
             // Hitung Selisih (Target - Hasil)
             // Jika Hasil 6000, Target 7000. Selisih = 1000 (Kurang)
@@ -131,8 +130,8 @@ class LaporanStik extends Page
                 $pekerja[] = [
                     'id' => $detail->pegawai->kode_pegawai ?? '-',
                     'nama' => $detail->pegawai->nama_pegawai ?? '-',
-                    'jam_masuk' => $detail->jam_masuk ? \Carbon\Carbon::parse($detail->jam_masuk)->format('H:i') : '-',
-                    'jam_pulang' => $detail->jam_pulang ? \Carbon\Carbon::parse($detail->jam_pulang)->format('H:i') : '-',
+                    'jam_masuk' => $detail->masuk ? \Carbon\Carbon::parse($detail->masuk)->format('H:i') : '-',
+                    'jam_pulang' => $detail->pulang ? \Carbon\Carbon::parse($detail->pulang)->format('H:i') : '-',
                     'ijin' => $detail->ijin ?? '-',
                     // Terapkan pembulatan
                     'pot_target' => $potonganPerOrang > 0
