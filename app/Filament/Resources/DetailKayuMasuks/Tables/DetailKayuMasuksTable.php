@@ -57,17 +57,20 @@ class DetailKayuMasuksTable
                     ->getStateUsing(function ($record) {
                         $namaKayu = $record->jenisKayu?->nama_kayu ?? '-';
                         $panjang = $record->panjang ?? '-';
-                        $grade = match ($record->grade) {
+
+                        $gradeValue = (int) $record->grade;
+
+                        $grade = match ($gradeValue) {
                             1 => 'A',
                             2 => 'B',
                             default => '-',
                         };
+
                         return "{$namaKayu} {$panjang} ({$grade})";
                     })
-                    ->sortable(['jenisKayu.nama_kayu', 'panjang', 'grade']) // tetap bisa diurutkan
-                    ->searchable(['jenisKayu.nama_kayu', 'panjang']) // bisa dicari juga
-                    //  ->badge()
-                    ->color(fn($record) => match ($record->grade) {
+                    ->sortable(['jenisKayu.nama_kayu', 'panjang', 'grade'])
+                    ->searchable(['jenisKayu.nama_kayu', 'panjang'])
+                    ->color(fn($record) => match ((int) $record->grade) {
                         1 => 'success',
                         2 => 'primary',
                         default => 'gray',
@@ -89,7 +92,7 @@ class DetailKayuMasuksTable
                         $jumlahBatang = $record->jumlah_batang ?? 0;
 
                         // Rumus: diameter × jumlah_batang × 0.785 / 1_000_000
-                        $kubikasi = $diameter * $jumlahBatang * 0.785 / 1_000_000;
+                        $kubikasi = $diameter * $diameter * $jumlahBatang * 0.785 / 1_000_000;
 
                         // Tampilkan hingga 6 angka di belakang koma
                         return number_format($kubikasi, 6, ',', '.');
@@ -115,54 +118,86 @@ class DetailKayuMasuksTable
                     ->label('Lahan')
                     ->collapsible()
                     ->orderQueryUsing(function ($query, $direction) {
-                        // supaya Filament tahu cara urutkan data saat ASC/DESC di UI
                         return $query
                             ->join('lahans', 'detail_kayu_masuks.id_lahan', '=', 'lahans.id')
                             ->orderBy('lahans.kode_lahan', $direction)
-                            ->select('detail_kayu_masuks.*'); // penting untuk mencegah ambiguitas
+                            ->select('detail_kayu_masuks.*');
                     })
                     ->getTitleFromRecordUsing(function ($record, $records = null) {
                         $kode = $record->lahan?->kode_lahan ?? '-';
                         $nama = $record->lahan?->nama_lahan ?? '-';
                         $jenis_kayu = $record->jenisKayu?->nama_kayu ?? '-';
 
-                        if ($records instanceof Collection && $records->isNotEmpty()) {
-                            $totalBatang = $records->count();
-                            $totalKubikasi = $records->sum(fn($r) => (float) $r->kubikasi);
+                        $parentId = $record->id_kayu_masuk ?? $record->kayu_masuk_id ?? null;
+                        $lahanId = $record->id_lahan;
+
+                        // CASE 1: Jika Filament sudah memberi Collection ($records)
+                        if ($records instanceof \Illuminate\Support\Collection && $records->isNotEmpty()) {
+
+                            $filtered = $records
+                                ->where('id_kayu_masuk', $parentId)
+                                ->where('id_lahan', $lahanId);
+
+                            $totalBatang = $filtered->sum(fn($r) => (int) ($r->jumlah_batang ?? 0));
+
+                            // Hitung kubikasi manual (karena tidak ada di DB)
+                            $totalKubikasi = $filtered->sum(function ($r) {
+                                $diameter = $r->diameter ?? 0;
+                                $jumlah = $r->jumlah_batang ?? 0;
+                                return $diameter * $diameter * $jumlah * 0.785 / 1000000;
+                            });
+
                         } else {
+
+                            // CASE 2: Tidak ada records collection → query DB
                             $query = DetailKayuMasuk::query()
-                                ->where('id_lahan', $record->id_lahan)
-                                ->get();
-                            $totalBatang = $query->count();
-                            $totalKubikasi = $query->sum(fn($r) => (float) $r->kubikasi);
+                                ->where('id_kayu_masuk', $parentId)
+                                ->where('id_lahan', $lahanId)
+                                ->get(); // convert → collection
+            
+                            $totalBatang = $query->sum('jumlah_batang');
+
+                            // Hitung kubikasi manual
+                            $totalKubikasi = $query->sum(function ($r) {
+                                $diameter = $r->diameter ?? 0;
+                                $jumlah = $r->jumlah_batang ?? 0;
+                                return $diameter * $diameter * $jumlah * 0.785 / 1000000;
+                            });
                         }
 
+                        // Format angka
                         $kubikasiFormatted = number_format($totalKubikasi, 4, ',', '.');
+
                         return "{$kode} {$nama} {$jenis_kayu} - {$totalBatang} batang ({$kubikasiFormatted} m³)";
-                    }),
+                    })
+                ,
             ])
+
+
+
             ->defaultGroup('lahan.kode_lahan')
+            ->groupingSettingsHidden()
             ->filters([
                 //
             ])
             ->headerActions([
                 CreateAction::make(),
-                // Action::make('total_kubikasi')
-                //     ->label(function () {
-                //         // Ambil semua data DetailKayuMasuk
-                //         $totalKubikasi = DetailKayuMasuk::all()
-                //             ->sum(
-                //                 fn($item) =>
-                //                 ($item->diameter ?? 0) * ($item->jumlah_batang ?? 0) * 0.785 / 1_000_000
-                //             );
+                Action::make('total_kubikasi')
+                    ->label(function () {
+                        // Ambil semua data DetailKayuMasuk
+                        $totalKubikasi = DetailKayuMasuk::all()
+                            ->sum(
+                                fn($item) =>
+                                ($item->diameter ?? 0) * ($item->diameter ?? 0) * ($item->jumlah_batang ?? 0) * 0.785 / 1_000_000
+                            );
 
-                //         return 'Total Kubikasi = ' . number_format($totalKubikasi, 6, ',', '.') . ' m³';
-                //     })
-                //     ->disabled() // Tidak bisa diklik
-                //     ->color('gray')
-                //     ->button() // Supaya tampil seperti label di header
-                //     ->outlined()
-                //     ->icon('heroicon-o-cube'),
+                        return 'Total Kubikasi = ' . number_format($totalKubikasi, 6, ',', '.') . ' m³';
+                    })
+                    ->disabled() // Tidak bisa diklik
+                    ->color('gray')
+                    ->button() // Supaya tampil seperti label di header
+                    ->outlined()
+                    ->icon('heroicon-o-cube'),
 
                 // Action::make('sinkron_kubikasi')
                 //     ->label('Sinkron Total Kubikasi')

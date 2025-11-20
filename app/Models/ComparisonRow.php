@@ -6,19 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class ComparisonRow extends Model
 {
-    //
-    protected $table = null; // tanpa tabel
+    protected $table = 'kayu_compare_temp';
+
+    public $incrementing = false;
     public $timestamps = false;
 
-    protected $fillable = [
-        'id',
-        'id_jenis_kayu',
-        'id_lahan',
-        'diameter',
-        'panjang',
-        'grade',
-        'detail_jumlah',
-        'turusan_jumlah',
-        'selisih',
-    ];
+    protected $primaryKey = 'id'; // pakai ROW_NUMBER()
+
+    protected $guarded = [];
 }

@@ -2,14 +2,17 @@
 
 namespace App\Filament\Resources\NotaKayus\RelationManagers;
 
+use App\Models\ComparisonRow;
 use App\Models\JenisKayu;
 use App\Models\Lahan;
 use App\Services\KayuComparator;
+use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 
 class KayuMasukRelationManager extends RelationManager
 {
@@ -20,64 +23,78 @@ class KayuMasukRelationManager extends RelationManager
         return 'Perbandingan Detail & Turusan';
     }
 
+    public function getTableQuery(): Builder
+    {
+        return ComparisonRow::query()
+            ->where('id_kayu_masuk', $this->ownerRecord->id);
+    }
     public function table(Table $table): Table
     {
         return $table
-            ->groups([
-                Group::make('selisih')
-                    ->label('Selisih')
-                    ->getTitleFromRecordUsing(
-                        fn($record) =>
-                        $record->selisih == 0 ? 'Sama' : 'Selisih ' . $record->selisih
-                    )
-                    ->orderQueryUsing(
-                        fn(Builder $query, string $direction) =>
-                        $query->orderBy('selisih', 'desc')   // <-- selalu DESC
-                    )
-                    ->collapsible(),
-
-            ])
-            ->defaultGroup('selisih')
-            ->defaultSort('selisih', 'desc')
-
-            ->query(function () {
-                $owner = $this->getOwnerRecord();
-                return KayuComparator::buildQuery($owner->id);
-            })
             ->columns([
-                TextColumn::make('info_kayu')
-                    ->label('Info')
+                TextColumn::make('no')
+                    ->label('No')
+                    ->rowIndex(),
+                TextColumn::make('jenis_kayu_label')
+                    ->label('Jenis Kayu')
                     ->getStateUsing(function ($record) {
-                        $namaKayu = JenisKayu::find($record->id_jenis_kayu)->nama_kayu ?? '-';
-                        $kodeLahan = Lahan::find($record->id_lahan)->kode_lahan ?? '-';
-                        $panjang = $record->panjang ? "{$record->panjang} cm" : '-';
+                        $jk = JenisKayu::find($record->id_jenis_kayu);
 
-                        return "{$namaKayu} - {$kodeLahan} - {$panjang}";
+                        if (!$jk) {
+                            return '-';
+                        }
+
+                        return "{$jk->nama_kayu}";
                     })
-                    ->alignCenter()
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('lahan_label')
+                    ->label('Lahan')
+                    ->getStateUsing(function ($record) {
+                        $jk = Lahan::find($record->id_lahan);
+
+                        if (!$jk) {
+                            return '-';
+                        }
+
+                        return "{$jk->kode_lahan}";
+                    })
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('panjang'),
+                // TextColumn::make('grade'),
+                TextColumn::make('grade')
+                    ->label('Grade')
+                    ->getStateUsing(function ($record) {
+                        return match ((int) $record->grade) {
+                            1 => 'A',
+                            2 => 'B',
+                            default => '-',
+                        };
+                    })
+                    ->color(fn($state) => match ($state) {
+                        'A' => 'success',
+                        'B' => 'primary',
+                        default => 'gray',
+                    }),
 
                 TextColumn::make('diameter')
-                    ->sortable()
                     ->suffix(' cm'),
 
+                TextColumn::make('detail_jumlah')
+                    ->label('Turusan 1')
+                    ->suffix(' Btg'),
 
-                TextColumn::make('detail_jumlah')->label('Turus 1'),
-                TextColumn::make('turusan_jumlah')->label('Turuss 2'),
-                TextColumn::make('grade')->label('Grade'),
-
+                TextColumn::make('turusan_jumlah')
+                    ->label('Turusan 2')
+                    ->suffix(' Btg'),
                 TextColumn::make('selisih')
                     ->label('Selisih')
-                    ->badge()
-                    ->formatStateUsing(function ($state) {
-                        if ($state == 0) {
-                            return 'Sama';
-                        }
-                        return 'Selisih ' . $state;
-                    })
-                    ->color(fn($state) => $state == 0 ? 'gray' : 'danger')
-                    ->icon(fn($state) => $state == 0 ? 'heroicon-o-check-circle' : 'heroicon-o-exclamation-circle'),
-
-            ]);
+                    ->getStateUsing(fn($record) => (float) $record->selisih)   // pastikan angka
+                    ->formatStateUsing(fn($state) => number_format((float) $state)) // fix formatter
+                    ->color(fn($state) => (float) $state < 0 ? 'danger' : ((float) $state > 0 ? 'success' : 'gray')),
+            ])
+            ->defaultSort('selisih');
     }
+
 }
