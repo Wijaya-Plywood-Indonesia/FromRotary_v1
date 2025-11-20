@@ -20,15 +20,12 @@ class DetailTurunKayusTable
             ->query(
                 DetailTurunKayu::query()
                     ->with([
-                        'pegawai',
+                        'pegawaiTurunKayu.pegawai',
                         'kayuMasuk.penggunaanSupplier',
                         'kayuMasuk.penggunaanKendaraanSupplier'
                     ])
             )
-            ->columns([  // BENAR: columns(), BUKAN components()
-
-                // 1. PEKERJA
-
+            ->columns([
                 // 2. SUPPLIER
                 TextColumn::make('kayuMasuk.penggunaanSupplier.nama_supplier')
                     ->label('Supplier')
@@ -41,6 +38,11 @@ class DetailTurunKayusTable
 
                 TextColumn::make('nama_supir')
                     ->label('Nama Supir')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('jumlah_kayu')
+                    ->label('Jumlah Kayu')
                     ->searchable()
                     ->sortable(),
 

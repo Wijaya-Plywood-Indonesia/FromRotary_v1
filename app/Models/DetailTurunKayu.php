@@ -7,20 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetailTurunKayu extends Model
 {
-    protected $primaryKey = 'id';
-    //
-    //
     protected $fillable = [
         'id_turun_kayu',
-        'id_pegawai',
         'id_kayu_masuk',
         'status',
         'foto',
         'nama_supir'
-    ];
-    protected $casts = [
-        'id_turun_kayus' => 'integer',
-        'id_pegawai' => 'integer',
     ];
 
     public function turunKayu()
@@ -28,36 +20,21 @@ class DetailTurunKayu extends Model
         return $this->belongsTo(TurunKayu::class, 'id_turun_kayu');
     }
 
-    public function pegawai()
-    {
-        return $this->belongsTo(Pegawai::class, 'id_pegawai');
-    }
-
     public function kayuMasuk(): BelongsTo
     {
         return $this->belongsTo(KayuMasuk::class, 'id_kayu_masuk');
     }
 
-
-    // Accessor untuk mendapatkan collection pegawai
-    public function getPegawaisAttribute()
+    public function pegawaiTurunKayu()
     {
-        if (empty($this->id_pegawai)) {
-            return collect();
-        }
-
-        return \App\Models\Pegawai::whereIn('id', $this->id_pegawai)->get();
+        return $this->hasMany(PegawaiTurunKayu::class, 'id_detail_turun_kayu');
     }
 
-    // Accessor untuk string kode + nama pegawai
-    public function getPegawaisListAttribute(): string
+    // mendapatkan list nama pekerja dalam bentuk string
+    public function getPegawaiListAttribute(): string
     {
-        if (empty($this->id_pegawai)) {
-            return '-';
-        }
-
-        return $this->pegawais
-            ->map(fn($p) => $p->full_name)
+        return $this->pegawaiTurunKayu
+            ->map(fn($item) => $item->pegawai->nama_pegawai ?? '-')
             ->join(', ');
     }
 }

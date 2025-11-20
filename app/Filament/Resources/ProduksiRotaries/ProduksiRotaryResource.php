@@ -24,11 +24,9 @@ use UnitEnum;
 class ProduksiRotaryResource extends Resource
 {
     protected static ?string $model = ProduksiRotary::class;
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
     protected static string|UnitEnum|null $navigationGroup = 'Rotary';
     protected static ?int $navigationSort = 1;
-    //ngurutin
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->latest('created_at');

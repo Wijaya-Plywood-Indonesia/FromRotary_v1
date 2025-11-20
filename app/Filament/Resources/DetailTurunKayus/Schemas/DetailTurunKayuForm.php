@@ -58,6 +58,11 @@ class DetailTurunKayuForm
                     ->label('Nama Supir')
                     ->required(),
 
+                TextInput::make('jumlah_kayu')
+                    ->label('Jumlah Kayu')
+                    ->required()
+                    ->numeric(),
+
                 // TANDA TANGAN (FOTO)
                 FileUpload::make('foto')
                     ->label('Foto Bukti')
@@ -74,7 +79,6 @@ class DetailTurunKayuForm
                     ->visibility('public')
                     ->downloadable()
                     ->openable()
-                    ->columnSpanFull()
 
                     ->required(),
             ]);

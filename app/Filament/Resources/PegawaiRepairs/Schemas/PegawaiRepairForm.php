@@ -1,21 +1,20 @@
 <?php
 
-namespace App\Filament\Resources\PegawaiTurunKayus\Schemas;
+namespace App\Filament\Resources\PegawaiRepairs\Schemas;
 
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\TimePicker;
-use Filament\Forms\Components\Select;
-use Filament\Schemas\Schema;
-use App\Models\Pegawai;
 use Carbon\CarbonPeriod;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use App\Models\Pegawai;
+use Filament\Forms\Components\Placeholder;
 
-class PegawaiTurunKayuForm
+class PegawaiRepairForm
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
             ->components([
-
                 Select::make('id_pegawai')
                     ->label('Pegawai')
                     ->options(
@@ -28,6 +27,7 @@ class PegawaiTurunKayuForm
                     //   ->multiple() // bisa pilih banyak
                     ->searchable()
                     ->required(),
+
                 Select::make('jam_masuk')
                     ->label('Jam Masuk')
                     ->options(self::timeOptions())
@@ -35,15 +35,24 @@ class PegawaiTurunKayuForm
                     ->required()
                     ->searchable()
                     ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
-                    ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null), // Tampilkan hanya HH:MM,
+                    ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null),
                 Select::make('jam_pulang')
                     ->label('Jam Pulang')
                     ->options(self::timeOptions())
-                    ->default('17:00') // Default: 17:00 (sore)
+                    ->default('15:00') // Default: 15:00 (sore)
                     ->required()
                     ->searchable()
                     ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
                     ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null),
+                TextInput::make('ijin')
+                    ->label('Ijin')
+                    ->maxLength(255),
+                TextInput::make('keterangan')
+                    ->label('Keterangan')
+                    ->maxLength(255),
+                TextInput::make('nomor_meja')
+                    ->label('Nomor Meja')
+                    ->numeric(),
             ]);
     }
     public static function timeOptions(): array
