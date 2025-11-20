@@ -22,6 +22,7 @@ use UnitEnum;
 
 class LaporanStik extends Page
 {
+    use InteractsWithForms;
     protected static BackedEnum|string|null $navigationIcon = 'heroicon-o-document-chart-bar';
     protected string $view = 'filament.pages.laporan-stik';
     protected static UnitEnum|string|null $navigationGroup = 'Laporan';
@@ -90,7 +91,7 @@ class LaporanStik extends Page
         // Ambil Data Produksi Stik
         // Asumsi: Ada model ProduksiStik yang punya relasi ke detailPegawaiStik
         $produksiList = ProduksiStik::with(['detailPegawaiStik.pegawai'])
-            ->whereDate('tgl_produksi', $tanggal) // Sesuaikan nama kolom tanggal
+            ->whereDate('tanggal_produksi', $tanggal) // Sesuaikan nama kolom tanggal
             ->get();
 
         // Ambil Data Target dari Database (Kode Ukuran: STIK)
