@@ -2,36 +2,41 @@
 
 namespace App\Filament\Pages;
 
-use App\Exports\LaporanProduksiExport;
+use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
 use Filament\Forms;
 use Filament\Schemas\Schema;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Notifications\Notification;
+
+// Untuk export to excel
+use Filament\Actions\Action;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\LaporanProduksiExport;
+
+// Exception dan Logging
 use Exception;
 use Illuminate\Support\Facades\Log;
-use Filament\Notifications\Notification;
-use Filament\Actions\Action;
 
-use App\Filament\Pages\LaporanProduksi\Queries\LoadProduksi;
-use App\Filament\Pages\LaporanProduksi\Transformers\ProduksiDataMap;
-use Maatwebsite\Excel\Facades\Excel;
+// Query dan Transformer
+use App\Filament\Pages\LaporanPressDryer\Queries\LoadPressDryer;
+use App\Filament\Pages\LaporanPressDryer\Transformers\DryerDataMap;
 
 use BackedEnum;
 use UnitEnum;
 
-// Canaccess
-use App\Filament\Traits\OnlyAdminCanAccess;
-
-class LaporanProduksi extends Page implements HasForms
+class LaporanPressDryer extends Page implements HasForms
 {
-    use InteractsWithForms;
-    use OnlyAdminCanAccess;
-    protected static BackedEnum|string|null $navigationIcon = 'heroicon-o-document-chart-bar';
-    protected string $view = 'filament.pages.laporan-produksi';
+    use Forms\Concerns\InteractsWithForms;
+
+    // Page Resource View
+    protected string $view = 'filament.pages.laporan-press-dryer';
+
+    // Navigation Group
     protected static UnitEnum|string|null $navigationGroup = 'Laporan';
-    protected static ?string $title = 'Laporan Produksi Rotary';
+    protected static BackedEnum|string|null $navigationIcon = 'heroicon-o-document-chart-bar';
+    protected static ?string $title = 'Laporan Press Dryer';
 
     // Form state container (statePath => 'data')
     public array $data = [
@@ -39,9 +44,10 @@ class LaporanProduksi extends Page implements HasForms
     ];
 
     public array $dataProduksi = [];
+
     public bool $isLoading = false;
 
-    // Inisialisasi halaman
+    // Inisialisasi Halaman
     public function mount(): void
     {
         // set default tanggal di state (YYYY-MM-DD)
@@ -53,24 +59,12 @@ class LaporanProduksi extends Page implements HasForms
         $this->loadData();
     }
 
-    // Header untuk download button
-    protected function getHeaderActions(): array
-    {
-        return [
-            Action::make('export')
-                ->label("Donwload Excel")
-                ->icon('heroicon-o-arrow-down-tray')
-                ->color('success')
-                ->action('exportToExcel'),
-        ];
-    }
-
-    // DatePicker untuk memilih tanggal laporan
+    // Fungsi DatePicker
     public function form(Schema $schema): Schema
     {
         return $schema
             ->schema([
-                Forms\Components\DatePicker::make('tanggal')
+                DatePicker::make('tanggal')
                     ->label('Tanggal')
                     ->native(false)                    // modern, responsive
                     ->format('Y-m-d')                     // format penyimpanan
@@ -87,7 +81,7 @@ class LaporanProduksi extends Page implements HasForms
             ->statePath('data'); // penting: menyambungkan schema -> $this->data
     }
 
-    // handler ketika tanggal berubah
+    // Fungsi setelah tanggal diupdate
     public function onTanggalUpdated($state): void
     {
         try {
@@ -128,11 +122,11 @@ class LaporanProduksi extends Page implements HasForms
             Log::info('Loading produksi data for date: ' . $tanggal);
 
             // LoadProduksi::run harus mengembalikan koleksi Eloquent
-            $raw = LoadProduksi::run($tanggal);
+            $raw = LoadPressDryer::run($tanggal);
 
             Log::info('Found ' . $raw->count() . ' production records');
 
-            $this->dataProduksi = ProduksiDataMap::make($raw);
+            $this->dataProduksi = DryerDataMap::make($raw);
 
             if (empty($this->dataProduksi)) {
                 Notification::make()
@@ -158,16 +152,16 @@ class LaporanProduksi extends Page implements HasForms
         }
     }
 
-    // Function untuk refresh
-    public function refresh(): void
+    // Export To Excel Button
+    protected function getHeaderActions(): array
     {
-        $this->loadData();
-
-        Notification::make()
-            ->success()
-            ->title('Data Diperbarui')
-            ->body('Data produksi telah dimuat ulang.')
-            ->send();
+        return [
+            Action::make('export')
+                ->label("Donwload Excel")
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('success')
+                ->action('exportToExcel'),
+        ];
     }
 
     // Export To Excel Function
