@@ -3,10 +3,8 @@
 namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Form;
 
 use App\Models\ProduksiStik;
 use App\Models\Target;
@@ -14,7 +12,8 @@ use App\Models\DetailPegawaiStik;
 
 use Filament\Actions\Action;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\LaporanStikExport;
+use App\Exports\LaporanProduksiStikExport;
+use Carbon\Carbon;
 
 use BackedEnum;
 use UnitEnum;
@@ -137,7 +136,7 @@ class LaporanStik extends Page
                     'pot_target' => $potonganPerOrang > 0
                         ? number_format($this->roundToNearestHundred($potonganPerOrang), 0, '', '.')
                         : '-',
-                    'keterangan' => $detail->keterangan ?? '-',
+                    'keterangan' => $detail->ket ?? '-',
                 ];
             }
 
@@ -183,5 +182,20 @@ class LaporanStik extends Page
         }
     }
 
-    
+    public function exportToExcel()
+    {
+        // Pastikan ada data yang dimuat sebelum diexport
+        if (empty($this->dataStik)) {
+            // Anda bisa tambahkan notifikasi di Filament jika tidak ada data
+            return; 
+        }
+
+        $tanggal = $this->tanggal ?? now()->format('Y-m-d');
+        $filename = 'Laporan-Produksi-Stik-' . Carbon::parse($tanggal)->format('Y-m-d') . '.xlsx';
+        
+        // Gunakan LaporanProduksiStikExport
+        return Excel::download(new LaporanProduksiStikExport($this->dataStik), $filename);
+    }
+    // END UPDATE
+
 }
