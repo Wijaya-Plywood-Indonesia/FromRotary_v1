@@ -1,22 +1,27 @@
 <?php
 
-namespace App\Filament\Pages\LaporanProduksi\Transformers;
+namespace App\Filament\Pages\LaporanPressDryer\Transformers;
 
 use Carbon\Carbon;
-use App\Models\Target;
+use App\Models\Target; // sesuaikan nama model targetnya
 use Illuminate\Support\Facades\Log;
 
-class ProduksiDataMap
+class DryerDataMap
 {
-
     public static function make($collection)
     {
         $result = [];
 
         foreach ($collection as $item) {
 
-            $namaMesin = $item->mesin->nama_mesin ?? 'TIDAK ADA MESIN';
-            $tanggal = Carbon::parse($item->tgl_produksi)->format('d/m/Y');
+            // Nama mesin diambil dari detail_mesins (bisa banyak mesin per shift)
+            $mesinList = $item->detailMesins->pluck('mesin.nama_mesin')->filter()->unique();
+            $namaMesin = $mesinList->isNotEmpty()
+                ? $mesinList->implode(' & ')
+                : 'TIDAK ADA MESIN';
+
+            $shift = strtoupper($item->shift ?? 'PAGI');
+            $tanggal = Carbon::parse($item->tanggal_produksi)->format('d/m/Y');
 
             // DEFAULT VALUE – WAJIB ada sebelum if-else
             $ukuranDisplay = 'TIDAK ADA UKURAN';
@@ -29,53 +34,54 @@ class ProduksiDataMap
             $ukuranId = null;
 
             // ---------------------------------------------------------
-            // 2. CEK DETAIL PALET
+            // 2. CEK DETAIL HASIL (palet)
             // ---------------------------------------------------------
-            if ($item->detailPaletRotary->isEmpty()) {
+            if ($item->detailHasils->isEmpty()) {
 
-                $ukuranDisplay = 'BELUM INPUT PALET';
+                $ukuranDisplay = 'BELUM INPUT HASIL';
 
-                Log::warning('Produksi tanpa detail palet', [
+                Log::warning('PressDryer tanpa detail hasil', [
                     'id_produksi' => $item->id,
                     'mesin' => $namaMesin,
+                    'shift' => $shift,
                     'tanggal' => $tanggal,
                 ]);
 
             } else {
-                $firstPalet = $item->detailPaletRotary->first();
-                $ukuranId = $firstPalet?->id_ukuran;
+                $firstHasil = $item->detailHasils->first();
+                $ukuranId = $firstHasil?->id_ukuran;
 
-                $totalHasil = $item->detailPaletRotary->sum('total_lembar') ?? 0;
+                $totalHasil = $item->detailHasils->sum('isi') ?? 0;        // jumlah lembar
 
-                // Cari target
-                $targetModel = Target::where('id_mesin', $item->id_mesin)
+                // Cari target berdasarkan shift + ukuran
+                $targetModel = Target::where('shift', $item->shift)
                     ->where('id_ukuran', $ukuranId)
                     ->first();
 
                 if (!$targetModel) {
-                    $targetModel = Target::where('id_mesin', $item->id_mesin)
+                    $targetModel = Target::where('shift', $item->shift)
                         ->whereNull('id_ukuran')
                         ->first();
                 }
 
-                $targetHarian = $targetModel?->target ?? 0;
-                $jamKerja = $targetModel?->jam ?? 8;
-                $potonganPerLembar = $targetModel?->potongan ?? 0;
+                $targetHarian = $targetModel?->target_lembar ?? 0;
+                $jamKerja = $targetModel?->jam_kerja ?? 8;
+                $potonganPerLembar = $targetModel?->potongan_per_lembar ?? 0;
                 $kodeUkuran = $targetModel?->kode_ukuran;
 
-                // Format kode ukuran
+                // Format kode ukuran (sesuai pola Rotary)
                 if ($kodeUkuran && trim($kodeUkuran) !== '') {
-                    $ukuranDisplay = preg_replace('/^(SPINDLESS|YUEQUN|MERANTI|SANJI|DRYER\s*PAGI)/i', '', $kodeUkuran);
+                    $ukuranDisplay = preg_replace('/^(SPINDLESS|YUEQUN|MERANTI|SANJI|DRYER\s*PAGI|PRESS)/i', '', $kodeUkuran);
                     $ukuranDisplay = trim($ukuranDisplay) ?: $kodeUkuran;
                 } else {
                     $ukuranDisplay = 'UKURAN BELUM DISET (id: ' . $ukuranId . ')';
                 }
             }
 
-            // Sekarang aman – semua variabel pasti ada
+            // Hitung selisih & potongan
             $selisihProduksi = $totalHasil - $targetHarian;
 
-            $jumlahPekerja = $item->detailPegawaiRotary->count();
+            $jumlahPekerja = $item->detailPegawais->count();
             $potonganTotal = 0;
             $potonganPerOrang = 0;
 
@@ -84,7 +90,7 @@ class ProduksiDataMap
                 $potonganPerOrang = $jumlahPekerja > 0 ? round($potonganTotal / $jumlahPekerja) : 0;
             }
 
-            $pekerja = $item->detailPegawaiRotary->map(function ($det) use ($potonganPerOrang) {
+            $pekerja = $item->detailPegawais->map(function ($det) use ($potonganPerOrang) {
                 return [
                     'id' => $det->pegawai->kode_pegawai ?? '-',
                     'nama' => $det->pegawai->nama_pegawai ?? '-',
@@ -97,7 +103,9 @@ class ProduksiDataMap
             })->toArray();
 
             $result[] = [
-                'mesin' => $namaMesin,
+                'mesin' => $namaMesin . ' - ' . $shift,   // ex: PRESS 1 & DRYER A - PAGI
+                'mesin_only' => $namaMesin,
+                'shift' => $shift,
                 'tanggal' => $tanggal,
                 'ukuran' => $ukuranDisplay,
                 'pekerja' => $pekerja,
@@ -113,8 +121,9 @@ class ProduksiDataMap
                 'ukuran_id' => $ukuranId,
             ];
 
-            Log::info('ProduksiDataMap', [
+            Log::info('DryerDataMap', [
                 'mesin' => $namaMesin,
+                'shift' => $shift,
                 'ukuran_id' => $ukuranId,
                 'kode_ukuran' => $ukuranDisplay,
                 'target' => $targetHarian,
