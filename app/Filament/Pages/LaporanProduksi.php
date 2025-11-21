@@ -21,13 +21,9 @@ use Maatwebsite\Excel\Facades\Excel;
 use BackedEnum;
 use UnitEnum;
 
-// Canaccess
-use App\Filament\Traits\OnlyAdminCanAccess;
-
 class LaporanProduksi extends Page implements HasForms
 {
     use InteractsWithForms;
-    use OnlyAdminCanAccess;
     protected static BackedEnum|string|null $navigationIcon = 'heroicon-o-document-chart-bar';
     protected string $view = 'filament.pages.laporan-produksi';
     protected static UnitEnum|string|null $navigationGroup = 'Laporan';

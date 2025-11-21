@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Exports\LaporanPressDryerExport;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
 use Filament\Forms;
@@ -13,7 +14,6 @@ use Filament\Notifications\Notification;
 use Filament\Actions\Action;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\LaporanProduksiExport;
 
 // Exception dan Logging
 use Exception;
@@ -169,6 +169,6 @@ class LaporanPressDryer extends Page implements HasForms
     {
         $tanggal = $this->data['tanggal'] ?? now()->format('Y-m-d');
         $filename = 'Laporan-Produksi-' . Carbon::parse($tanggal)->format('Y-m-d') . '.xlsx';
-        return Excel::download(new LaporanProduksiExport($this->dataProduksi), $filename);
+        return Excel::download(new LaporanPressDryerExport($this->dataProduksi), $filename);
     }
 }
