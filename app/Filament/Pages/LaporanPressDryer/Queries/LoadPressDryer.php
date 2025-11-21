@@ -15,7 +15,7 @@ class LoadPressDryer
         // Return ProduksiPressDryer
         return ProduksiPressDryer::with([
             'detailPegawais.pegawai:id,kode_pegawai,nama_pegawai',
-            'detailHasils:id,nomor_palet,isi',
+            'detailHasils:id,no_palet,isi',
             'detailMesin.mesin:id,nama_mesin',
             'detailMesin.kategoriMesin:id,nama_kategori_mesin',
         ])
