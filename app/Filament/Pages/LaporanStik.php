@@ -95,7 +95,7 @@ class LaporanStik extends Page
         // Ambil Data Target dari Database (Kode Ukuran: STIK)
         // Mengambil data dinamis dari tabel targets sesuai screenshot
         $targetRef = Target::where('kode_ukuran', 'STIK')->first();
-        
+
         $stdTarget = $targetRef->target ?? 7000; // Default 7000 jika db null
         $stdJam = $targetRef->jam ?? 10;
         $stdPotonganHarga = $targetRef->potongan ?? 0; // 32.86 dari screenshot
@@ -104,10 +104,10 @@ class LaporanStik extends Page
 
         foreach ($produksiList as $produksi) {
             $tanggalFormat = \Carbon\Carbon::parse($produksi->tanggal_produksi)->format('d/m/Y');
-            
+
             // Asumsi: Di tabel produksi_stiks ada kolom 'hasil_produksi' atau sejenisnya
             $hasil = $produksi->detailHasilStik->sum('total_lembar') ?? 0;
-            
+
             // Hitung Selisih (Target - Hasil)
             // Jika Hasil 6000, Target 7000. Selisih = 1000 (Kurang)
             $selisih = $stdTarget - $hasil;
@@ -115,7 +115,7 @@ class LaporanStik extends Page
             $jumlahPekerja = $produksi->detailPegawaiStik->count();
 
             $potonganPerOrang = 0;
-            
+
             // Logika Potongan: Hanya jika target tidak tercapai (Selisih > 0)
             // Jika hasil lebih besar dari target, selisih minus, tidak ada potongan.
             if ($selisih > 0) {
@@ -154,7 +154,7 @@ class LaporanStik extends Page
                 ]
             ];
         }
-        
+
         // Hitung Total Summary untuk Footer (Opsional)
         $this->calculateOverallSummary();
 
@@ -173,8 +173,8 @@ class LaporanStik extends Page
         foreach ($this->dataStik as $data) {
             $this->summary['total_hasil'] += $data['hasil_harian'];
             $this->summary['total_pekerja'] += $data['summary']['jumlah_pekerja'];
-            
-            foreach($data['pekerja'] as $p) {
+
+            foreach ($data['pekerja'] as $p) {
                 $val = str_replace('.', '', $p['pot_target']);
                 $val = is_numeric($val) ? $val : 0;
                 $this->summary['total_potongan'] += $val;
@@ -187,12 +187,12 @@ class LaporanStik extends Page
         // Pastikan ada data yang dimuat sebelum diexport
         if (empty($this->dataStik)) {
             // Anda bisa tambahkan notifikasi di Filament jika tidak ada data
-            return; 
+            return;
         }
 
         $tanggal = $this->tanggal ?? now()->format('Y-m-d');
         $filename = 'Laporan-Produksi-Stik-' . Carbon::parse($tanggal)->format('Y-m-d') . '.xlsx';
-        
+
         // Gunakan LaporanProduksiStikExport
         return Excel::download(new LaporanProduksiStikExport($this->dataStik), $filename);
     }

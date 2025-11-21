@@ -58,8 +58,8 @@ class ProduksiDataMap
                         ->first();
                 }
 
-                $targetHarian = $targetModel?->target ?? 0;
-                $jamKerja = $targetModel?->jam ?? 8;
+                $targetHarian = $targetModel?->target;
+                $jamKerja = $targetModel?->jam;
                 $potonganPerLembar = $targetModel?->potongan ?? 0;
                 $kodeUkuran = $targetModel?->kode_ukuran;
 
