@@ -26,7 +26,7 @@ class KayuMasukRelationManager extends RelationManager
     public function getTableQuery(): Builder
     {
         return ComparisonRow::query()
-            ->where('id_kayu_masuk', $this->ownerRecord->id);
+            ->where('id_kayu_masuk', $this->ownerRecord->id_kayu_masuk);
     }
     public function table(Table $table): Table
     {
