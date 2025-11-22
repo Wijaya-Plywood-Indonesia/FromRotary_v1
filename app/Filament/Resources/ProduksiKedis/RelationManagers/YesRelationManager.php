@@ -15,6 +15,11 @@ class YesRelationManager extends RelationManager
     protected static ?string $title = 'Validasi Hasil';
     protected static string $relationship = 'validasiKedi';
 
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
+
     public function form(Schema $schema): Schema
     {
         return ValidasiKediForm::configure($schema);
@@ -22,11 +27,7 @@ class YesRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
-        return ValidasiKedisTable::configure($table)
-            ->headerActions([
-                CreateAction::make(),
-            ])
-        ;
+        return ValidasiKedisTable::configure($table);
     }
 
 }

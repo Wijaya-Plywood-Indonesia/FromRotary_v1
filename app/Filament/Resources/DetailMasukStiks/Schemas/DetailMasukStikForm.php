@@ -36,8 +36,8 @@ class DetailMasukStikForm
                 Select::make('id_ukuran')
                     ->label('Ukuran')
                     ->options(
-                        Ukuran::all()
-                            ->pluck('dimensi', 'id') // ← memanggil accessor getDimensiAttribute()
+                        Ukuran::orderBy('dimensi')
+                            ->pluck('dimensi', 'id')
                     )
                     ->searchable()
                     ->afterStateUpdated(function ($state) {

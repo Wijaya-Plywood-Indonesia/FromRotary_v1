@@ -2,11 +2,13 @@
 
 namespace App\Filament\Resources\DetailMasukKedis\Tables;
 
+use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\CreateAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
 
 class DetailMasukKedisTable
 {
@@ -14,45 +16,62 @@ class DetailMasukKedisTable
     {
         return $table
             ->columns([
+
                 TextColumn::make('no_palet')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('id_ukuran')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('id_jenis_kayu')
-                    ->numeric()
-                    ->sortable(),
+                    ->label('No. Palet')
+                    ->searchable(),
+
+                TextColumn::make('jenisKayu.nama_kayu')
+                    ->label('Jenis Kayu')
+                    ->searchable()
+                    ->placeholder('N/A'),
+
+                TextColumn::make('ukuran.dimensi')
+                    ->label('Ukuran')
+                    ->placeholder('-'),
+
                 TextColumn::make('kw')
-                    ->numeric()
+                    ->label('KW')
                     ->sortable(),
+
                 TextColumn::make('jumlah')
-                    ->numeric()
+                    ->label('Jumlah')
                     ->sortable(),
+
                 TextColumn::make('rencana_bongkar')
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('id_produksi_kedi')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->date('d/m/Y')
+                    ->label('Rencana Bongkar'),
             ])
-            ->filters([
-                //
+
+            ->headerActions([
+                CreateAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
             ])
+
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
+
+                DeleteAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
             ])
+
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->hidden(
+                            fn($livewire) =>
+                            $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                        ),
                 ]),
             ]);
     }
