@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\NotaBarangKeluar;
+use App\Models\NotaBarangMasuk;
 
-class NotaBKController extends Controller
+class NotaBMController extends Controller
 {
-    public function show(NotaBarangKeluar $record)
+    public function show(NotaBarangMasuk $record)
     {
         // Muat relasi yang diperlukan
         $record->load([
-            'pembuat',
-            'validator',
+            'dibuatOleh',
+            'divalidasiOleh',
             'detail',
         ]);
 
-        return view('nota-barang.bk-print', [
+        return view('nota-barang.bm-print', [
             'record' => $record,
             'details' => $record->detail,
         ]);

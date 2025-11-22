@@ -24,6 +24,10 @@ class DetailNotaBarangKeluarResource extends Resource
     {
         return DetailNotaBarangKeluarForm::configure($schema);
     }
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 
     public static function table(Table $table): Table
     {

@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Resources\NotaBarangKeluars\Schemas;
+namespace App\Filament\Resources\NotaBarangMasuks\Schemas;
 
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
-class NotaBarangKeluarForm
+class NotaBarangMasukForm
 {
     public static function configure(Schema $schema): Schema
     {
@@ -23,11 +23,14 @@ class NotaBarangKeluarForm
                     ->label('Kepada')
                     ->required(),
                 Hidden::make('dibuat_oleh')
-                    ->default(fn() => auth()->user()?->id),
-
+                    ->default(fn() => auth()->id())
+                    ->dehydrated(fn($context) => $context === 'create'),
                 TextInput::make('dibuat_oleh_display')
                     ->label('Dibuat Oleh')
-                    ->default(fn() => auth()->user()?->name)
+                    ->formatStateUsing(
+                        fn($record) =>
+                        $record?->dibuatOleh?->name ?? auth()->user()->name
+                    )
                     ->disabled()
                     ->dehydrated(false),
             ]);

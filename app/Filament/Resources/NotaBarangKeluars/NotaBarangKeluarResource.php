@@ -16,18 +16,20 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class NotaBarangKeluarResource extends Resource
 {
     protected static ?string $model = NotaBarangKeluar::class;
-
+    protected static ?string $modelLabel = 'Nota Barang Keluar';
+    protected static ?string $pluralModelLabel = 'Nota Barang Keluar';
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema
     {
         return NotaBarangKeluarForm::configure($schema);
     }
-
+    protected static string|UnitEnum|null $navigationGroup = 'BK-BM';
     public static function infolist(Schema $schema): Schema
     {
         return NotaBarangKeluarInfolist::configure($schema);

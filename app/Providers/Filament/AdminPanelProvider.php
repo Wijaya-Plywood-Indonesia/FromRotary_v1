@@ -52,6 +52,7 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Dashboard::class,
             ])
+            ->brandName('Wijaya')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
@@ -70,7 +71,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 FilamentShieldPlugin::make()
-                    ->navigationGroup('Akses Pengguna'),
+                    ->navigationGroup(''),
             ])
             ->authMiddleware([
                 Authenticate::class,
@@ -80,6 +81,9 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
 
                 //Kategori Menu Produksi
+
+                NavigationGroup::make('BK-BM')
+                    ->icon('heroicon-o-adjustments-horizontal'),
 
                 NavigationGroup::make('Rotary')
                     ->icon('heroicon-o-cog'),

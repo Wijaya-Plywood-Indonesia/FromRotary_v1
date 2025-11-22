@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Nota Barang Keluar</title>
+        <title>Nota Barang Masuk</title>
 
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -29,7 +29,7 @@
                 width: 100%;
                 border-collapse: collapse;
                 margin-top: 10px;
-                table-layout: fixed; /* kunci lebar tabel biar nggak melebar */
+                table-layout: fixed;
             }
 
             .info-table td {
@@ -45,7 +45,6 @@
                 text-align: left;
                 vertical-align: top;
                 word-wrap: break-word;
-                white-space: normal; /* biar teks turun ke bawah, tidak memanjang */
             }
 
             .detail-table th {
@@ -53,13 +52,11 @@
                 font-weight: bold;
             }
 
-            /* Kolom no dibikin kecil */
             .col-no {
                 width: 10%;
                 text-align: center;
             }
 
-            /* Kolom jumlah & satuan dibuat sempit */
             .col-small {
                 width: 15%;
             }
@@ -67,26 +64,6 @@
             .signature-table td {
                 text-align: center;
                 padding-top: 25px;
-                word-wrap: break-word;
-            }
-
-            /* Responsif */
-            @media (max-width: 600px) {
-                body {
-                    font-size: 14px;
-                    margin: 10px auto;
-                    padding: 0 10px;
-                }
-
-                h2 {
-                    font-size: 18px;
-                }
-
-                .detail-table th,
-                .detail-table td {
-                    font-size: 13px;
-                    padding: 6px 6px;
-                }
             }
 
             @media print {
@@ -100,7 +77,7 @@
     </head>
 
     <body>
-        <h2><strong>NOTA BARANG KELUAR</strong></h2>
+        <h2><strong>NOTA BARANG MASUK</strong></h2>
 
         {{-- Informasi Nota --}}
         <table class="info-table">
@@ -109,7 +86,9 @@
                     <strong>Tanggal</strong>:
                     {{ $record->tanggal->format('d-m-Y') }}
                 </td>
-                <td><strong>Kepada</strong>: {{ $record->tujuan_nota }}</td>
+                <td>
+                    <strong>Dari</strong>: {{ $record->sumber_nota ?? '-' }}
+                </td>
             </tr>
             <tr>
                 <td><strong>No. Nota</strong>: {{ $record->no_nota }}</td>
@@ -146,17 +125,19 @@
 
         <table class="signature-table">
             <tr>
-                <td style="width: 60%"></td>
-                <td>Hormat Kami,</td>
+                <td><strong>Dibuat Oleh</strong></td>
+                <td><strong>Divalidasi Oleh</strong></td>
             </tr>
             <tr>
-                <td></td>
+                <td style="height: 60px"></td>
                 <td></td>
             </tr>
             <tr>
-                <td></td>
                 <td>
-                    <strong>{{ $record->pembuat->name ?? '-' }}</strong>
+                    <strong>{{ $record->dibuatOleh->name ?? '-' }}</strong>
+                </td>
+                <td>
+                    <strong>{{ $record->divalidasiOleh->name ?? '-' }}</strong>
                 </td>
             </tr>
         </table>
