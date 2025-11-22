@@ -47,6 +47,11 @@ class LaporanPressDryer extends Page implements HasForms
 
     public bool $isLoading = false;
 
+    // ✅ TAMBAH LISTENERS
+    protected $listeners = [
+        'refreshLaporanPressDryer' => 'loadData',
+    ];
+
     // Inisialisasi Halaman
     public function mount(): void
     {
@@ -106,9 +111,6 @@ class LaporanPressDryer extends Page implements HasForms
             $this->data['tanggal'] = now()->format('Y-m-d');
             $this->form->fill($this->data);
         }
-
-        // normalisasi format tanggal menjadi YYYY-MM-DD agar konsisten
-
     }
 
     // Load data produksi berdasarkan tanggal
@@ -119,7 +121,12 @@ class LaporanPressDryer extends Page implements HasForms
 
             $tanggal = $this->data['tanggal'] ?? now()->format('Y-m-d');
 
-            Log::info('Loading produksi data for date: ' . $tanggal);
+            Log::info('Loading produksi data for date: ' . $tanggal, [
+                'timestamp' => now()->toDateTimeString(),
+            ]);
+
+            // ✅ FORCE CLEAR STATE
+            $this->dataProduksi = [];
 
             // LoadProduksi::run harus mengembalikan koleksi Eloquent
             $raw = LoadPressDryer::run($tanggal);
@@ -152,12 +159,31 @@ class LaporanPressDryer extends Page implements HasForms
         }
     }
 
+    // ✅ TAMBAH METHOD REFRESH MANUAL
+    public function refresh(): void
+    {
+        $this->loadData();
+
+        Notification::make()
+            ->success()
+            ->title('Data Diperbarui')
+            ->body('Data berhasil dimuat ulang')
+            ->send();
+    }
+
     // Export To Excel Button
     protected function getHeaderActions(): array
     {
         return [
+            // ✅ TAMBAH TOMBOL REFRESH
+            Action::make('refresh')
+                ->label('Refresh')
+                ->icon('heroicon-o-arrow-path')
+                ->color('gray')
+                ->action('refresh'),
+
             Action::make('export')
-                ->label("Donwload Excel")
+                ->label("Download Excel")
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('success')
                 ->action('exportToExcel'),
