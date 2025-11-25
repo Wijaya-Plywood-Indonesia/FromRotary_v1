@@ -15,6 +15,17 @@ class DetailMasukKediRelationManager extends RelationManager
     protected static ?string $title = 'Masuk Kedi';
     protected static string $relationship = 'detailMasukKedi';
 
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
+
+    public static function canViewForRecord($ownerRecord, $pageClass): bool
+{
+    return $ownerRecord->status === 'masuk';
+}
+
+
     public function form(Schema $schema): Schema
     {
         return DetailMasukKediForm::configure($schema);
@@ -22,11 +33,7 @@ class DetailMasukKediRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
-        return DetailMasukKedisTable::configure($table)
-            ->headerActions([
-                CreateAction::make(),
-            ])
-        ;
+        return DetailMasukKedisTable::configure($table);
     }
 
 }

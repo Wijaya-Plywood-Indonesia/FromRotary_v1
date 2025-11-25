@@ -14,10 +14,10 @@ class ProduksiKediInfolist
                 TextEntry::make('tanggal')
                     ->date(),
                 TextEntry::make('status'),
-                TextEntry::make('created_at')
-                    ->dateTime(),
-                TextEntry::make('updated_at')
-                    ->dateTime(),
+                // TextEntry::make('created_at')
+                //     ->dateTime(),
+                // TextEntry::make('updated_at')
+                //     ->dateTime(),
             ]);
     }
 }
