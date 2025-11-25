@@ -50,6 +50,26 @@ class Ukuran extends Model
         return $this->hasMany(DetailHasilStik::class, 'id_ukuran');
     }
 
+    public function paltformBahanHp()
+    {
+        return $this->hasMany(PlatformBahanHp::class, 'id_ukuran');
+    }
+
+    public function veneerBahanHp()
+    {
+        return $this->hasMany(VeneerBahanHp::class, 'id_ukuran');
+    }
+
+    public function platformHasilHp()
+    {
+        return $this->hasMany(platformHasilHp::class, 'id_ukuran');
+    }
+
+    public function triplekHasilHp()
+    {
+        return $this->hasMany(TriplekHasilHp::class, 'id_ukuran');
+    }
+
     public function targets()
     {
         return $this->hasMany(DetailHasilPaletRotary::class, 'id_ukuran', 'id');
