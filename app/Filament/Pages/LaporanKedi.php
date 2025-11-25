@@ -5,6 +5,9 @@ namespace App\Filament\Pages;
 use Filament\Pages\Page;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Components\DatePicker;
+use Filament\Notifications\Notification;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\LaporanProduksiKediExport;
 
 use App\Models\ProduksiKedi;
 use Filament\Actions\Action;
@@ -54,19 +57,62 @@ class LaporanKedi extends Page
         ];
     }
 
+    // --- METHOD UNTUK EKSPOR EXCEL BARU ---
+    public function exportToExcel()
+    {
+        // 1. Validasi Data
+        if (empty($this->dataKedi)) {
+            Notification::make()
+                ->title('Gagal Export')
+                ->body('Tidak ada data Produksi Kedi yang tersedia pada tanggal tersebut untuk diekspor.')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        // 2. Tentukan nama file
+        $tanggal = $this->tanggal ?? now()->format('Y-m-d');
+        $filename = 'Laporan-Produksi-Kedi-' . Carbon::parse($tanggal)->format('Y-m-d') . '.xlsx';
+
+        // 3. Panggil Maatwebsite\Excel
+        // Menggunakan class export yang baru dibuat dan data yang sudah difilter/diproses
+        return Excel::download(new LaporanProduksiKediExport($this->dataKedi), $filename);
+    }
+
+    // --- MENAMBAHKAN ACTION (TOMBOL EXPORT) ---
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('export')
+                ->label('Export ke Excel')
+                ->tooltip('Export data yang sudah difilter ke format Excel')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->action('exportToExcel'),
+        ];
+    }
+
     public function loadAllData()
     {
         $this->isLoading = true;
 
         $tanggal = $this->tanggal ?? now()->format('Y-m-d');
 
+        // Modifikasi Query: Menambahkan whereHas untuk memfilter STATUS VALIDASI TERAKHIR
         $produksiList = ProduksiKedi::with([
             'detailMasukKedi.ukuran',
             'detailMasukKedi.jenisKayu',
             'detailBongkarKedi.ukuran',
             'detailBongkarKedi.jenisKayu',
+            'validasiTerakhir', // Eager load validasi terakhir
         ])
         ->whereDate('tanggal', $tanggal)
+        
+        // --- LOGIKA FILTER BARU: HANYA YANG SUDAH DIVALIDASI ('divalidasi' atau 'disetujui') ---
+        ->whereHas('validasiTerakhir', function ($query) {
+            $query->whereIn('status', ['divalidasi']);
+        })
+        // --------------------------------------------------------------------------------------
+        
         ->get();
 
         $this->dataKedi = [];
@@ -122,6 +168,8 @@ class LaporanKedi extends Page
                 'status' => $produksi->status,
                 'detail_masuk' => $masuk,
                 'detail_bongkar' => $bongkar,
+                'validasi_terakhir' => $produksi->validasiTerakhir?->status ?? 'Belum Ada',
+                'validasi_oleh' => $produksi->validasiTerakhir?->role ?? '-',
             ];
         }
 
