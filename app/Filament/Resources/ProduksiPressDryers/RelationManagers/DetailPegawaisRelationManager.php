@@ -196,22 +196,6 @@ class DetailPegawaisRelationManager extends RelationManager
                         fn($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
-
-                // ➕ Tambah / Edit Ijin & Keterangan
-                Action::make('aturIjin')
-                    ->label(fn($record) => $record->ijin ? 'Edit Ijin' : 'Tambah Ijin')
-                    ->icon('heroicon-o-pencil-square')
-                    ->form([
-                        TextInput::make('ijin')->label('Ijin'),
-                        Textarea::make('ket')->label('Keterangan'),
-                    ])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'ijin' => $data['ijin'],
-                            'ket' => $data['ket'],
-                        ]);
-                    }),
-
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

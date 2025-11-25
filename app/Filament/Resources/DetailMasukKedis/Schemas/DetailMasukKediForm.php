@@ -8,6 +8,7 @@ use App\Models\JenisKayu;
 use App\Models\Ukuran;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TextInput;
 
 class DetailMasukKediForm
 {
