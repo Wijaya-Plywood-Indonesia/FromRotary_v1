@@ -88,6 +88,30 @@ class DetailNotaBarangKeluarsTable
                         // Refresh komponen supaya status berubah di tabel
                         $livewire->dispatch('$refresh');
                     }),
+                Action::make('batalkan_validasi')
+                    ->label('Batalkan Validasi')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->visible(function (RelationManager $livewire) {
+                        $nota = $livewire->ownerRecord;
+
+                        // Tombol muncul hanya jika nota SUDAH divalidasi
+                        return $nota->divalidasi_oleh != null;
+                    })
+                    ->action(function (RelationManager $livewire) {
+                        $nota = $livewire->ownerRecord;
+
+                        $nota->update([
+                            'divalidasi_oleh' => null,
+                        ]);
+
+                        Notification::make()
+                            ->title('Validasi berhasil dibatalkan.')
+                            ->danger()
+                            ->send();
+                    })
+                    ->after(fn($livewire) => $livewire->dispatch('$refresh')),
             ])
             ->filters([
                 //

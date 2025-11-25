@@ -20,7 +20,7 @@ class DetailKayuMasukForm
             ->components([
 
 
-                Select::make('lahan_id')
+                Select::make('id_lahan')
                     ->label('Lahan')
                     ->options(
                         Lahan::query()
@@ -31,7 +31,7 @@ class DetailKayuMasukForm
                     )
                     ->default(function () {
                         // Ambil lahan terakhir yang pernah diinputkan di detail_turusan_kayus
-                        $lastLahan = DetailKayuMasuk::latest('id')->value('lahan_id');
+                        $lastLahan = DetailKayuMasuk::latest('id')->value('id_lahan');
 
                         // Jika tidak ada data sama sekali, gunakan id = 1
                         return $lastLahan ?? 1;

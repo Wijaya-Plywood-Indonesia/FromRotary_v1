@@ -121,7 +121,7 @@ class NotaKayuController extends Controller
                 $totalBatang = $kelompok->sum('kuantitas');
                 $totalKubikasi = $kelompok->sum('kubikasi');
                 $harga = $rentang->harga_beli;
-                $totalHarga = $harga * $totalKubikasi;
+                $totalHarga = $harga * $totalKubikasi * 1000;
 
                 $hasil->push([
                     'rentang' => "{$rentang->diameter_terkecil} - {$rentang->diameter_terbesar}",

@@ -55,25 +55,42 @@ class DetailKayuMasuksTable
                 TextColumn::make('keterangan_kayu')
                     ->label('Kayu')
                     ->getStateUsing(function ($record) {
+
                         $namaKayu = $record->jenisKayu?->nama_kayu ?? '-';
                         $panjang = $record->panjang ?? '-';
 
-                        $gradeValue = (int) $record->grade;
+                        // --- NORMALISASI NILAI GRADE ---
+                        $raw = trim((string) $record->grade);     // hapus spasi
+                        $rawUpper = strtoupper($raw);            // samakan huruf
+            
+                        // kalau numeric, ubah ke int (misal: "01" atau " 1 ")
+                        $gradeNorm = is_numeric($rawUpper) ? (int) $rawUpper : $rawUpper;
 
-                        $grade = match ($gradeValue) {
-                            1 => 'A',
-                            2 => 'B',
+                        // match paling aman: terima angka maupun huruf
+                        $grade = match ($gradeNorm) {
+                            1, '1', 'A' => 'A',
+                            2, '2', 'B' => 'B',
                             default => '-',
                         };
 
                         return "{$namaKayu} {$panjang} ({$grade})";
                     })
+
                     ->sortable(['jenisKayu.nama_kayu', 'panjang', 'grade'])
                     ->searchable(['jenisKayu.nama_kayu', 'panjang'])
-                    ->color(fn($record) => match ((int) $record->grade) {
-                        1 => 'success',
-                        2 => 'primary',
-                        default => 'gray',
+
+                    ->color(function ($record) {
+
+                        // NORMALISASI juga untuk warna badge
+                        $raw = trim((string) $record->grade);
+                        $rawUpper = strtoupper($raw);
+                        $gradeNorm = is_numeric($rawUpper) ? (int) $rawUpper : $rawUpper;
+
+                        return match ($gradeNorm) {
+                            1, '1', 'A' => 'success',
+                            2, '2', 'B' => 'primary',
+                            default => 'gray',
+                        };
                     }),
                 TextColumn::make('diameter')
                     ->label('Diameter')
@@ -111,6 +128,11 @@ class DetailKayuMasuksTable
                     ->sortable()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d M Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
             ])
             ->groups([
@@ -132,7 +154,7 @@ class DetailKayuMasuksTable
                         $lahanId = $record->id_lahan;
 
                         // CASE 1: Jika Filament sudah memberi Collection ($records)
-                        if ($records instanceof \Illuminate\Support\Collection && $records->isNotEmpty()) {
+                        if ($records instanceof Collection && $records->isNotEmpty()) {
 
                             $filtered = $records
                                 ->where('id_kayu_masuk', $parentId)
@@ -180,6 +202,7 @@ class DetailKayuMasuksTable
             ->filters([
                 //
             ])
+            ->defaultSort('created_at', 'desc')
             ->headerActions([
                 CreateAction::make(),
                 Action::make('total_kubikasi')
@@ -198,44 +221,6 @@ class DetailKayuMasuksTable
                     ->button() // Supaya tampil seperti label di header
                     ->outlined()
                     ->icon('heroicon-o-cube'),
-
-                // Action::make('sinkron_kubikasi')
-                //     ->label('Sinkron Total Kubikasi')
-                //     ->icon('heroicon-o-arrow-path')
-                //     ->color('success')
-                //     ->requiresConfirmation()
-                //     ->action(function (RelationManager $livewire) {
-                //         $record = $livewire->ownerRecord; // model KayuMasuk (parent)
-
-                //         // Pastikan kita mendapatkan collection (bukan null)
-                //         $details = $record->detailMasukanKayu()->get();
-
-                //         $totalKubikasi = $details->sum(function ($item) {
-                //             return ($item->diameter ?? 0) * ($item->jumlah_batang ?? 0) * 0.785 / 1000000;
-                //         });
-
-                //         // Pastikan tidak null (cast ke float)
-                //         $totalKubikasi = (float) $totalKubikasi;
-
-                //         $record->update(['kubikasi' => $totalKubikasi]);
-
-                //         Notification::make()
-                //             ->title('Total kubikasi berhasil disinkronkan!')
-                //             ->body('Total: ' . number_format($totalKubikasi, 6, ',', '.') . ' m³')
-                //             ->success()
-                //             ->send();
-
-                //         // 🔄 Refresh halaman setelah update
-                //         // $livewire->dispatchBrowserEvent('reload');
-
-                //     })
-                //     ->after(function ($livewire) {
-                //         // Setelah aksi selesai, reload komponen saat ini (bukan full page)
-                //         $livewire->dispatch('$refresh');
-
-                //         // Kalau mau full reload (halaman benar-benar segar):
-                //         $livewire->js('window.location.reload()');
-                //     }),
 
             ])
             ->recordActions([
