@@ -97,6 +97,10 @@ class DetailBongkarRelationManager extends RelationManager
                     ->placeholder('Cth: 1.5 atau 100'),
             ]);
     }
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
 
     public function table(Table $table): Table
     {
@@ -171,5 +175,9 @@ class DetailBongkarRelationManager extends RelationManager
                         ),
                 ]),
             ]);
+    }
+    public static function canViewForRecord($ownerRecord, $pageClass): bool
+    {
+        return $ownerRecord->status === 'bongkar';
     }
 }

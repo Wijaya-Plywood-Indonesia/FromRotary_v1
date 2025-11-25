@@ -2,62 +2,50 @@
 
 namespace App\Services;
 
-use App\Models\ComparisonRow;
-use App\Models\DetailKayuMasuk;
-use App\Models\DetailTurusanKayu;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class KayuComparator
 {
-    public static function buildQuery(int $idKayuMasuk): Builder
+    public static function buildQuery($notaId)
     {
-        $detail = DetailKayuMasuk::selectRaw('
-                id_jenis_kayu,
-                id_lahan,
-                diameter,
-                panjang,
-                grade,
-                SUM(jumlah_batang) as total_detail
-            ')
-            ->where('id_kayu_masuk', $idKayuMasuk)
-            ->groupBy('id_jenis_kayu', 'id_lahan', 'diameter', 'panjang', 'grade');
+        $left = DB::table('detail_kayu as d')
+            ->select([
+                'd.id_jenis_kayu',
+                'd.id_lahan',
+                'd.panjang',
+                'd.diameter',
+                'd.grade',
+                DB::raw('SUM(d.jumlah) as total_detail_jumlah'),
+                DB::raw('0 as total_turusan_jumlah'),
+            ])
+            ->where('d.id_nota_kayu', $notaId)
+            ->groupBy('d.id_jenis_kayu', 'd.id_lahan', 'd.panjang', 'd.diameter', 'd.grade');
 
-        $turusan = DetailTurusanKayu::selectRaw('
-                jenis_kayu_id,
-                lahan_id,
-                diameter,
-                panjang,
-                grade,
-                COUNT(*) as total_turusan
-            ')
-            ->where('id_kayu_masuk', $idKayuMasuk)
-            ->groupBy('jenis_kayu_id', 'lahan_id', 'diameter', 'panjang', 'grade');
+        $right = DB::table('turusan_kayu as t')
+            ->select([
+                't.id_jenis_kayu',
+                't.id_lahan',
+                't.panjang',
+                't.diameter',
+                't.grade',
+                DB::raw('0 as total_detail_jumlah'),
+                DB::raw('SUM(t.jumlah) as total_turusan_jumlah'),
+            ])
+            ->where('t.id_nota_kayu', $notaId)
+            ->groupBy('t.id_jenis_kayu', 't.id_lahan', 't.panjang', 't.diameter', 't.grade');
 
-        $sqlBuilder = DB::query()
-            ->fromSub($detail, 'detail')
-            ->leftJoinSub($turusan, 'turusan', function ($join) {
-                $join->on('detail.id_jenis_kayu', '=', 'turusan.jenis_kayu_id')
-                    ->on('detail.id_lahan', '=', 'turusan.lahan_id')
-                    ->on('detail.diameter', '=', 'turusan.diameter')
-                    ->on('detail.panjang', '=', 'turusan.panjang')
-                    ->on('detail.grade', '=', 'turusan.grade');
-            })
-            ->selectRaw('
-                ROW_NUMBER() OVER () AS id,
-                detail.id_jenis_kayu,
-                detail.id_lahan,
-                detail.diameter,
-                detail.panjang,
-                detail.grade,
-                detail.total_detail AS detail_jumlah,
-                COALESCE(turusan.total_turusan, 0) AS turusan_jumlah,
-                (detail.total_detail - COALESCE(turusan.total_turusan, 0)) AS selisih
-            ');
-
-        // ALIAS FINAL WAJIB = comparison_rows
-        return ComparisonRow::query()
-            ->fromSub($sqlBuilder, 'comparison_rows')
-            ->select('*');
+        return DB::query()
+            ->fromSub($left->unionAll($right), 'x')
+            ->select([
+                'x.*',
+                DB::raw('ABS(total_detail_jumlah - total_turusan_jumlah) as selisih')
+            ])
+            ->groupBy(
+                'x.id_jenis_kayu',
+                'x.id_lahan',
+                'x.panjang',
+                'x.diameter',
+                'x.grade'
+            );
     }
 }

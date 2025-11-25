@@ -12,7 +12,10 @@ class DetailLahanRotaryRelationManager extends RelationManager
 {
     protected static ?string $title = 'Lahan';
     protected static string $relationship = 'detailLahanRotary';
-
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
     public function form(Schema $schema): Schema
     {
         return PenggunaanLahanRotaryForm::configure($schema);

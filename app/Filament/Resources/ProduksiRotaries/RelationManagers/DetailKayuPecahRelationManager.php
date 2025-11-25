@@ -12,7 +12,10 @@ class DetailKayuPecahRelationManager extends RelationManager
 {
     protected static string $relationship = 'DetailKayuPecah';
     protected static ?string $title = 'Kayu Pecah';
-
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
     public function form(Schema $schema): Schema
     {
         return KayuPecahRotaryForm::configure($schema);

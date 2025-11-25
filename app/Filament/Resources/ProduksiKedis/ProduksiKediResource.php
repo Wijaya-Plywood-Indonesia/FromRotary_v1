@@ -43,18 +43,14 @@ class ProduksiKediResource extends Resource
     {
         return ProduksiKedisTable::configure($table);
     }
-
-    /**
-     * Mengimplementasikan logika dinamis untuk Relation Manager dengan pengecekan aman pada Route.
-     */
     public static function getRelations(): array
-{
-    return [
-        DetailMasukKediRelationManager::class,
-        DetailBongkarRelationManager::class,
-        YesRelationManager::class,
-    ];
-}
+    {
+        return [
+            DetailMasukKediRelationManager::class,
+            DetailBongkarRelationManager::class,
+            YesRelationManager::class,
+        ];
+    }
 
     public static function getPages(): array
     {

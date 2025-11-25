@@ -5,12 +5,15 @@ namespace App\Filament\Resources\ProduksiRotaries\RelationManagers;
 use App\Models\Pegawai;
 use App\Models\PegawaiRotary;
 use Carbon\CarbonPeriod;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -22,7 +25,11 @@ class DetailPegawaiRotaryRelationManager extends RelationManager
     protected static ?string $title = 'Pegawai';
     protected static string $relationship = 'detailPegawaiRotary';
     //Format Angka
-
+    // FUNGSI BARU UNTUK MEMUNCULKAN TOMBOL DI HALAMAN VIEW
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
     public static function timeOptions(): array
     {
         return collect(CarbonPeriod::create('00:00', '1 hour', '23:00')->toArray())
@@ -56,7 +63,9 @@ class DetailPegawaiRotaryRelationManager extends RelationManager
                     ->options([
                         'operator_mesin' => 'Operator Mesin',
                         'petugas_pilih' => 'Petugas Pilih',
-                        'operator_lain' => 'Operator Produksi Lain',
+                        'siku' => 'Siku',
+                        'sampah' => 'Sampah',
+                        'operator_lain' => 'Tugas Lain',
                     ])
                     ->required()
                     ->native(false),
@@ -94,6 +103,7 @@ class DetailPegawaiRotaryRelationManager extends RelationManager
 
         return $data;
     }
+
     public function table(Table $table): Table
     {
         return $table
@@ -121,6 +131,20 @@ class DetailPegawaiRotaryRelationManager extends RelationManager
                 CreateAction::make(),
             ])
             ->recordActions([
+
+                Action::make('aturIjin')
+                    ->label(fn($record) => $record->ijin ? 'Edit Ijin' : 'Tambah Ijin')
+                    ->icon('heroicon-o-pencil-square')
+                    ->form([
+                        TextInput::make('ijin')->label('Ijin'),
+                        Textarea::make('ket')->label('Keterangan'),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'izin' => $data['izin'],
+                            'keterangan' => $data['keterangan'],
+                        ]);
+                    }),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

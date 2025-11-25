@@ -55,25 +55,45 @@ class DetailKayuMasuksTable
                 TextColumn::make('keterangan_kayu')
                     ->label('Kayu')
                     ->getStateUsing(function ($record) {
+
                         $namaKayu = $record->jenisKayu?->nama_kayu ?? '-';
                         $panjang = $record->panjang ?? '-';
-                        $grade = match ($record->grade) {
-                            1 => 'A',
-                            2 => 'B',
+
+                        // --- NORMALISASI NILAI GRADE ---
+                        $raw = trim((string) $record->grade);     // hapus spasi
+                        $rawUpper = strtoupper($raw);            // samakan huruf
+            
+                        // kalau numeric, ubah ke int (misal: "01" atau " 1 ")
+                        $gradeNorm = is_numeric($rawUpper) ? (int) $rawUpper : $rawUpper;
+
+                        // match paling aman: terima angka maupun huruf
+                        $grade = match ($gradeNorm) {
+                            1, '1', 'A' => 'A',
+                            2, '2', 'B' => 'B',
                             default => '-',
                         };
+
                         return "{$namaKayu} {$panjang} ({$grade})";
                     })
-                    ->sortable(['jenisKayu.nama_kayu', 'panjang', 'grade']) // tetap bisa diurutkan
-                    ->searchable(['jenisKayu.nama_kayu', 'panjang']) // bisa dicari juga
-                    //  ->badge()
-                    ->color(fn($record) => match ($record->grade) {
-                        1 => 'success',
-                        2 => 'primary',
-                        default => 'gray',
+
+                    ->sortable(['jenisKayu.nama_kayu', 'panjang', 'grade'])
+                    ->searchable(['jenisKayu.nama_kayu', 'panjang'])
+
+                    ->color(function ($record) {
+
+                        // NORMALISASI juga untuk warna badge
+                        $raw = trim((string) $record->grade);
+                        $rawUpper = strtoupper($raw);
+                        $gradeNorm = is_numeric($rawUpper) ? (int) $rawUpper : $rawUpper;
+
+                        return match ($gradeNorm) {
+                            1, '1', 'A' => 'success',
+                            2, '2', 'B' => 'primary',
+                            default => 'gray',
+                        };
                     }),
                 TextColumn::make('diameter')
-                    ->label('D')
+                    ->label('Diameter')
                     ->numeric()
                     ->sortable(),
 
@@ -89,7 +109,7 @@ class DetailKayuMasuksTable
                         $jumlahBatang = $record->jumlah_batang ?? 0;
 
                         // Rumus: diameter × jumlah_batang × 0.785 / 1_000_000
-                        $kubikasi = $diameter * $jumlahBatang * 0.785 / 1_000_000;
+                        $kubikasi = $diameter * $diameter * $jumlahBatang * 0.785 / 1_000_000;
 
                         // Tampilkan hingga 6 angka di belakang koma
                         return number_format($kubikasi, 6, ',', '.');
@@ -108,6 +128,11 @@ class DetailKayuMasuksTable
                     ->sortable()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d M Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
             ])
             ->groups([
@@ -115,36 +140,69 @@ class DetailKayuMasuksTable
                     ->label('Lahan')
                     ->collapsible()
                     ->orderQueryUsing(function ($query, $direction) {
-                        // supaya Filament tahu cara urutkan data saat ASC/DESC di UI
                         return $query
                             ->join('lahans', 'detail_kayu_masuks.id_lahan', '=', 'lahans.id')
                             ->orderBy('lahans.kode_lahan', $direction)
-                            ->select('detail_kayu_masuks.*'); // penting untuk mencegah ambiguitas
+                            ->select('detail_kayu_masuks.*');
                     })
                     ->getTitleFromRecordUsing(function ($record, $records = null) {
                         $kode = $record->lahan?->kode_lahan ?? '-';
                         $nama = $record->lahan?->nama_lahan ?? '-';
                         $jenis_kayu = $record->jenisKayu?->nama_kayu ?? '-';
 
+                        $parentId = $record->id_kayu_masuk ?? $record->kayu_masuk_id ?? null;
+                        $lahanId = $record->id_lahan;
+
+                        // CASE 1: Jika Filament sudah memberi Collection ($records)
                         if ($records instanceof Collection && $records->isNotEmpty()) {
-                            $totalBatang = $records->count();
-                            $totalKubikasi = $records->sum(fn($r) => (float) $r->kubikasi);
+
+                            $filtered = $records
+                                ->where('id_kayu_masuk', $parentId)
+                                ->where('id_lahan', $lahanId);
+
+                            $totalBatang = $filtered->sum(fn($r) => (int) ($r->jumlah_batang ?? 0));
+
+                            // Hitung kubikasi manual (karena tidak ada di DB)
+                            $totalKubikasi = $filtered->sum(function ($r) {
+                                $diameter = $r->diameter ?? 0;
+                                $jumlah = $r->jumlah_batang ?? 0;
+                                return $diameter * $diameter * $jumlah * 0.785 / 1000000;
+                            });
+
                         } else {
+
+                            // CASE 2: Tidak ada records collection → query DB
                             $query = DetailKayuMasuk::query()
-                                ->where('id_lahan', $record->id_lahan)
-                                ->get();
-                            $totalBatang = $query->count();
-                            $totalKubikasi = $query->sum(fn($r) => (float) $r->kubikasi);
+                                ->where('id_kayu_masuk', $parentId)
+                                ->where('id_lahan', $lahanId)
+                                ->get(); // convert → collection
+            
+                            $totalBatang = $query->sum('jumlah_batang');
+
+                            // Hitung kubikasi manual
+                            $totalKubikasi = $query->sum(function ($r) {
+                                $diameter = $r->diameter ?? 0;
+                                $jumlah = $r->jumlah_batang ?? 0;
+                                return $diameter * $diameter * $jumlah * 0.785 / 1000000;
+                            });
                         }
 
+                        // Format angka
                         $kubikasiFormatted = number_format($totalKubikasi, 4, ',', '.');
+
                         return "{$kode} {$nama} {$jenis_kayu} - {$totalBatang} batang ({$kubikasiFormatted} m³)";
-                    }),
+                    })
+                ,
             ])
+
+
+
             ->defaultGroup('lahan.kode_lahan')
+            ->groupingSettingsHidden()
             ->filters([
                 //
             ])
+            ->defaultSort('created_at', 'desc')
             ->headerActions([
                 CreateAction::make(),
                 Action::make('total_kubikasi')
@@ -153,7 +211,7 @@ class DetailKayuMasuksTable
                         $totalKubikasi = DetailKayuMasuk::all()
                             ->sum(
                                 fn($item) =>
-                                ($item->diameter ?? 0) * ($item->jumlah_batang ?? 0) * 0.785 / 1_000_000
+                                ($item->diameter ?? 0) * ($item->diameter ?? 0) * ($item->jumlah_batang ?? 0) * 0.785 / 1_000_000
                             );
 
                         return 'Total Kubikasi = ' . number_format($totalKubikasi, 6, ',', '.') . ' m³';
@@ -163,44 +221,6 @@ class DetailKayuMasuksTable
                     ->button() // Supaya tampil seperti label di header
                     ->outlined()
                     ->icon('heroicon-o-cube'),
-
-                Action::make('sinkron_kubikasi')
-                    ->label('Sinkron Total Kubikasi')
-                    ->icon('heroicon-o-arrow-path')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->action(function (RelationManager $livewire) {
-                        $record = $livewire->ownerRecord; // model KayuMasuk (parent)
-            
-                        // Pastikan kita mendapatkan collection (bukan null)
-                        $details = $record->detailMasukanKayu()->get();
-
-                        $totalKubikasi = $details->sum(function ($item) {
-                            return ($item->diameter ?? 0) * ($item->jumlah_batang ?? 0) * 0.785 / 1000000;
-                        });
-
-                        // Pastikan tidak null (cast ke float)
-                        $totalKubikasi = (float) $totalKubikasi;
-
-                        $record->update(['kubikasi' => $totalKubikasi]);
-
-                        Notification::make()
-                            ->title('Total kubikasi berhasil disinkronkan!')
-                            ->body('Total: ' . number_format($totalKubikasi, 6, ',', '.') . ' m³')
-                            ->success()
-                            ->send();
-
-                        // 🔄 Refresh halaman setelah update
-                        // $livewire->dispatchBrowserEvent('reload');
-            
-                    })
-                    ->after(function ($livewire) {
-                        // Setelah aksi selesai, reload komponen saat ini (bukan full page)
-                        $livewire->dispatch('$refresh');
-
-                        // Kalau mau full reload (halaman benar-benar segar):
-                        $livewire->js('window.location.reload()');
-                    }),
 
             ])
             ->recordActions([

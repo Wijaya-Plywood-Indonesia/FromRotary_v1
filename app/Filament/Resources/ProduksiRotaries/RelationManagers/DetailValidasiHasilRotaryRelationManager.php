@@ -13,7 +13,10 @@ class DetailValidasiHasilRotaryRelationManager extends RelationManager
 {
     protected static ?string $title = 'Validasi';
     protected static string $relationship = 'detailValidasiHasilRotary';
-
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
     public function form(Schema $schema): Schema
     {
         return ValidasiHasilRotaryForm::configure($schema);

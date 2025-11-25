@@ -3,10 +3,10 @@
 namespace App\Filament\Resources\DetailMasukKedis\Schemas;
 
 use Filament\Schemas\Schema;
+
 use App\Models\JenisKayu;
 use App\Models\Ukuran;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 
 class DetailMasukKediForm
@@ -14,7 +14,7 @@ class DetailMasukKediForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
-            ->schema([
+            ->components([
 
                 TextInput::make('no_palet')
                     ->label('Nomor Palet')
@@ -56,24 +56,34 @@ class DetailMasukKediForm
                             ->mapWithKeys(fn($u) => [$u->id => $u->dimensi])
                     )
                     ->searchable()
-                    ->afterStateUpdated(function ($state) {
-                        session(['last_ukuran' => $state]);
-                    })
-                    ->default(fn() => session('last_ukuran'))
-                    ->required(), // Sesuai dengan migrasi
+
+                    ->required(),
+
+                Select::make('id_jenis_kayu')
+                    ->label('Jenis Kayu')
+                    ->options(
+                        JenisKayu::query()
+                            ->get()
+                            ->mapWithKeys(function ($JenisKayu) {
+                                return [
+                                    $JenisKayu->id => "{$JenisKayu->kode_kayu} - {$JenisKayu->nama_kayu}",
+                                ];
+                            })
+                    )
+                    ->searchable()
+                    ->required(),
+
 
                 TextInput::make('kw')
                     ->label('KW (Kualitas)')
                     ->numeric()
-                    ->required()
-                    ->maxLength(255)
-                    ->placeholder('Cth: 1, 2, 3,dll.'),
+                    ->required(),
+
 
                 TextInput::make('jumlah')
                     ->label('Jumlah')
-                    ->required()
-                    ->numeric()
-                    ->placeholder('Cth: 1.5 atau 100'),
+                    ->required(),
+
 
                 DatePicker::make('rencana_bongkar')
                     ->label('Rencana Bongkar')

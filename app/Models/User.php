@@ -47,4 +47,13 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function notaBarangKeluarDibuat()
+    {
+        return $this->hasMany(NotaBarangKeluar::class, 'dibuat_oleh');
+    }
+
+    public function notaBarangKeluarDivalidasi()
+    {
+        return $this->hasMany(NotaBarangKeluar::class, 'divalidasi_oleh');
+    }
 }

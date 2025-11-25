@@ -12,7 +12,10 @@ class DetailPaletRotaryRelationManager extends RelationManager
 {
     protected static ?string $title = 'Hasil';
     protected static string $relationship = 'detailPaletRotary';
-
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
     public function form(Schema $schema): Schema
     {
         return DetailHasilPaletRotaryForm::configure($schema);

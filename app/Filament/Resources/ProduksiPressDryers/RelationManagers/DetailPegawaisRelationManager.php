@@ -123,7 +123,7 @@ class DetailPegawaisRelationManager extends RelationManager
         return $data;
     }
 
-    
+
     public function table(Table $table): Table
     {
         return $table
@@ -157,49 +157,70 @@ class DetailPegawaisRelationManager extends RelationManager
             ])
             ->headerActions([
                 // Create Action — HILANG jika status sudah divalidasi
-            CreateAction::make()
-                ->hidden(fn($livewire) =>
-                    $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                ),
+                CreateAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
             ])
             ->recordActions([
                 // Edit Action — HILANG jika status sudah divalidasi
-            EditAction::make()
-                ->hidden(fn($livewire) =>
-                    $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                ),
-
-            // Delete Action — HILANG jika status sudah divalidasi
-            DeleteAction::make()
-                ->hidden(fn($livewire) =>
-                    $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                ),
-
-            // Atur Ijin — HILANG jika status sudah divalidasi
-            Action::make('aturIjin')
-                ->label(fn($record) => $record->ijin ? 'Edit Ijin' : 'Tambah Ijin')
-                ->icon('heroicon-o-pencil-square')
-                ->form([
-                    TextInput::make('ijin')->label('Ijin'),
-                    Textarea::make('ket')->label('Keterangan'),
-                ])
-                ->action(function ($record, array $data) {
-                    $record->update([
-                        'ijin' => $data['ijin'],
-                        'ket'  => $data['ket'],
-                    ]);
-                })
-                ->hidden(fn($livewire) =>
-                    $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                ),
-            ])
-            ->toolbarActions([
-            BulkActionGroup::make([
-                DeleteBulkAction::make()
-                    ->hidden(fn($livewire) =>
+                EditAction::make()
+                    ->hidden(
+                        fn($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
-            ]),
+
+                // Delete Action — HILANG jika status sudah divalidasi
+                DeleteAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
+
+                // Atur Ijin — HILANG jika status sudah divalidasi
+                Action::make('aturIjin')
+                    ->label(fn($record) => $record->ijin ? 'Edit Ijin' : 'Tambah Ijin')
+                    ->icon('heroicon-o-pencil-square')
+                    ->form([
+                        TextInput::make('ijin')->label('Ijin'),
+                        Textarea::make('ket')->label('Keterangan'),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'ijin' => $data['ijin'],
+                            'ket' => $data['ket'],
+                        ]);
+                    })
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
+
+                // ➕ Tambah / Edit Ijin & Keterangan
+                Action::make('aturIjin')
+                    ->label(fn($record) => $record->ijin ? 'Edit Ijin' : 'Tambah Ijin')
+                    ->icon('heroicon-o-pencil-square')
+                    ->form([
+                        TextInput::make('ijin')->label('Ijin'),
+                        Textarea::make('ket')->label('Keterangan'),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'ijin' => $data['ijin'],
+                            'ket' => $data['ket'],
+                        ]);
+                    }),
+
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
+                        ->hidden(
+                            fn($livewire) =>
+                            $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                        ),
+                ]),
             ]);
     }
 }

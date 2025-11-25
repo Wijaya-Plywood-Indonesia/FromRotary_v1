@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
 use Spatie\Image\Image;
 use Spatie\Image\Manipulations; // ⬅️ ini yang penting
 use Illuminate\Support\Facades\Storage;
+use PhpParser\Node\Stmt\Label;
 
 class KayuPecahRotaryForm
 {
@@ -39,12 +40,11 @@ class KayuPecahRotaryForm
                     })
                     ->searchable()
                     ->required(),
-                TextInput::make('panjang')
+                TextInput::make('ukuran')
+                    ->label('Diameter')
                     ->required()
                     ->numeric(),
-                TextInput::make('diameter')
-                    ->required()
-                    ->numeric(),
+
                 FileUpload::make('foto')
                     ->label('Foto Kayu Pecah Dengan Meteran')
                     ->image()

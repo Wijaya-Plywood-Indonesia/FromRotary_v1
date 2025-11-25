@@ -11,6 +11,7 @@ class ProduksiKedi extends Model
     protected $fillable = [
         'tanggal',
         'kendala',
+        'kode_kedi',
         'status',
     ];
 

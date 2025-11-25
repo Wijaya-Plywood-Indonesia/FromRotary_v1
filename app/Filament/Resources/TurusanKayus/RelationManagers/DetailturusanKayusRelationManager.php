@@ -214,20 +214,30 @@ class DetailturusanKayusRelationManager extends RelationManager
                     ->getStateUsing(function ($record) {
                         $namaKayu = $record->jenisKayu?->nama_kayu ?? '-';
                         $panjang = $record->panjang ?? '-';
-                        $grade = match ($record->grade) {
-                            1 => 'A',
-                            2 => 'B',
+
+                        // Normalisasi nilai agar aman di server
+                        $rawGrade = $record->grade;
+
+                        // buang spasi + uppercase
+                        $clean = trim(strtoupper((string) $rawGrade));
+
+                        // konversi ke integer kalau isi angka
+                        $gradeInt = is_numeric($clean) ? intval($clean) : $clean;
+
+                        // match fleksibel: terima 1, "1", "A", "a"
+                        $grade = match ($gradeInt) {
+                            1, '1', 'A' => 'A',
+                            2, '2', 'B' => 'B',
                             default => '-',
                         };
 
                         return "{$namaKayu} {$panjang} ({$grade})";
                     })
-                    ->sortable(['jenisKayu.nama_kayu', 'panjang', 'grade']) // tetap bisa diurutkan
-                    ->searchable(['jenisKayu.nama_kayu', 'panjang']) // bisa dicari juga
-                    //  ->badge()
-                    ->color(fn($record) => match ($record->grade) {
-                        1 => 'success',
-                        2 => 'primary',
+                    ->sortable(['jenisKayu.nama_kayu', 'panjang', 'grade'])
+                    ->searchable(['jenisKayu.nama_kayu', 'panjang'])
+                    ->color(fn($record) => match (trim((string) $record->grade)) {
+                        '1', 'A' => 'success',
+                        '2', 'B' => 'primary',
                         default => 'gray',
                     }),
 

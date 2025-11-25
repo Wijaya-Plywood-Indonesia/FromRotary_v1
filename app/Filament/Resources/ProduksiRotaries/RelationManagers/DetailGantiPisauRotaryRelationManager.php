@@ -15,7 +15,10 @@ class DetailGantiPisauRotaryRelationManager extends RelationManager
 {
     protected static ?string $title = 'Ganti Pisau';
     protected static string $relationship = 'detailGantiPisauRotary';
-
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
     public function form(Schema $schema): Schema
     {
         return GantiPisauRotaryForm::configure($schema);

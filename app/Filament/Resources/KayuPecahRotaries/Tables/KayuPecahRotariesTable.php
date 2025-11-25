@@ -26,12 +26,11 @@ class KayuPecahRotariesTable
                     ->sortable(['lahan.kode_lahan']) // optional
                     ->searchable(['lahan.kode_lahan', 'lahan.nama_lahan']),
 
-                TextColumn::make('panjang')
+                TextColumn::make('ukuran')
+                    ->label('ukuran')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('diameter')
-                    ->numeric()
-                    ->sortable(),
+
                 IconColumn::make('foto')
                     ->label('Foto')
                     ->boolean()
