@@ -21,6 +21,19 @@ class DetailMasukKediForm
                     ->numeric()
                     ->required(),
 
+                Select::make('kode_kedi')
+                    ->label('Kode Kedi')
+                    ->options([
+                        'Kedi 1' => 'Kedi 1',
+                        'Kedi 2' => 'Kedi 2',
+                        'Kedi 3' => 'Kedi 3',
+                        'Kedi 4' => 'Kedi 4',
+                    ])
+                    ->required()
+                    ->native(false)
+                    ->searchable(),
+
+
                 // Relasi ke Jenis Kayu
                 Select::make('id_jenis_kayu')
                     ->label('Jenis Kayu')
@@ -38,10 +51,10 @@ class DetailMasukKediForm
                 Select::make('id_ukuran')
                     ->label('Ukuran')
                     ->options(
-        Ukuran::all()
-            ->sortBy(fn($u) => $u->dimensi)
-            ->mapWithKeys(fn($u) => [$u->id => $u->dimensi])
-    )
+                        Ukuran::all()
+                            ->sortBy(fn($u) => $u->dimensi)
+                            ->mapWithKeys(fn($u) => [$u->id => $u->dimensi])
+                    )
                     ->searchable()
                     ->afterStateUpdated(function ($state) {
                         session(['last_ukuran' => $state]);

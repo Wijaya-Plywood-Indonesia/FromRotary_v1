@@ -20,6 +20,12 @@ class YesRelationManager extends RelationManager
         return false;
     }
 
+    public static function canViewForRecord($ownerRecord, $pageClass): bool
+    {
+        return true;
+    }
+
+
     public function form(Schema $schema): Schema
     {
         return ValidasiKediForm::configure($schema);
@@ -29,5 +35,4 @@ class YesRelationManager extends RelationManager
     {
         return ValidasiKedisTable::configure($table);
     }
-
 }

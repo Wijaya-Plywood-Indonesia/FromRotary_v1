@@ -13,6 +13,9 @@ use Filament\Tables\Table;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
+use App\Models\JenisKayu;
+use App\Models\Ukuran;
 
 class DetailBongkarRelationManager extends RelationManager
 {
@@ -24,28 +27,39 @@ class DetailBongkarRelationManager extends RelationManager
         return false;
     }
 
+    public static function canViewForRecord($ownerRecord, $pageClass): bool
+{
+    return $ownerRecord->status === 'bongkar';
+}
+
+
     public function form(Schema $schema): Schema
     {
         return $schema
-        ->schema([
+            ->schema([
                 TextInput::make('no_palet')
                     ->label('Nomor Palet')
                     ->numeric()
                     ->required(),
 
-                // Relasi ke Jenis Kayu (id_jenis_kayu)
+                Select::make('kode_kedi')
+                    ->label('Kode Kedi')
+                    ->options([
+                        'Kedi 1' => 'Kedi 1',
+                        'Kedi 2' => 'Kedi 2',
+                        'Kedi 3' => 'Kedi 3',
+                        'Kedi 4' => 'Kedi 4',
+                    ])
+                    ->required()
+                    ->native(false)
+                    ->searchable(),
+
+                // Relasi ke Jenis Kayu
                 Select::make('id_jenis_kayu')
                     ->label('Jenis Kayu')
-                    ->options(function () {
-                        $produksi = $this->getOwnerRecord();
-
-                        return \App\Models\DetailMasukStik::where('id_produksi_stik', $produksi->id)
-                            ->select('id_jenis_kayu')
-                            ->distinct()
-                            ->with('jenisKayu:id,nama_kayu')
-                            ->get()
-                            ->pluck('jenisKayu.nama_kayu', 'id_jenis_kayu');
-                    })
+                    ->options(
+                        JenisKayu::orderBy('nama_kayu')->pluck('nama_kayu', 'id')
+                    )
                     ->searchable()
                     ->afterStateUpdated(function ($state) {
                         session(['last_jenis_kayu' => $state]);
@@ -53,24 +67,21 @@ class DetailBongkarRelationManager extends RelationManager
                     ->default(fn() => session('last_jenis_kayu'))
                     ->required(),
 
-                // Relasi ke Ukuran (id_ukuran)
+                // Relasi ke Kayu Masuk (Optional)
                 Select::make('id_ukuran')
-                    ->label('Ukuran Kayu')
-                    ->options(function () {
-                        $produksi = $this->getOwnerRecord();
-
-                        return \App\Models\DetailMasukKedi::where('id_produksi_kedi', $produksi->id)
-                            ->with('ukuran')
-                            ->get()
-                            ->pluck('ukuran.nama_ukuran', 'id_ukuran')
-                            ->unique();
-                    })
+                    ->label('Ukuran')
+                    ->options(
+                        Ukuran::all()
+                            ->sortBy(fn($u) => $u->dimensi)
+                            ->mapWithKeys(fn($u) => [$u->id => $u->dimensi])
+                    )
                     ->searchable()
                     ->afterStateUpdated(function ($state) {
                         session(['last_ukuran' => $state]);
                     })
                     ->default(fn() => session('last_ukuran'))
-                    ->required(),
+                    ->required(), // Sesuai dengan migrasi
+
 
                 TextInput::make('kw')
                     ->label('Kualitas (KW)')
@@ -94,6 +105,14 @@ class DetailBongkarRelationManager extends RelationManager
                 TextColumn::make('no_palet')
                     ->label('No. Palet')
                     ->searchable(),
+
+                BadgeColumn::make('kode_kedi')
+                    ->label('Kode Kedi')
+                    ->colors([
+                        'primary'
+                    ])
+                    ->formatStateUsing(fn($state) => $state ?? '-'),
+
 
                 TextColumn::make('jenisKayu.nama_kayu')
                     ->label('Jenis Kayu')

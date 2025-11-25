@@ -9,6 +9,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Columns\BadgeColumn;
 
 class DetailMasukKedisTable
 {
@@ -20,6 +21,13 @@ class DetailMasukKedisTable
                 TextColumn::make('no_palet')
                     ->label('No. Palet')
                     ->searchable(),
+
+                BadgeColumn::make('kode_kedi')
+                    ->label('Kode Kedi')
+                    ->colors([
+                        'primary'
+                    ])
+                    ->formatStateUsing(fn($state) => $state ?? '-'),
 
                 TextColumn::make('jenisKayu.nama_kayu')
                     ->label('Jenis Kayu')

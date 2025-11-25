@@ -20,6 +20,12 @@ class DetailMasukKediRelationManager extends RelationManager
         return false;
     }
 
+    public static function canViewForRecord($ownerRecord, $pageClass): bool
+{
+    return $ownerRecord->status === 'masuk';
+}
+
+
     public function form(Schema $schema): Schema
     {
         return DetailMasukKediForm::configure($schema);

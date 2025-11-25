@@ -19,6 +19,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Route;
 
 class ProduksiKediResource extends Resource
 {
@@ -43,15 +44,17 @@ class ProduksiKediResource extends Resource
         return ProduksiKedisTable::configure($table);
     }
 
+    /**
+     * Mengimplementasikan logika dinamis untuk Relation Manager dengan pengecekan aman pada Route.
+     */
     public static function getRelations(): array
-    {
-        return [
-                //
-            RelationManagers\DetailMasukKediRelationManager::class,
-            RelationManagers\DetailBongkarRelationManager::class,
-            RelationManagers\YesRelationManager::class,
-        ];
-    }
+{
+    return [
+        DetailMasukKediRelationManager::class,
+        DetailBongkarRelationManager::class,
+        YesRelationManager::class,
+    ];
+}
 
     public static function getPages(): array
     {
