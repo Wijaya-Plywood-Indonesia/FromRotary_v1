@@ -21,25 +21,18 @@ class DetailMasukKediRelationManager extends RelationManager
     }
 
     public static function canViewForRecord($ownerRecord, $pageClass): bool
-{
-    return $ownerRecord->status === 'masuk';
-}
+    {
+        return $ownerRecord->status === 'masuk';
+    }
 
 
     public function form(Schema $schema): Schema
     {
         return DetailMasukKediForm::configure($schema);
     }
-    public function isReadOnly(): bool
-    {
-        return false;
-    }
     public function table(Table $table): Table
     {
         return DetailMasukKedisTable::configure($table);
     }
-    public static function canViewForRecord($ownerRecord, $pageClass): bool
-    {
-        return $ownerRecord->status === 'masuk';
-    }
+
 }

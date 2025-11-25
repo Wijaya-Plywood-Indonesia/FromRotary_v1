@@ -15,11 +15,6 @@ class YesRelationManager extends RelationManager
     protected static ?string $title = 'Validasi Hasil';
     protected static string $relationship = 'validasiKedi';
 
-    public function isReadOnly(): bool
-    {
-        return false;
-    }
-
     public static function canViewForRecord($ownerRecord, $pageClass): bool
     {
         return true;
