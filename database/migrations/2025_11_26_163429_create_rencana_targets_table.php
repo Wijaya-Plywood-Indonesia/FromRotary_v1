@@ -10,14 +10,17 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('validasis', function (Blueprint $table) {
+        Schema::create('rencana_targets', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_produksi_dryer')
-                ->constrained('produksi_press_dryers')
+            $table->foreignId('id_ukuran')
+                ->constrained('ukurans')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->string('role');
-            $table->string('status');
+            $table->foreignId('id_jenis_kayu')
+                ->constrained('jenis_kayus')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->integer('kw');
             $table->timestamps();
         });
     }
@@ -27,6 +30,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('validasis');
+        Schema::dropIfExists('rencana_targets');
     }
 };

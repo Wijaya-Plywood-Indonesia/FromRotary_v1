@@ -54,6 +54,11 @@ class Ukuran extends Model
     {
         return $this->hasMany(DetailHasilPaletRotary::class, 'id_ukuran', 'id');
     }
+
+    public function rencanaTargets()
+    {
+        return $this->hasMany(RencanaTarget::class, 'id_ukuran');
+    }
     public function getDimensiAttribute(): string
     {
         return "{$this->panjang} x {$this->lebar} x {$this->tebal}";

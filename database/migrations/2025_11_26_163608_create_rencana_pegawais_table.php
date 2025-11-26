@@ -10,15 +10,13 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('validasi_repairs', function (Blueprint $table) {
+        Schema::create('rencana_pegawais', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_repair')
-                ->constrained('repairs')
-                ->cascadeOnDelete();
-
-            $table->string('role', 50);
-            $table->string('status', 50);
-
+            $table->foreignId('id_pegawai')
+                ->constrained('pegawais')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->integer('nomor_meja');
             $table->timestamps();
         });
     }
@@ -28,6 +26,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('validasi_repairs');
+        Schema::dropIfExists('rencana_pegawais');
     }
 };
