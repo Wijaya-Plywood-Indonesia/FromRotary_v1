@@ -146,15 +146,17 @@
 
         <table class="signature-table">
             <tr>
-                <td style="width: 60%"></td>
-                <td>Hormat Kami,</td>
+                <td><strong>Penerima</strong></td>
+                <td><strong>Pengirim</strong></td>
             </tr>
             <tr>
-                <td></td>
+                <td style="height: 60px"></td>
                 <td></td>
             </tr>
             <tr>
-                <td></td>
+                <td>
+                    <strong>{{ $record->tujuan_nota}}</strong>
+                </td>
                 <td>
                     <strong>{{ $record->pembuat->name ?? '-' }}</strong>
                 </td>

@@ -1,50 +1,82 @@
 <!DOCTYPE html>
 <html lang="id">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Laporan Pembelian Kayu</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                font-size: 12px;
-                margin: 25px;
-                color: #000;
-                background: #fff;
-            }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 8px;
-            }
-            th,
-            td {
-                border: 1px solid #444;
-                padding: 5px;
-                text-align: right;
-            }
-            th {
-                background: #f5f5f5;
-            }
-            .group-title {
-                background: #eaeaea;
-                font-weight: bold;
-                padding: 5px;
-                margin-top: 15px;
-                border: 1px solid #444;
-            }
-            .header-table td {
-                border: none;
-                padding: 4px;
-            }
-            .signature td {
-                border: none;
-                text-align: center;
-                padding: 5px;
-            }
-        </style>
-    </head>
-    <body>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>Laporan Pembelian Kayu</title>
+
+    <style>
+      .phone-wrapper {
+    width: 360px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 6px;              /* lebih rapat */
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    margin: 0;
+    background: #e5e5e5;
+    line-height: 1.05;         /* sangat rapat */
+}
+
+h3 {
+    margin: 0 0 3px 0;         /* lebih rapat */
+    font-size: 12px;
+    text-align: center;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 2px;           /* jarak antar tabel sangat rapat */
+}
+
+th, td {
+    border: 1px solid #444;
+    padding: 2px;              /* padding diperkecil */
+    text-align: right;
+}
+
+.header-table td {
+    border: none;
+    padding: 1px;              /* header lebih rapat */
+    text-align: left;
+}
+
+.group-title {
+    background: #eaeaea;
+    font-weight: bold;
+    padding: 2px;              /* lebih rapat */
+    margin-top: 6px;           /* antar group dirapatkan */
+    border: 1px solid #444;
+    font-size: 10px;
+}
+
+.signature td {
+    border: none;
+    padding: 2px;              /* tanda tangan lebih rapat */
+    text-align: center;
+}
+
+.footer {
+    font-size: 9px;
+    text-align: right;
+    margin-top: 6px;           /* rapat */
+}
+
+@media (max-width: 360px) {
+    .phone-wrapper {
+        width: 100%;
+    }
+}
+    </style>
+</head>
+
+<body>
+    <div class="phone-wrapper">
         <h3 style="text-align: center">NOTA KAYU</h3>
 
         <table class="header-table">
@@ -211,14 +243,13 @@
             </table>
         </div>
 
-        <br /><br /><br />
         <table class="signature" style="width: 100%">
             <tr>
                 <td>Penanggung Jawab Kayu</td>
                 <td>Grader Kayu</td>
             </tr>
             <tr>
-                <td style="height: 70px"></td>
+                <td style="height: 10px"></td>
                 <td></td>
             </tr>
             <tr>

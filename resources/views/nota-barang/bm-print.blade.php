@@ -86,9 +86,7 @@
                     <strong>Tanggal</strong>:
                     {{ $record->tanggal->format('d-m-Y') }}
                 </td>
-                <td>
-                    <strong>Dari</strong>: {{ $record->sumber_nota ?? '-' }}
-                </td>
+                <td><strong>Dari</strong>: {{ $record->tujuan_nota}}</td>
             </tr>
             <tr>
                 <td><strong>No. Nota</strong>: {{ $record->no_nota }}</td>
@@ -125,8 +123,8 @@
 
         <table class="signature-table">
             <tr>
-                <td><strong>Dibuat Oleh</strong></td>
-                <td><strong>Divalidasi Oleh</strong></td>
+                <td><strong>Dikirim Oleh</strong></td>
+                <td><strong>Diterima Oleh</strong></td>
             </tr>
             <tr>
                 <td style="height: 60px"></td>
@@ -134,10 +132,10 @@
             </tr>
             <tr>
                 <td>
-                    <strong>{{ $record->dibuatOleh->name ?? '-' }}</strong>
+                    <strong>{{ $record->tujuan_nota}}</strong>
                 </td>
                 <td>
-                    <strong>{{ $record->divalidasiOleh->name ?? '-' }}</strong>
+                    <strong>{{ $record->dibuatOleh->name ?? '-' }}</strong>
                 </td>
             </tr>
         </table>
