@@ -22,15 +22,20 @@ class KayuMasuksTable
                 //->badge()
                 //  ->color('success')
                 ,
+                
                 TextColumn::make('upload_dokumen_angkut')
                     ->label('Dokumen Legal')
                     ->badge()
                     ->formatStateUsing(fn($state) => $state ? 'Ada File' : 'Kosong')
                     ->color(fn($state) => $state ? 'success' : 'danger'),
                 TextColumn::make('tgl_kayu_masuk')->dateTime()->sortable(),
+                
                 TextColumn::make('seri')->numeric()->sortable(),
+                
                 TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                
                 TextColumn::make('updated_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                
                 TextColumn::make('createdBy.name')
                     ->label('Dibuat Oleh')
                     ->sortable()

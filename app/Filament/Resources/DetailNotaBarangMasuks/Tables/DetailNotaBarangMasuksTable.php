@@ -40,21 +40,19 @@ class DetailNotaBarangMasuksTable
             ->defaultSort('created_at', 'desc')
             ->headerActions([
                 CreateAction::make()->label('Tambah Barang'),
-
-
                 Action::make('validasi_nota')
                     ->label('Validasi Nota')
                     ->icon('heroicon-o-check')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->visible(
-                        fn(RelationManager $livewire) =>
-                        $livewire->ownerRecord->divalidasi_oleh === null
-                    )
-                    ->disabled(
-                        fn(RelationManager $livewire) =>
-                        $livewire->ownerRecord->dibuat_oleh === auth()->id()
-                    )
+                    ->visible(function (RelationManager $livewire) {
+                        // Tombol hanya muncul jika BELUM divalidasi
+                        return empty($livewire->ownerRecord->divalidasi_oleh);
+                    })
+                    ->disabled(function (RelationManager $livewire) {
+                        // Pembuat TIDAK boleh validasi
+                        return $livewire->ownerRecord->dibuat_oleh == auth()->id();
+                    })
                     ->action(function (RelationManager $livewire) {
 
                         $nota = $livewire->ownerRecord;
@@ -69,7 +67,7 @@ class DetailNotaBarangMasuksTable
                             ->send();
                     })
                     ->after(function ($livewire) {
-                        // Refresh komponen supaya status berubah di tabel
+                        // Refresh komponen supaya status berubah
                         $livewire->dispatch('$refresh');
                     }),
                 Action::make('batalkan_validasi')

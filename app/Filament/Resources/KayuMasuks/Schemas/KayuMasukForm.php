@@ -28,6 +28,7 @@ class KayuMasukForm
                     ])
                     ->required()
                     ->native(false)
+                    ->default('SAKR')
                     ->searchable()
                     ->preload(),
                 FileUpload::make('upload_dokumen_angkut')
