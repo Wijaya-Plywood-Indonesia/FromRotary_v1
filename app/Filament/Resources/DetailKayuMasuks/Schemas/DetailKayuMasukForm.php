@@ -16,10 +16,11 @@ class DetailKayuMasukForm
     {
         return $schema
             ->columns(2)
-
             ->components([
 
-
+                // ==========================
+                // LAHAN → Ambil lahan terakhir
+                // ==========================
                 Select::make('id_lahan')
                     ->label('Lahan')
                     ->options(
@@ -29,18 +30,13 @@ class DetailKayuMasukForm
                                 $lahan->id => "{$lahan->kode_lahan} - {$lahan->nama_lahan}",
                             ])
                     )
-                    ->default(function () {
-                        // Ambil lahan terakhir yang pernah diinputkan di detail_turusan_kayus
-                        $lastLahan = DetailKayuMasuk::latest('id')->value('id_lahan');
-
-                        // Jika tidak ada data sama sekali, gunakan id = 1
-                        return $lastLahan ?? 1;
-                    })
+                    ->default(fn() => DetailKayuMasuk::latest('id')->value('id_lahan') ?? 1)
                     ->searchable()
                     ->required(),
 
-
-
+                // ==========================
+                // PANJANG → ambil panjang terakhir berdasarkan lahan terakhir
+                // ==========================
                 Select::make('panjang')
                     ->label('Panjang')
                     ->options([
@@ -54,15 +50,16 @@ class DetailKayuMasukForm
                         if (!$lastLahan)
                             return 0;
 
-                        $lastPanjang = DetailKayuMasuk::where('id_lahan', $lastLahan)
+                        return DetailKayuMasuk::where('id_lahan', $lastLahan)
                             ->latest('id')
-                            ->value('panjang');
-
-                        return $lastPanjang ?? 0;
+                            ->value('panjang') ?? 0;
                     })
                     ->searchable()
                     ->native(false),
 
+                // ==========================
+                // GRADE → ambil grade terakhir
+                // ==========================
                 Select::make('grade')
                     ->label('Grade')
                     ->options([
@@ -70,13 +67,7 @@ class DetailKayuMasukForm
                         2 => 'Grade B',
                     ])
                     ->required()
-                    ->default(function () {
-                        // Ambil lahan terakhir yang pernah diinputkan di detail_turusan_kayus
-                        $lastLahan = DetailKayuMasuk::latest('id')->value('grade');
-
-                        // Jika tidak ada data sama sekali, gunakan id = 1
-                        return $lastLahan ?? 1;
-                    })
+                    ->default(fn() => DetailKayuMasuk::latest('id')->value('grade') ?? 1)
                     ->native(false)
                     ->searchable()
                     ->reactive()
@@ -90,10 +81,13 @@ class DetailKayuMasukForm
                         }
                     })
                     ->afterStateUpdated(function ($state) {
-                        cookie()->queue('filament_local_storage_detail_kayu_masuk.grade', $state, 60 * 24 * 30); // 30 hari
+                        cookie()->queue('filament_local_storage_detail_kayu_masuk.grade', $state, 60 * 24 * 30);
                     }),
 
-                Select::make('jenis_kayu_id')
+                // ==========================
+                // JENIS KAYU → ambil jenis kayu terakhir
+                // ==========================
+                Select::make('id_jenis_kayu')
                     ->label('Jenis Kayu')
                     ->options(
                         JenisKayu::query()
@@ -106,6 +100,9 @@ class DetailKayuMasukForm
                     ->searchable()
                     ->required(),
 
+                // ==========================
+                // DIAMETER
+                // ==========================
                 TextInput::make('diameter')
                     ->label('Diameter (cm)')
                     ->placeholder('13 cm - 50 cm')
@@ -116,9 +113,6 @@ class DetailKayuMasukForm
                         'between' => 'Wijaya hanya menerima kayu dengan diameter antara 13 cm hingga 50 cm.',
                     ])
                     ->afterStateUpdated(function ($state) {
-                        if ($state === null)
-                            return;
-
                         if ($state < 13) {
                             Notification::make()
                                 ->title('Ukuran Kayu Terlalu Kecil')

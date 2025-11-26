@@ -37,6 +37,7 @@ class DetailNotaBarangMasuksTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('created_at', 'desc')
             ->headerActions([
                 CreateAction::make()->label('Tambah Barang'),
 

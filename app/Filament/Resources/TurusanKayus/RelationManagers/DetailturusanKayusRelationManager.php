@@ -5,6 +5,7 @@ namespace App\Filament\Resources\TurusanKayus\RelationManagers;
 use App\Models\DetailTurusanKayu;
 use App\Models\JenisKayu;
 use App\Models\Lahan;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -32,30 +33,36 @@ class DetailturusanKayusRelationManager extends RelationManager
         return $schema
             ->components([
 
-
+                /*
+                |--------------------------------------------------------------------------
+                | NOMOR URUT (SUDAH BENAR)
+                |--------------------------------------------------------------------------
+                */
                 TextInput::make('nomer_urut')
                     ->label('Nomor')
                     ->numeric()
                     ->required()
                     ->default(function (callable $get, $livewire) {
-                        $parentRecord = $livewire->ownerRecord;
-                        if (!$parentRecord)
+                        $parent = $livewire->ownerRecord;
+
+                        if (!$parent)
                             return 1;
 
-                        $lastNumber = DetailTurusanKayu::where('id_kayu_masuk', $parentRecord->id)
+                        $last = DetailTurusanKayu::where('id_kayu_masuk', $parent->id)
                             ->max('nomer_urut');
-                        return $lastNumber ? $lastNumber + 1 : 1;
+
+                        return $last ? $last + 1 : 1;
                     })
                     ->rules(function ($get, $livewire, $record) {
-                        $parentRecord = $livewire->ownerRecord;
-                        if (!$parentRecord) {
+                        $parent = $livewire->ownerRecord;
+
+                        if (!$parent)
                             return [];
-                        }
 
                         return [
                             Rule::unique('detail_turusan_kayus', 'nomer_urut')
-                                ->where('id_kayu_masuk', $parentRecord->id)
-                                ->where('lahan_id', $get('lahan_id')) // ✅ tambahkan ini
+                                ->where('id_kayu_masuk', $parent->id)
+                                ->where('lahan_id', $get('lahan_id'))
                                 ->ignore($record?->id),
                         ];
                     })
@@ -63,51 +70,60 @@ class DetailturusanKayusRelationManager extends RelationManager
                         'unique' => 'Nomor ini sudah digunakan pada kayu masuk dan lahan yang sama.',
                     ]),
 
+                /*
+                |--------------------------------------------------------------------------
+                | LAHAN
+                |--------------------------------------------------------------------------
+                */
                 Select::make('lahan_id')
                     ->label('Lahan')
                     ->options(
-                        Lahan::query()
-                            ->get()
+                        Lahan::get()
                             ->mapWithKeys(fn($lahan) => [
                                 $lahan->id => "{$lahan->kode_lahan} - {$lahan->nama_lahan}",
                             ])
                     )
-                    ->default(fn() => DetailTurusanKayu::latest('id')->value('lahan_id') ?? 1)
+                    ->default(function ($livewire) {
+                        $parent = $livewire->ownerRecord;
+
+                        if (!$parent)
+                            return 1;
+
+                        return DetailTurusanKayu::where('id_kayu_masuk', $parent->id)
+                            ->latest('id')
+                            ->value('lahan_id') ?? 1;
+                    })
                     ->searchable()
                     ->required()
                     ->reactive()
                     ->afterStateUpdated(function ($state, callable $set) {
-                        if (!$state) {
-                            $set('panjang', 0);
-                            return;
-                        }
+                        if (!$state)
+                            return $set('panjang', 0);
 
                         $lahan = Lahan::find($state);
 
-                        if (!$lahan) {
-                            $set('panjang', 0);
-                            return;
-                        }
+                        if (!$lahan)
+                            return $set('panjang', 0);
 
                         $nama = strtolower($lahan->nama_lahan ?? '');
 
-                        // Jika nama lahan mengandung angka 130 atau 260
-                        if (str_contains($nama, '130')) {
-                            $set('panjang', 130);
-                            return;
-                        } elseif (str_contains($nama, '260')) {
-                            $set('panjang', 260);
-                            return;
-                        }
+                        if (str_contains($nama, '130'))
+                            return $set('panjang', 130);
+                        if (str_contains($nama, '260'))
+                            return $set('panjang', 260);
 
-                        // Jika tidak mengandung angka, ambil panjang terakhir berdasarkan lahan_id
-                        $lastPanjang = DetailTurusanKayu::where('lahan_id', $state)
+                        $last = DetailTurusanKayu::where('lahan_id', $state)
                             ->latest('id')
                             ->value('panjang');
 
-                        $set('panjang', $lastPanjang ?? 0);
+                        return $set('panjang', $last ?? 0);
                     }),
 
+                /*
+                |--------------------------------------------------------------------------
+                | PANJANG
+                |--------------------------------------------------------------------------
+                */
                 Select::make('panjang')
                     ->label('Panjang')
                     ->options([
@@ -116,35 +132,50 @@ class DetailturusanKayusRelationManager extends RelationManager
                         0 => 'Tidak Diketahui',
                     ])
                     ->required()
-                    ->default(function () {
-                        // Saat form pertama dibuka, ambil panjang terakhir dari lahan terakhir
-                        $lastLahan = DetailTurusanKayu::latest('id')->value('lahan_id');
-                        if (!$lastLahan)
+                    ->default(function ($livewire) {
+                        $parent = $livewire->ownerRecord;
+
+                        if (!$parent)
                             return 0;
 
-                        $lastPanjang = DetailTurusanKayu::where('lahan_id', $lastLahan)
+                        return DetailTurusanKayu::where('id_kayu_masuk', $parent->id)
                             ->latest('id')
-                            ->value('panjang');
-
-                        return $lastPanjang ?? 0;
+                            ->value('panjang') ?? 0;
                     })
                     ->searchable()
                     ->native(false),
 
+                /*
+                |--------------------------------------------------------------------------
+                | JENIS KAYU
+                |--------------------------------------------------------------------------
+                */
                 Select::make('jenis_kayu_id')
                     ->label('Jenis Kayu')
                     ->options(
-                        JenisKayu::query()
-                            ->get()
-                            ->mapWithKeys(fn($JenisKayu) => [
-                                $JenisKayu->id => "{$JenisKayu->kode_kayu} - {$JenisKayu->nama_kayu}",
+                        JenisKayu::get()
+                            ->mapWithKeys(fn($x) => [
+                                $x->id => "{$x->kode_kayu} - {$x->nama_kayu}",
                             ])
                     )
-                    ->default(fn() => DetailTurusanKayu::latest('id')->value('jenis_kayu_id') ?? 1)
+                    ->default(function ($livewire) {
+                        $parent = $livewire->ownerRecord;
+
+                        if (!$parent)
+                            return 1;
+
+                        return DetailTurusanKayu::where('id_kayu_masuk', $parent->id)
+                            ->latest('id')
+                            ->value('jenis_kayu_id') ?? 1;
+                    })
                     ->searchable()
                     ->required(),
 
-
+                /*
+                |--------------------------------------------------------------------------
+                | GRADE
+                |--------------------------------------------------------------------------
+                */
                 Select::make('grade')
                     ->label('Grade')
                     ->options([
@@ -152,12 +183,22 @@ class DetailturusanKayusRelationManager extends RelationManager
                         2 => 'Grade B',
                     ])
                     ->required()
-                    ->default(fn() => DetailTurusanKayu::latest('id')->value('grade') ?? 1)
+                    ->default(function ($livewire) {
+                        $parent = $livewire->ownerRecord;
+
+                        if (!$parent)
+                            return 1;
+
+                        return DetailTurusanKayu::where('id_kayu_masuk', $parent->id)
+                            ->latest('id')
+                            ->value('grade') ?? 1;
+                    })
                     ->native(false)
                     ->searchable()
                     ->reactive()
                     ->afterStateHydrated(function ($state, $set) {
-                        $saved = request()->cookie('filament_local_storage_detail_kayu_masuk.grade')
+                        $saved =
+                            request()->cookie('filament_local_storage_detail_kayu_masuk.grade')
                             ?? optional(json_decode(request()->header('X-Filament-Local-Storage'), true))['detail_kayu_masuk.grade']
                             ?? null;
 
@@ -165,9 +206,16 @@ class DetailturusanKayusRelationManager extends RelationManager
                             $set('grade', (int) $saved);
                         }
                     })
-                    ->afterStateUpdated(function ($state) {
-                        cookie()->queue('filament_local_storage_detail_kayu_masuk.grade', $state, 60 * 24 * 30);
-                    }),
+                    ->afterStateUpdated(
+                        fn($state) =>
+                        cookie()->queue('filament_local_storage_detail_kayu_masuk.grade', $state, 60 * 24 * 30)
+                    ),
+
+                /*
+                |--------------------------------------------------------------------------
+                | DIAMETER
+                |--------------------------------------------------------------------------
+                */
                 TextInput::make('diameter')
                     ->label('Diameter (cm)')
                     ->placeholder('13 cm - 50 cm')
@@ -331,23 +379,49 @@ class DetailturusanKayusRelationManager extends RelationManager
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    BulkAction::make('update_lahan')
+                        ->label('Update Lahan')
+                        ->icon('heroicon-o-map')
+                        ->schema([
+                            Select::make('lahan_id')
+                                ->label('Lahan Baru')
+                                ->options(Lahan::pluck('kode_lahan', 'id'))
+                                ->required(),
+                        ])
+                        ->action(function (array $data, Collection $records) {
+                            foreach ($records as $record) {
+                                $record->update([
+                                    'lahan_id' => $data['lahan_id'],
+                                ]);
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle(fn($count) => "{$count} data berhasil diupdate"),
+
+                    BulkAction::make('update_panjang')
+                        ->label('Update Panjang')
+                        ->icon('heroicon-o-arrows-up-down')
+                        ->schema([
+                            Select::make('panjang')
+                                ->label('Panjang Baru')
+                                ->options([
+                                    130 => '130',
+                                    260 => '260',
+                                ])
+                                ->required(),
+                        ])
+                        ->action(function (array $data, Collection $records) {
+                            foreach ($records as $record) {
+                                $record->update([
+                                    'panjang' => $data['panjang'],
+                                ]);
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle(fn($count) => "{$count} data berhasil diupdate"),
                 ]),
             ]);
 
     }
-    protected function getListeners(): array
-    {
-        return [
-            'keydown.enter' => 'handleEnterKey',
-        ];
-    }
 
-    public function handleEnterKey(): void
-    {
-        // Cek apakah modal create terbuka
-        if ($this->isActionOpen('create')) {
-            // trigger action createAnother
-            $this->callAction('createAnother');
-        }
-    }
 }

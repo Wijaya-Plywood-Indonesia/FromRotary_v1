@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\DetailKayuMasuks\Tables;
 
 use App\Models\DetailKayuMasuk;
+use App\Models\Lahan;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -14,6 +16,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Select;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Tables\Grouping\Group;
 use Illuminate\Support\Collection;
@@ -205,22 +208,7 @@ class DetailKayuMasuksTable
             ->defaultSort('created_at', 'desc')
             ->headerActions([
                 CreateAction::make(),
-                Action::make('total_kubikasi')
-                    ->label(function () {
-                        // Ambil semua data DetailKayuMasuk
-                        $totalKubikasi = DetailKayuMasuk::all()
-                            ->sum(
-                                fn($item) =>
-                                ($item->diameter ?? 0) * ($item->diameter ?? 0) * ($item->jumlah_batang ?? 0) * 0.785 / 1_000_000
-                            );
 
-                        return 'Total Kubikasi = ' . number_format($totalKubikasi, 6, ',', '.') . ' m³';
-                    })
-                    ->disabled() // Tidak bisa diklik
-                    ->color('gray')
-                    ->button() // Supaya tampil seperti label di header
-                    ->outlined()
-                    ->icon('heroicon-o-cube'),
 
             ])
             ->recordActions([
@@ -255,9 +243,50 @@ class DetailKayuMasuksTable
                 DeleteAction::make(),
             ])
             ->toolbarActions([
-                // BulkActionGroup::make([
-                //     DeleteBulkAction::make(),
-                // ]),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    BulkAction::make('update_lahan')
+                        ->label('Update Lahan')
+                        ->icon('heroicon-o-map')
+                        ->schema([
+                            Select::make('id_lahan')
+                                ->label('Lahan Baru')
+                                ->options(Lahan::pluck('kode_lahan', 'id'))
+                                ->required(),
+                        ])
+                        ->action(function (array $data, Collection $records) {
+                            foreach ($records as $record) {
+                                $record->update([
+                                    'id_lahan' => $data['id_lahan'],
+                                ]);
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle(fn($count) => "{$count} data berhasil diupdate"),
+
+                    BulkAction::make('update_panjang')
+                        ->label('Update Panjang')
+                        ->icon('heroicon-o-arrows-up-down')
+                        ->schema([
+                            Select::make('panjang')
+                                ->label('Panjang Baru')
+                                ->options([
+                                    130 => '130',
+                                    260 => '260',
+                                ])
+                                ->required(),
+                        ])
+                        ->action(function (array $data, Collection $records) {
+                            foreach ($records as $record) {
+                                $record->update([
+                                    'panjang' => $data['panjang'],
+                                ]);
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle(fn($count) => "{$count} data berhasil diupdate"),
+                ]),
+
             ]);
     }
 }

@@ -113,6 +113,7 @@ class DetailNotaBarangKeluarsTable
                     })
                     ->after(fn($livewire) => $livewire->dispatch('$refresh')),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])

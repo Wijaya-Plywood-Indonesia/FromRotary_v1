@@ -48,6 +48,7 @@ class NotaBarangKeluarsTable
             ->filters([
                 //
             ])
+            ->defaultSort('created_at', 'desc')
             ->recordActions([
                 Action::make('print')
                     ->label('Cetak Nota')
