@@ -43,10 +43,10 @@ class ProduksiHp extends Model
         return $this->hasMany(ValidasiHp::class, 'id_produksi_hp');
     }
 
-    // public function validasiTerakhir()
-    // {
-    //     return $this->hasOne(ValidasiStik::class, 'id_produksi_stik')->latestOfMany();
-    // }
+    public function validasiTerakhir()
+    {
+        return $this->hasOne(ValidasiHp::class, 'id_produksi_hp')->latestOfMany();
+    }
 
     public function bahanPenolongHp()
     {

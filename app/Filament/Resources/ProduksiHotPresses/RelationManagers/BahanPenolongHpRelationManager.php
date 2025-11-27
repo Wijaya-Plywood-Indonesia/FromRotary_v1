@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\ProduksiHotPresses\RelationManagers;
 
+use App\Filament\Resources\BahanPenolongHps\Schemas\BahanPenolongHpForm;
+use App\Filament\Resources\BahanPenolongHps\Tables\BahanPenolongHpsTable;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -17,38 +19,18 @@ class BahanPenolongHpRelationManager extends RelationManager
 {
     protected static string $relationship = 'bahanPenolongHp';
 
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
+
     public function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextInput::make('no')
-                    ->required()
-                    ->maxLength(255),
-            ]);
+        return BahanPenolongHpForm::configure($schema);
     }
 
     public function table(Table $table): Table
     {
-        return $table
-            ->recordTitleAttribute('no')
-            ->columns([
-                TextColumn::make('no')
-                    ->searchable(),
-            ])
-            ->filters([
-                //
-            ])
-            ->headerActions([
-                CreateAction::make(),
-            ])
-            ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+        return BahanPenolongHpsTable::configure($table);
     }
 }

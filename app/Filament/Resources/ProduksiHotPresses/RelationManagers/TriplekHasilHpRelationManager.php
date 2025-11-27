@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\ProduksiHotPresses\RelationManagers;
 
+use App\Filament\Resources\TriplekHasilHps\Schemas\TriplekHasilHpForm;
+use App\Filament\Resources\TriplekHasilHps\Tables\TriplekHasilHpsTable;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -17,38 +19,18 @@ class TriplekHasilHpRelationManager extends RelationManager
 {
     protected static string $relationship = 'triplekHasilHp';
 
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
+
     public function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextInput::make('no')
-                    ->required()
-                    ->maxLength(255),
-            ]);
+        return TriplekHasilHpForm::configure($schema);
     }
 
     public function table(Table $table): Table
     {
-        return $table
-            ->recordTitleAttribute('no')
-            ->columns([
-                TextColumn::make('no')
-                    ->searchable(),
-            ])
-            ->filters([
-                //
-            ])
-            ->headerActions([
-                CreateAction::make(),
-            ])
-            ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+        return TriplekHasilHpsTable::configure($table);
     }
 }

@@ -66,18 +66,18 @@ class DetailPegawaiHpForm
                 ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
                 ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null),
             
-            // --- IJIN (TextInput) ---
-            TextInput::make('ijin')
-                ->label('Izin')
-                ->nullable()
-                ->maxLength(255),
+            // // --- IJIN (TextInput) ---
+            // TextInput::make('ijin')
+            //     ->label('Izin')
+            //     ->nullable()
+            //     ->maxLength(255),
 
-            // --- KETERANGAN (Textarea) ---
-            Textarea::make('ket')
-                ->label('Keterangan')
-                ->rows(1)
-                ->nullable()
-                ->maxLength(255),
+            // // --- KETERANGAN (Textarea) ---
+            // Textarea::make('ket')
+            //     ->label('Keterangan')
+            //     ->rows(1)
+            //     ->nullable()
+            //     ->maxLength(255),
         ]);
     }
 }

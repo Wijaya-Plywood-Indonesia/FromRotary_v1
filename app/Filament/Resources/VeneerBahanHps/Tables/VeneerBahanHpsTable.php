@@ -6,6 +6,8 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Table;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 
 class VeneerBahanHpsTable
@@ -36,14 +38,38 @@ class VeneerBahanHpsTable
                     ->label('Jumlah Lembar'),
             ])
             ->filters([
-                //
+                // Tempat filter jika Anda membutuhkannya
+            ])
+            ->headerActions([
+                // Create Action — HILANG jika status sudah divalidasi
+                CreateAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
             ])
             ->recordActions([
-                EditAction::make(),
+                // Edit Action — HILANG jika status sudah divalidasi
+                EditAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
+
+                // Delete Action — HILANG jika status sudah divalidasi
+                DeleteAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->hidden(
+                            fn($livewire) =>
+                            $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                        ),
                 ]),
             ]);
     }

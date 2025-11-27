@@ -2,53 +2,29 @@
 
 namespace App\Filament\Resources\ProduksiHotPresses\RelationManagers;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Forms\Components\TextInput;
+use App\Filament\Resources\PlatformBahanHps\Schemas\PlatformBahanHpForm;
+use App\Filament\Resources\PlatformBahanHps\Tables\PlatformBahanHpsTable;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class PlatformBahanHpRelationManager extends RelationManager
 {
     protected static string $relationship = 'platformBahanHp';
 
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
+
     public function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextInput::make('no')
-                    ->required()
-                    ->maxLength(255),
-            ]);
+        return PlatformBahanHpForm::configure($schema);
     }
 
     public function table(Table $table): Table
     {
-        return $table
-            ->recordTitleAttribute('no')
-            ->columns([
-                TextColumn::make('no')
-                    ->searchable(),
-            ])
-            ->filters([
-                //
-            ])
-            ->headerActions([
-                CreateAction::make(),
-            ])
-            ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+        return PlatformBahanHpsTable::configure($table);
+
     }
 }

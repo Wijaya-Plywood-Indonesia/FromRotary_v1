@@ -20,8 +20,10 @@ class VeneerBahanHpResource extends Resource
     protected static ?string $model = VeneerBahanHp::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-    protected static string|UnitEnum|null $navigationGroup = 'Hot Press';
-    protected static ?int $navigationSort = 1;
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 
     protected static ?string $recordTitleAttribute = 'Veneer Bahan';
 

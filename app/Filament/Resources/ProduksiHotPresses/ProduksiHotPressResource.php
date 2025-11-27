@@ -25,6 +25,9 @@ class ProduksiHotPressResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Hot Press';
     protected static ?int $navigationSort = 1;
 
+    protected static ?string $modelLabel = 'Produksi Hot Press';
+    protected static ?string $pluralModelLabel = 'Produksi Hot Press';
+
     public static function form(Schema $schema): Schema
     {
         return ProduksiHotPressForm::configure($schema);
