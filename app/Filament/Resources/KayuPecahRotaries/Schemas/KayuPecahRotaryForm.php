@@ -38,7 +38,6 @@ class KayuPecahRotaryForm
                                 return [$item->id => $item->lahan->kode_lahan ?? 'Tanpa Kode'];
                             });
                     })
-                    ->searchable()
                     ->required(),
                 TextInput::make('ukuran')
                     ->label('Diameter')

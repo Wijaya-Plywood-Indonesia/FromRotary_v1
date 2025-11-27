@@ -47,16 +47,14 @@ class DetailNotaBarangMasuksTable
                     ->icon('heroicon-o-check')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->visible(
-                        fn(RelationManager $livewire) =>
-                        $livewire->ownerRecord->divalidasi_oleh === null
-                    )
-                    ->disabled(
-                        fn(RelationManager $livewire) =>
-                        $livewire->ownerRecord->dibuat_oleh === auth()->id()
-                    )
-                    ->action(function (RelationManager $livewire) {
+                    ->visible(function (RelationManager $livewire) {
+                        $nota = $livewire->ownerRecord;
 
+                        return
+                            $nota->divalidasi_oleh === null   // belum divalidasi
+                            && $nota->dibuat_oleh !== auth()->id(); // pembuat tidak boleh lihat
+                    })
+                    ->action(function (RelationManager $livewire) {
                         $nota = $livewire->ownerRecord;
 
                         $nota->update([
@@ -68,10 +66,9 @@ class DetailNotaBarangMasuksTable
                             ->success()
                             ->send();
                     })
-                    ->after(function ($livewire) {
-                        // Refresh komponen supaya status berubah di tabel
-                        $livewire->dispatch('$refresh');
-                    }),
+                    ->after(fn($livewire) => $livewire->dispatch('$refresh')),
+
+
                 Action::make('batalkan_validasi')
                     ->label('Batalkan Validasi')
                     ->icon('heroicon-o-x-circle')

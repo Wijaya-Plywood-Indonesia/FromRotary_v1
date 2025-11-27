@@ -19,13 +19,20 @@ class KayuPecahRotariesTable
 
                 TextColumn::make('lahan_display')
                     ->label('Lahan')
-                    ->getStateUsing(
-                        fn($record) =>
-                        "{$record->lahan->kode_lahan} - {$record->lahan->nama_lahan}"
-                    )
-                    ->sortable(['lahan.kode_lahan']) // optional
-                    ->searchable(['lahan.kode_lahan', 'lahan.nama_lahan']),
+                    ->getStateUsing(function ($record) {
+                        $lahan = $record->penggunaanLahan?->lahan;
 
+                        return $lahan
+                            ? "{$lahan->kode_lahan} - {$lahan->nama_lahan}"
+                            : '-';
+                    })
+                    ->sortable([
+                        'penggunaanLahan.lahan.kode_lahan'
+                    ])
+                    ->searchable([
+                        'penggunaanLahan.lahan.kode_lahan',
+                        'penggunaanLahan.lahan.nama_lahan',
+                    ]),
                 TextColumn::make('ukuran')
                     ->label('ukuran')
                     ->numeric()
