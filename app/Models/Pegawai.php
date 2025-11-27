@@ -38,6 +38,11 @@ class Pegawai extends Model
         return $this->hasMany(DetailPegawaiStik::class, 'id_pegawai');
     }
 
+    public function detailPegawaiHp()
+    {
+        return $this->hasMany(DetailPegawaiHp::class, 'id_pegawai');
+    }
+
     // Pegawai Repair
     public function pegawaiRepairs()
     {

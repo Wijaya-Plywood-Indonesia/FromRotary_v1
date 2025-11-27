@@ -47,4 +47,9 @@ class ProduksiHp extends Model
     // {
     //     return $this->hasOne(ValidasiStik::class, 'id_produksi_stik')->latestOfMany();
     // }
+
+    public function bahanPenolongHp()
+    {
+        return $this->hasMany(BahanPenolongHp::class, 'id_produksi_hp');
+    }
 }
