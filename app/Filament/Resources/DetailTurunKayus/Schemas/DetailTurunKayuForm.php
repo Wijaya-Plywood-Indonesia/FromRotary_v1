@@ -44,14 +44,38 @@ class DetailTurunKayuForm
                 // STATUS
                 Select::make('status')
                     ->label('Status')
-                    ->options([
-                        'menunggu' => 'Menunggu',
-                        'proses' => 'Sedang Diproses',
-                        'selesai' => 'Selesai',
-                        'ditolak' => 'Ditolak',
-                    ])
-                    ->default('menunggu')
+                    ->options(function (callable $get) {
+                        $kayuMasukId = $get('id_kayu_masuk');
+
+                        if (!$kayuMasukId) {
+                            return [
+                                'menunggu' => 'Menunggu',
+                                'selesai' => 'Selesai',
+                            ];
+                        }
+
+                        $kayuMasuk = KayuMasuk::with('penggunaanKendaraanSupplier')
+                            ->find($kayuMasukId);
+
+                        $jenis = $kayuMasuk?->penggunaanKendaraanSupplier?->jenis_kendaraan;
+
+                        // Jika kendaraan Fuso → dua status
+                        if ($jenis === 'Fuso') {
+                            return [
+                                'menunggu' => 'Menunggu',
+                                'selesai' => 'Selesai',
+                            ];
+                        }
+
+                        // Selain Fuso → hanya selesai
+                        return [
+                            'selesai' => 'Selesai',
+                        ];
+                    })
+                    ->reactive()
+                    ->native(false)
                     ->required(),
+
 
 
                 TextInput::make('nama_supir')

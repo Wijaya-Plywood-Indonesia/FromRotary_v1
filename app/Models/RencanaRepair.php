@@ -18,4 +18,14 @@ class RencanaRepair extends Model
     protected $casts = [
         'tanggal' => 'date',
     ];
+
+    public function pegawaiRepairs()
+    {
+        return $this->hasMany(RencanaPegawai::class, 'id_rencana_repair');
+    }
+
+    public function rencanaTargets()
+    {
+        return $this->hasMany(RencanaTarget::class, 'id_rencana_repair');
+    }
 }

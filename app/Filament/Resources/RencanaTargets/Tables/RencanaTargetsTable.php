@@ -1,39 +1,31 @@
 <?php
 
-namespace App\Filament\Resources\RencanaPegawais\Tables;
+namespace App\Filament\Resources\RencanaTargets\Tables;
 
-use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class RencanaPegawaisTable
+class RencanaTargetsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('pegawai.nama_pegawai')
-                    ->label('Pekerja')
-                    ->formatStateUsing(
-                        fn($record) => $record->pegawai
-                        ? $record->pegawai->kode_pegawai . ' - ' . $record->pegawai->nama_pegawai
-                        : '—'
-                    )
-                    ->badge()
-                    ->searchable(
-                        query: fn($query, $search) => $query->whereHas(
-                            'pegawai',
-                            fn($q) => $q
-                                ->where('nama_pegawai', 'like', "%{$search}%")
-                                ->orWhere('kode_pegawai', 'like', "%{$search}%")
-                        )
-                    ),
-                TextColumn::make('nomor_meja')
+                TextColumn::make('ukuran.dimensi')
+                    ->label('Ukuran')
                     ->numeric()
                     ->sortable(),
+                TextColumn::make('jenisKayu.nama_kayu')
+                    ->label('Jenis Kayu')
+                    ->searchable()
+                    ->placeholder('N/A'),
+                TextColumn::make('kw')
+                    ->label('Kualitas (KW)')
+                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

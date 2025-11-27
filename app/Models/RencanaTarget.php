@@ -12,6 +12,7 @@ class RencanaTarget extends Model
     protected $table = 'rencana_targets';
 
     protected $fillable = [
+        'id_rencana_repair',
         'id_ukuran',
         'id_jenis_kayu',
         'kw',
@@ -25,5 +26,10 @@ class RencanaTarget extends Model
     public function jenisKayu()
     {
         return $this->belongsTo(JenisKayu::class, 'id_jenis_kayu');
+    }
+
+    public function rencanaRepair()
+    {
+        return $this->belongsTo(RencanaRepair::class, 'id_rencana_repair');
     }
 }

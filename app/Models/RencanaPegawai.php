@@ -12,6 +12,7 @@ class RencanaPegawai extends Model
     protected $table = 'rencana_pegawais';
 
     protected $fillable = [
+        'id_rencana_repair',
         'id_pegawai',
         'nomor_meja',
     ];
@@ -22,5 +23,10 @@ class RencanaPegawai extends Model
     public function pegawai()
     {
         return $this->belongsTo(Pegawai::class, 'id_pegawai');
+    }
+
+    public function rencanaRepair()
+    {
+        return $this->belongsTo(RencanaRepair::class, 'id_rencana_repair');
     }
 }

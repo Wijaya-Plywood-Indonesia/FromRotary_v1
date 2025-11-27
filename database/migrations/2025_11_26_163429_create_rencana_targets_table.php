@@ -12,6 +12,10 @@ return new class extends Migration {
     {
         Schema::create('rencana_targets', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('id_rencana_repair')
+                ->constrained('rencana_repairs')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->foreignId('id_ukuran')
                 ->constrained('ukurans')
                 ->cascadeOnUpdate()
