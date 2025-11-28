@@ -13,73 +13,45 @@ class RekapKayuMasuksTable
         return $table
             ->columns([
 
-                // ============================
-                // 1. TANGGAL (dari kayu masuk)
-                // ============================
                 TextColumn::make('kayuMasuk.tgl_kayu_masuk')
                     ->label('Tanggal')
                     ->date()
                     ->sortable(),
 
-                // ======================
-                // 2. NAMA SUPPLIER
-                // ======================
+
                 TextColumn::make('kayuMasuk.penggunaanSupplier.nama_supplier')
                     ->label('Nama')
                     ->sortable()
                     ->searchable(),
 
-                // ==============
-                // 3. SERI
-                // ==============
-                TextColumn::make('seri')
+
+                TextColumn::make('kayuMasuk.seri')
                     ->label('Seri')
                     ->sortable(),
 
-                // ======================
-                // 4. PANJANG
-                // ======================
                 TextColumn::make('panjang')
                     ->label('Panjang')
                     ->sortable(),
 
-                // ======================
-                // 5. JENIS KAYU
-                // ======================
-                TextColumn::make('jenis')
+
+                TextColumn::make('jenisKayu.nama_kayu')
                     ->label('Jenis')
                     ->sortable(),
 
-                // ======================
-                // 6. LAHAN
-                // ======================
+
                 TextColumn::make('lahan.kode_lahan')
                     ->label('Lahan')
                     ->sortable(),
 
-                // ======================
-                // 7. BANYAK / PCS
-                // ======================
-                TextColumn::make('banyak')
+                TextColumn::make('kuantitas')
                     ->label('Banyak')
                     ->numeric()
                     ->summarize(Sum::make()),
 
-                // ======================
-                // 8. M3 / KUBIKASI
-                // ======================
-                TextColumn::make('m3')
-                    ->label('M3')
-                    ->numeric(3)
-                    ->summarize(Sum::make()),
-
-                // ======================
-                // 9. POIN
-                // ======================
-                TextColumn::make('poin')
-                    ->label('Poin')
+                TextColumn::make('diameter')
+                    ->label('D')
                     ->numeric()
-                    ->summarize(Sum::make()),
+                ,
 
             ])
             ->defaultSort('kayuMasuk.tgl_kayu_masuk', 'desc');

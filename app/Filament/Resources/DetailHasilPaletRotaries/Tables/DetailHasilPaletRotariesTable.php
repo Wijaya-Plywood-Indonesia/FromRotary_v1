@@ -7,6 +7,7 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -51,6 +52,12 @@ class DetailHasilPaletRotariesTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->groups([
+                Group::make('group_lahan')
+                    ->label('Lahan')
+                    ->collapsible()
+                    ->orderQueryUsing(fn($query) => $query),
             ])
             ->filters([
                 //

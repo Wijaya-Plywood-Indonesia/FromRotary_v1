@@ -17,72 +17,14 @@ class ListRekapKayuMasuks extends ListRecords
     {
         return [
 
-            // ========================
-            // EXPORT EXCEL
-            // ========================
-            Action::make('export_excel')
-                ->label('Export Excel')
-                ->icon('heroicon-o-arrow-down-tray')
-                ->action(function () {
-
-                    // Query untuk export
-                    $query = RekapKayuMasuk::query()->with([
-                        'kayuMasuk.penggunaanSupplier',
-                        'jenisKayu',
-                        'lahan',
-                    ]);
-
-                    // Kolom export (Sesuai kebutuhan kamu)
-                    $columns = [
-                        ['label' => 'Tanggal', 'field' => 'tanggal'], // accessor
-                        ['label' => 'Nama', 'field' => 'nama'],       // accessor
-                        ['label' => 'Seri', 'field' => 'seri'],
-                        ['label' => 'Panjang', 'field' => 'panjang'],
-                        ['label' => 'Jenis', 'field' => 'jenisKayu.nama_jenis'],
-                        ['label' => 'Lahan', 'field' => 'lahan.kode_lahan'],
-                        ['label' => 'Banyak', 'field' => 'kuantitas'],
-                        ['label' => 'M3', 'field' => 'kubikasi'],    // accessor
-                        ['label' => 'Poin', 'field' => 'total_harga'], // accessor
-                    ];
-
-                    return Excel::download(
-                        new LaporanKayu($query, $columns),
-                        'rekap-detail-kayu.xlsx'
-                    );
-                }),
-
-
-            // ========================
-            // EXPORT CSV
-            // ========================
-            Action::make('export_csv')
-                ->label('Export CSV')
+            Action::make('laporan_kayu')
+                ->label('Laporan Kayu Masuk')
                 ->icon('heroicon-o-document-text')
-                ->action(function () {
+                ->color('info')
+                ->url(route('laporan.kayu-masuk'))
+                ->openUrlInNewTab(),
 
-                    $query = RekapKayuMasuk::query()->with([
-                        'kayuMasuk.penggunaanSupplier',
-                        'jenisKayu',
-                        'lahan',
-                    ]);
 
-                    $columns = [
-                        ['label' => 'Tanggal', 'field' => 'tanggal'],
-                        ['label' => 'Nama', 'field' => 'nama'],
-                        ['label' => 'Seri', 'field' => 'seri'],
-                        ['label' => 'Panjang', 'field' => 'panjang'],
-                        ['label' => 'Jenis', 'field' => 'jenisKayu.nama_jenis'],
-                        ['label' => 'Lahan', 'field' => 'lahan.kode_lahan'],
-                        ['label' => 'Banyak', 'field' => 'kuantitas'],
-                        ['label' => 'M3', 'field' => 'kubikasi'],
-                        ['label' => 'Poin', 'field' => 'total_harga'],
-                    ];
-
-                    return Excel::download(
-                        new LaporanKayu($query, $columns),
-                        'rekap-detail-kayu.csv'
-                    );
-                }),
 
         ];
     }
