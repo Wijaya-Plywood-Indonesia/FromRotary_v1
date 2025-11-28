@@ -51,4 +51,9 @@ class DetailHasilPaletRotary extends Model
             'id_lahan'            // local key di penggunaan_lahan_rotary
         );
     }
+    public function getGroupLahanAttribute()
+    {
+        $lahan = $this->penggunaanLahan?->lahan;
+        return $lahan ? "{$lahan->kode_lahan} - {$lahan->nama_lahan}" : '-';
+    }
 }
