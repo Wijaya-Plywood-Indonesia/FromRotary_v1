@@ -10,6 +10,7 @@ use Filament\Tables\Table;
 
 class DetailPegawaiHpRelationManager extends RelationManager
 {
+    protected static ?string $title = 'Pegawai';
     protected static string $relationship = 'detailPegawaiHp';
 
     public function isReadOnly(): bool

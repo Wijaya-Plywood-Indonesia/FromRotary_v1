@@ -10,12 +10,17 @@ class TriplekHasilHp extends Model
 
     protected $fillable = [
         'id_produksi_hp',
+        'id_mesin',
         'no_palet',
         'id_jenis_kayu',
         'id_ukuran',
         'kw',
         'isi',
     ];
+    public function mesin()
+    {
+        return $this->belongsTo(Mesin::class, 'id_mesin');
+    }
 
     public function produksiHp()
     {

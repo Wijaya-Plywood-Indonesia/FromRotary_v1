@@ -17,6 +17,10 @@ return new class extends Migration
                 ->constrained('produksi_hp')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
+            $table->foreignId('id_mesin')
+                ->constrained('mesins')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->foreignId('id_pegawai')
                 ->constrained('pegawais')
                 ->cascadeOnUpdate()

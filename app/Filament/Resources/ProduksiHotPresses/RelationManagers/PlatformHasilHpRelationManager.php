@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 
 class PlatformHasilHpRelationManager extends RelationManager
 {
+    protected static ?string $title = 'Hasil Platform';
     protected static string $relationship = 'platformHasilHp';
 
     public function isReadOnly(): bool

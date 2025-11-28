@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 
 class BahanPenolongHpRelationManager extends RelationManager
 {
+    protected static ?string $title = 'Bahan Penolong';
     protected static string $relationship = 'bahanPenolongHp';
 
     public function isReadOnly(): bool

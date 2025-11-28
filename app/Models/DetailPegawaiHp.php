@@ -10,6 +10,7 @@ class DetailPegawaiHp extends Model
 
     protected $fillable = [
         'id_produksi_hp',
+        'id_mesin',
         'id_pegawai',
         'tugas',
         'masuk',
@@ -18,6 +19,11 @@ class DetailPegawaiHp extends Model
         'ket',
         
     ];
+
+    public function mesin()
+    {
+        return $this->belongsTo(Mesin::class, 'id_mesin');
+    }
 
     public function produksiHp()
     {

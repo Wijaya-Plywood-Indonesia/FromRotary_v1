@@ -17,6 +17,10 @@ return new class extends Migration
                 ->constrained('produksi_hp')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
+            $table->foreignId('id_mesin')
+                ->constrained('mesins')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->integer('no_palet');
             $table->foreignId('id_jenis_kayu')
                 ->nullable()

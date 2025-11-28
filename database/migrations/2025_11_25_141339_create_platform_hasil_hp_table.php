@@ -6,15 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+
     public function up(): void
     {
         Schema::create('platform_hasil_hp', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_produksi_hp')
                 ->constrained('produksi_hp')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->foreignId('id_mesin')
+                ->constrained('mesins')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->integer('no_palet');

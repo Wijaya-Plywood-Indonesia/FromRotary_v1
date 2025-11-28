@@ -5,6 +5,7 @@ namespace App\Filament\Resources\PlatformHasilHps\Schemas;
 use Filament\Schemas\Schema;
 use App\Models\JenisKayu;
 use App\Models\Ukuran;
+use App\Models\Mesin;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 
@@ -14,6 +15,18 @@ class PlatformHasilHpForm
     {
         return $schema
             ->components([
+                Select::make('id_mesin')
+                    ->label('Mesin Hotpress')
+                    ->options(
+                        Mesin::whereHas('kategoriMesin', function ($query) {
+                            $query->where('nama_kategori_mesin', 'HOTPRESS');
+                        })
+                            ->orderBy('nama_mesin')
+                            ->pluck('nama_mesin', 'id')
+                    )
+                    ->searchable()
+                    ->required(),
+
                 TextInput::make('no_palet')
                     ->label('Nomor Palet')
                     ->numeric()

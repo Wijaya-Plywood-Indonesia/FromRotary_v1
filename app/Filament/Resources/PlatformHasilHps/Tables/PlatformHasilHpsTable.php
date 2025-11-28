@@ -16,6 +16,12 @@ class PlatformHasilHpsTable
     {
         return $table
             ->columns([
+                TextColumn::make('mesin.nama_mesin')
+                    ->label('Mesin')
+                    ->searchable()
+                    ->placeholder('-'),
+
+
                 TextColumn::make('no_palet')
                     ->label('No. Palet')
                     ->searchable(),

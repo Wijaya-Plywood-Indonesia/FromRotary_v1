@@ -20,6 +20,11 @@ class DetailPegawaiHpsTable
     {
         return $table
             ->columns([
+                TextColumn::make('mesin.nama_mesin')
+                    ->label('Mesin')
+                    ->searchable()
+                    ->placeholder('-'),
+
                 TextColumn::make('pegawaiHp.nama_pegawai')
                     ->label('Pegawai')
                     ->sortable()

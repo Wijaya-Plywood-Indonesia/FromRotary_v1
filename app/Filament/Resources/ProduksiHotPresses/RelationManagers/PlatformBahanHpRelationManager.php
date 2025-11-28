@@ -10,6 +10,7 @@ use Filament\Tables\Table;
 
 class PlatformBahanHpRelationManager extends RelationManager
 {
+    protected static ?string $title = 'Bahan Platform';
     protected static string $relationship = 'platformBahanHp';
 
     public function isReadOnly(): bool

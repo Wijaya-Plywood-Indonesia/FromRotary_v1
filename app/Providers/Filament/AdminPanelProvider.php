@@ -86,6 +86,9 @@ class AdminPanelProvider extends PanelProvider
 
                 NavigationGroup::make('Dryer')
                     ->icon('heroicon-o-fire'),
+                
+                NavigationGroup::make('Hot Press')
+                    ->icon('heroicon-o-cpu-chip'),
 
                 NavigationGroup::make('Kayu')
                     ->icon('heroicon-o-circle-stack'),

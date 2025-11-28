@@ -10,12 +10,18 @@ class PlatformHasilHp extends Model
 
     protected $fillable = [
         'id_produksi_hp',
+        'id_mesin',
         'no_palet',
         'id_jenis_kayu',
         'id_ukuran',
         'kw',
         'isi',
     ];
+
+    public function mesin()
+    {
+        return $this->belongsTo(Mesin::class, 'id_mesin');
+    }
 
     public function produksiHp()
     {
@@ -29,6 +35,6 @@ class PlatformHasilHp extends Model
 
     public function jenisKayu()
     {
-        return $this->belongsTo(JenisKayu::class, 'id_jenis_kayu','id');
+        return $this->belongsTo(JenisKayu::class, 'id_jenis_kayu', 'id');
     }
 }
