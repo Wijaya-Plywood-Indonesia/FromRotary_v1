@@ -28,11 +28,6 @@ class DetailMasukKediResource extends Resource
     {
         return DetailMasukKediForm::configure($schema);
     }
-    public static function shouldRegisterNavigation(): bool
-    {
-        return false;
-    }
-
     public static function table(Table $table): Table
     {
         return DetailMasukKedisTable::configure($table);

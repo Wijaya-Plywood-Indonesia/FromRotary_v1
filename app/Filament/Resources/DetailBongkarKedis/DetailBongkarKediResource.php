@@ -49,8 +49,5 @@ class DetailBongkarKediResource extends Resource
             'edit' => EditDetailBongkarKedi::route('/{record}/edit'),
         ];
     }
-    public static function shouldRegisterNavigation(): bool
-    {
-        return false;
-    }
+
 }

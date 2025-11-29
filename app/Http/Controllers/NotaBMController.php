@@ -20,4 +20,15 @@ class NotaBMController extends Controller
             'details' => $record->detail,
         ]);
     }
+
+    // ✅ REKAP NOTA MASUK
+    public function rekap()
+    {
+        $data = NotaBarangMasuk::withCount('detail')
+            ->withSum('detail', 'jumlah')
+            ->latest('tanggal')
+            ->get();
+
+        return view('nota-barang.bk-rekap', compact('data'));
+    }
 }
