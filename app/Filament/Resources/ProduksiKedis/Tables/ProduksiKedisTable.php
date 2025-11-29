@@ -29,26 +29,22 @@ class ProduksiKedisTable
                 TextColumn::make('tanggal')
                     ->date()
                     ->sortable(),
-
-                TextColumn::make('kode_kedi')
-                    ->label('Kedi')
-                    ->formatStateUsing(fn($state) => ucfirst($state)),
                 TextColumn::make('status')
                     ->label('Status')
                     ->formatStateUsing(fn($state) => ucfirst($state)),
-                TextColumn::make('validasiKedi')
-                    ->label('Validasi')
-                    ->badge()
-                    ->getStateUsing(function ($record) {
-                        return $record->validasiKedi()->exists()
-                            ? 'Sudah divalidasi'
-                            : 'Belum divalidasi';
-                    })
-                    ->color(function ($record) {
-                        return $record->validasiKedi()->exists()
-                            ? 'success'   // hijau bawaan Filament
-                            : 'danger';    // merah bawaan Filament
-                    }),
+                // TextColumn::make('validasiKedi')
+                //     ->label('Validasi')
+                //     ->badge()
+                //     ->getStateUsing(function ($record) {
+                //         return $record->validasiKedi()->exists()
+                //             ? 'Sudah divalidasi'
+                //             : 'Belum divalidasi';
+                //     })
+                //     ->color(function ($record) {
+                //         return $record->validasiKedi()->exists()
+                //             ? 'success'   // hijau bawaan Filament
+                //             : 'danger';    // merah bawaan Filament
+                //     }),
                 TextColumn::make('kendala')
                     ->label('Kendala Produksi')
                     ->getStateUsing(
@@ -107,10 +103,6 @@ class ProduksiKedisTable
                     }),
             ])
             ->recordActions([
-
-                //  ViewAction::make(),
-                //   EditAction::make(),
-
                 Action::make('kelola_kendala')
                     ->label(fn($record) => $record->kendala ? 'Perbarui Kendala' : 'Tambah Kendala')
                     ->icon(fn($record) => $record->kendala ? 'heroicon-o-pencil-square' : 'heroicon-o-plus')
@@ -155,10 +147,6 @@ class ProduksiKedisTable
 
                 // View boleh tetap tampil
                 ViewAction::make(),
-                ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
-
             ])
             ->groups(
                 [

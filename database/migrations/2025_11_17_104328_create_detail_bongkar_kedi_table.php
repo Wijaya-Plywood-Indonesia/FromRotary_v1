@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('detail_bongkar_kedi', function (Blueprint $table) {
             $table->id();
-
+            $table->foreignId('id_mesin')
+                ->constrained('mesins')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->integer('no_palet');
-            $table->string('kode_kedi');
             $table->foreignId('id_jenis_kayu')
                 ->constrained('jenis_kayus')
                 ->cascadeOnUpdate()

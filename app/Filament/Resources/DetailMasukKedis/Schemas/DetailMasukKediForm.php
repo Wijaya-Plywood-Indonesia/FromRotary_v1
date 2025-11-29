@@ -6,6 +6,7 @@ use Filament\Schemas\Schema;
 
 use App\Models\JenisKayu;
 use App\Models\Ukuran;
+use App\Models\Mesin;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
@@ -17,23 +18,22 @@ class DetailMasukKediForm
         return $schema
             ->components([
 
+                Select::make('id_mesin')
+                    ->label('Kode Kedi')
+                    ->options(
+                        Mesin::whereHas('kategoriMesin', function ($query) {
+                            $query->where('nama_kategori_mesin', 'DRYER');
+                        })
+                            ->orderBy('nama_mesin')
+                            ->pluck('nama_mesin', 'id')
+                    )
+                    ->searchable()
+                    ->required(),
+
                 TextInput::make('no_palet')
                     ->label('Nomor Palet')
                     ->numeric()
                     ->required(),
-
-                Select::make('kode_kedi')
-                    ->label('Kode Kedi')
-                    ->options([
-                        'Kedi 1' => 'Kedi 1',
-                        'Kedi 2' => 'Kedi 2',
-                        'Kedi 3' => 'Kedi 3',
-                        'Kedi 4' => 'Kedi 4',
-                    ])
-                    ->required()
-                    ->native(false)
-                    ->searchable(),
-
 
                 // Relasi ke Jenis Kayu
                 Select::make('id_jenis_kayu')
@@ -60,19 +60,19 @@ class DetailMasukKediForm
 
                     ->required(),
 
-                Select::make('id_jenis_kayu')
-                    ->label('Jenis Kayu')
-                    ->options(
-                        JenisKayu::query()
-                            ->get()
-                            ->mapWithKeys(function ($JenisKayu) {
-                                return [
-                                    $JenisKayu->id => "{$JenisKayu->kode_kayu} - {$JenisKayu->nama_kayu}",
-                                ];
-                            })
-                    )
-                    ->searchable()
-                    ->required(),
+                // Select::make('id_jenis_kayu')
+                //     ->label('Jenis Kayu')
+                //     ->options(
+                //         JenisKayu::query()
+                //             ->get()
+                //             ->mapWithKeys(function ($JenisKayu) {
+                //                 return [
+                //                     $JenisKayu->id => "{$JenisKayu->kode_kayu} - {$JenisKayu->nama_kayu}",
+                //                 ];
+                //             })
+                //     )
+                //     ->searchable()
+                //     ->required(),
 
 
                 TextInput::make('kw')

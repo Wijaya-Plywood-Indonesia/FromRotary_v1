@@ -16,6 +16,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use App\Models\JenisKayu;
 use App\Models\Ukuran;
+use App\Models\Mesin;
 
 class DetailBongkarRelationManager extends RelationManager
 {
@@ -34,22 +35,23 @@ class DetailBongkarRelationManager extends RelationManager
     {
         return $schema
             ->schema([
+
+                Select::make('id_mesin')
+                    ->label('Kode Kedi')
+                    ->options(
+                        Mesin::whereHas('kategoriMesin', function ($query) {
+                            $query->where('nama_kategori_mesin', 'DRYER');
+                        })
+                            ->orderBy('nama_mesin')
+                            ->pluck('nama_mesin', 'id')
+                    )
+                    ->searchable()
+                    ->required(),
+
                 TextInput::make('no_palet')
                     ->label('Nomor Palet')
                     ->numeric()
                     ->required(),
-
-                Select::make('kode_kedi')
-                    ->label('Kode Kedi')
-                    ->options([
-                        'Kedi 1' => 'Kedi 1',
-                        'Kedi 2' => 'Kedi 2',
-                        'Kedi 3' => 'Kedi 3',
-                        'Kedi 4' => 'Kedi 4',
-                    ])
-                    ->required()
-                    ->native(false)
-                    ->searchable(),
 
                 // Relasi ke Jenis Kayu
                 Select::make('id_jenis_kayu')
@@ -104,13 +106,10 @@ class DetailBongkarRelationManager extends RelationManager
                     ->label('No. Palet')
                     ->searchable(),
 
-                BadgeColumn::make('kode_kedi')
-                    ->label('Kode Kedi')
-                    ->colors([
-                        'primary'
-                    ])
-                    ->formatStateUsing(fn($state) => $state ?? '-'),
-
+                TextColumn::make('mesin.nama_mesin')
+                    ->label('Mesin')
+                    ->searchable()
+                    ->placeholder('-'),
 
                 TextColumn::make('jenisKayu.nama_kayu')
                     ->label('Jenis Kayu')
