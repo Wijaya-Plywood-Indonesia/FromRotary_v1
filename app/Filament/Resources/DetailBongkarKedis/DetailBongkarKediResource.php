@@ -19,6 +19,7 @@ class DetailBongkarKediResource extends Resource
     protected static ?string $model = DetailBongkarKedi::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
     public static function shouldRegisterNavigation(): bool
     {
         return false;
@@ -48,9 +49,5 @@ class DetailBongkarKediResource extends Resource
             'create' => CreateDetailBongkarKedi::route('/create'),
             'edit' => EditDetailBongkarKedi::route('/{record}/edit'),
         ];
-    }
-    public static function shouldRegisterNavigation(): bool
-    {
-        return false;
     }
 }

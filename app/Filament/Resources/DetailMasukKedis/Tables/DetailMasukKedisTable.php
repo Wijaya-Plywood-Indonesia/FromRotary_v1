@@ -22,12 +22,10 @@ class DetailMasukKedisTable
                     ->label('No. Palet')
                     ->searchable(),
 
-                BadgeColumn::make('kode_kedi')
-                    ->label('Kode Kedi')
-                    ->colors([
-                        'primary'
-                    ])
-                    ->formatStateUsing(fn($state) => $state ?? '-'),
+                TextColumn::make('mesin.nama_mesin')
+                    ->label('Mesin')
+                    ->searchable()
+                    ->placeholder('-'),
 
                 TextColumn::make('jenisKayu.nama_kayu')
                     ->label('Jenis Kayu')
