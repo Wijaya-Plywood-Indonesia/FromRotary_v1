@@ -20,7 +20,6 @@ class DetailTurunKayusTable
             ->query(
                 DetailTurunKayu::query()
                     ->with([
-                        'pegawaiTurunKayu.pegawai',
                         'kayuMasuk.penggunaanSupplier',
                         'kayuMasuk.penggunaanKendaraanSupplier'
                     ])
@@ -70,10 +69,7 @@ class DetailTurunKayusTable
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'selesai' => 'success',
-                        'proses' => 'warning',
                         'menunggu' => 'gray',
-                        'batal' => 'danger',
-                        default => 'gray',
                     })
                     ->sortable(),
 

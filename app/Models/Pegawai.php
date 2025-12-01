@@ -43,9 +43,9 @@ class Pegawai extends Model
         return $this->hasMany(DetailPegawaiHp::class, 'id_pegawai');
     }
 
-    // Pegawai Repair
-    public function pegawaiRepairs()
+    public function rencanaPegawais()
     {
-        return $this->hasMany(PegawaiRepair::class, 'id_pegawai');
+        return $this->hasMany(RencanaPegawai::class, 'id_pegawai');
     }
+
 }

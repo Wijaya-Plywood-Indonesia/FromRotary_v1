@@ -9,7 +9,6 @@ use App\Filament\Resources\ValidasiRepairs\Schemas\ValidasiRepairForm;
 use App\Filament\Resources\ValidasiRepairs\Tables\ValidasiRepairsTable;
 use App\Models\ValidasiRepair;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -19,14 +18,12 @@ class ValidasiRepairResource extends Resource
 {
     protected static ?string $model = ValidasiRepair::class;
 
-    public static function showRegisterNavigation(): bool
-    {
-
-        return false;
-    }
-    protected static string|UnitEnum|null $navigationGroup = 'Repair';
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
     public static function form(Schema $schema): Schema
     {
         return ValidasiRepairForm::configure($schema);

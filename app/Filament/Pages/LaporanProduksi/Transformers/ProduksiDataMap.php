@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Log;
 
 class ProduksiDataMap
 {
-
     public static function make($collection)
     {
         $result = [];
@@ -79,10 +78,36 @@ class ProduksiDataMap
             $potonganTotal = 0;
             $potonganPerOrang = 0;
 
+            // --- LOGIKA PERHITUNGAN POTONGAN CUSTOM (DIPERBARUI) ---
             if ($targetHarian > 0 && $selisihProduksi < 0 && $potonganPerLembar > 0) {
+                // Hitung total uang denda
                 $potonganTotal = abs($selisihProduksi) * $potonganPerLembar;
-                $potonganPerOrang = $jumlahPekerja > 0 ? round($potonganTotal / $jumlahPekerja) : 0;
+
+                if ($jumlahPekerja > 0) {
+                    $potonganPerOrangRaw = $potonganTotal / $jumlahPekerja;
+
+                    // Logika Pembulatan Bertingkat: 0-299 -> 0 | 300-799 -> 500 | 800+ -> 1000
+                    $ribuan = floor($potonganPerOrangRaw / 1000);
+
+                    // Menggunakan fmod agar sisa bagi desimal tetap akurat, atau % untuk integer standar
+                    // Di sini kita gunakan % standar seperti request
+                    $ratusan = $potonganPerOrangRaw % 1000;
+
+                    if ($ratusan < 300) {
+                        // Bulatkan ke bawah (misal 4.250 jadi 4.000)
+                        $potonganPerOrang = $ribuan * 1000;
+
+                    } elseif ($ratusan >= 300 && $ratusan < 800) {
+                        // Bulatkan ke tengah (misal 4.350 jadi 4.500)
+                        $potonganPerOrang = ($ribuan * 1000) + 500;
+
+                    } else {
+                        // Bulatkan ke atas (misal 4.850 jadi 5.000)
+                        $potonganPerOrang = ($ribuan + 1) * 1000;
+                    }
+                }
             }
+            // -------------------------------------------------------
 
             $pekerja = $item->detailPegawaiRotary->map(function ($det) use ($potonganPerOrang) {
                 return [
@@ -92,7 +117,8 @@ class ProduksiDataMap
                     'jam_pulang' => $det->jam_pulang ?? '-',
                     'ijin' => $det->ijin ?? '-',
                     'keterangan' => $det->keterangan ?? '-',
-                    'pot_target' => round($potonganPerOrang, 2),
+                    // Tampilkan hasil yang sudah dibulatkan
+                    'pot_target' => $potonganPerOrang,
                 ];
             })->toArray();
 
@@ -107,7 +133,7 @@ class ProduksiDataMap
                 'hasil' => $totalHasil,
                 'selisih' => $selisihProduksi,
                 'potongan_total' => $potonganTotal,
-                'potongan_per_orang' => round($potonganPerOrang, 2),
+                'potongan_per_orang' => $potonganPerOrang, // Sudah integer hasil custom round
                 'has_target' => $targetModel !== null,
                 'kode_ukuran_raw' => $kodeUkuran,
                 'ukuran_id' => $ukuranId,
@@ -119,6 +145,7 @@ class ProduksiDataMap
                 'kode_ukuran' => $ukuranDisplay,
                 'target' => $targetHarian,
                 'hasil' => $totalHasil,
+                'potongan_per_orang' => $potonganPerOrang
             ]);
         }
 
