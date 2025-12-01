@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RencanaPegawai extends Model
 {
@@ -12,21 +13,45 @@ class RencanaPegawai extends Model
     protected $table = 'rencana_pegawais';
 
     protected $fillable = [
-        'id_rencana_repair',
+        'id_produksi_repair',
         'id_pegawai',
         'nomor_meja',
+        'jam_masuk',
+        'jam_pulang',
+        'ijin',
+        'keterangan',
     ];
 
-    /**
-     * Relasi ke model Pegawai
-     */
-    public function pegawai()
+    protected $casts = [
+        'jam_masuk' => 'datetime:H:i',
+        'jam_pulang' => 'datetime:H:i',
+    ];
+
+    // Eager load biar nggak N+1 query
+    protected $with = [
+        'pegawai',
+        'produksiRepair',
+    ];
+
+    // ==============================
+    // RELASI
+    // ==============================
+
+    /** Relasi ke hari produksi */
+    public function produksiRepair(): BelongsTo
+    {
+        return $this->belongsTo(ProduksiRepair::class, 'id_produksi_repair');
+    }
+
+    /** Relasi ke data pegawai */
+    public function pegawai(): BelongsTo
     {
         return $this->belongsTo(Pegawai::class, 'id_pegawai');
     }
 
-    public function rencanaRepair()
+    public function rencanaRepairs()
     {
-        return $this->belongsTo(RencanaRepair::class, 'id_rencana_repair');
+        return $this->hasMany(RencanaRepair::class, 'id_rencana_pegawai');
     }
+
 }

@@ -30,8 +30,8 @@ class JenisKayu extends Model
         return $this->hasMany(DetailTurusanKayu::class, 'jenis_kayu_id');
     }
 
-    public function rencanaTargets()
+    public function rencanaPegawai()
     {
-        return $this->hasMany(RencanaTarget::class, 'id_jenis_kayu');
+        return $this->hasMany(RencanaPegawai::class, 'id_jenis_kayu');
     }
 }

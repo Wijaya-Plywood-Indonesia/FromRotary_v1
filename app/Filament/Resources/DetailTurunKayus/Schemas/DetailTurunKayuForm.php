@@ -103,7 +103,6 @@ class DetailTurunKayuForm
                     ->visibility('public')
                     ->downloadable()
                     ->openable()
-
                     ->required(),
             ]);
     }

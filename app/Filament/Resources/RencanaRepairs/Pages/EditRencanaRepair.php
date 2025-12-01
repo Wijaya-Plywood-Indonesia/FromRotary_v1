@@ -4,7 +4,6 @@ namespace App\Filament\Resources\RencanaRepairs\Pages;
 
 use App\Filament\Resources\RencanaRepairs\RencanaRepairResource;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditRencanaRepair extends EditRecord
@@ -14,7 +13,6 @@ class EditRencanaRepair extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            ViewAction::make(),
             DeleteAction::make(),
         ];
     }

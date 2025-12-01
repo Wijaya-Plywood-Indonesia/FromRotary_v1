@@ -22,10 +22,32 @@ use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
+use App\Models\DetailTurunKayu;
 
 class DetailturusanKayusRelationManager extends RelationManager
 {
     protected static string $relationship = 'DetailturusanKayus';
+
+    public static function canViewForRecord($ownerRecord, $pageClass): bool
+    {
+        // Ambil status dari detail_turun_kayus berdasarkan kayu masuk
+        $detailTurun = DetailTurunKayu::where('id_kayu_masuk', $ownerRecord->id)->first();
+
+        // Jika belum ada record → anggap belum selesai → tidak boleh isi
+        if (!$detailTurun) {
+            return false;
+        }
+
+        // Jika status "menunggu" → boleh isi data
+        if ($detailTurun->status === 'menunggu') {
+            return true;
+        }
+
+        // Jika status "selesai" → tidak boleh isi lagi
+        return false;
+    }
+
+
 
     public function form(Schema $schema): Schema
     {

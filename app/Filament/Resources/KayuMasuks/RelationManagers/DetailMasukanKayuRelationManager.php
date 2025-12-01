@@ -15,6 +15,26 @@ class DetailMasukanKayuRelationManager extends RelationManager
     protected static string $relationship = 'DetailMasukanKayu';
     protected static ?string $title = 'Detail Kayu Masuk';
 
+    public static function canViewForRecord($ownerRecord, $pageClass): bool
+    {
+        // Ambil status dari detail_turun_kayus berdasarkan kayu masuk
+        $detailTurun = \App\Models\DetailTurunKayu::where('id_kayu_masuk', $ownerRecord->id)->first();
+
+        // Jika belum ada record → anggap belum selesai → tidak boleh isi
+        if (!$detailTurun) {
+            return false;
+        }
+
+        // Jika status "menunggu" → boleh isi data
+        if ($detailTurun->status === 'menunggu') {
+            return true;
+        }
+
+        // Jika status "selesai" → tidak boleh isi lagi
+        return false;
+    }
+
+
 
     public function form(Schema $schema): Schema
     {
@@ -25,6 +45,7 @@ class DetailMasukanKayuRelationManager extends RelationManager
     {
         return DetailKayuMasuksTable::configure($table);
     }
+
     public function incrementJumlah($id)
     {
         if ($item = DetailKayuMasuk::find($id)) {
