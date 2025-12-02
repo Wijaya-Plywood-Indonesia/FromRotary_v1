@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8" />
-        <title>Rekap Nota Barang Masuk</title>
+        <title>Rekap Nota Barang Keluar</title>
 
         <style>
             /* SETUP PRINT */
@@ -92,7 +92,7 @@
         {{-- BUTTON EXPORT (TIDAK IKUT PRINT) --}}
         <div class="toolbar no-print">
             <a
-                href="{{ route('nota-bm.export') }}"
+                href="{{ route('nota-bk.export') }}"
                 class="export-btn"
                 target="_blank"
             >
@@ -101,7 +101,7 @@
         </div>
 
         <div class="header">
-            <h2>REKAP NOTA BARANG MASUK</h2>
+            <h2>REKAP NOTA BARANG KELUAR</h2>
             <div class="sub">Dicetak: {{ now()->format('d-m-Y H:i') }}</div>
         </div>
 
