@@ -63,17 +63,3 @@ Jika CI lulus, tahap deployment berjalan otomatis ke hosting.
 Membuat proses deploy menjadi **otomatis**, **aman**, dan **cepat** (tanpa perlu unggah manual ke File Manager).
 
 ---
-
-# 🛠 Cara Menggunakan Pipeline CI/CD
-
-1. **Pastikan GitHub Secrets sudah diisi:**
-   - `SSH_HOST`
-   - `SSH_PORT`
-   - `SSH_USERNAME`
-   - `SSH_PRIVATE_KEY`
-
-2. **Push kode ke branch `main`:**
-   ```bash
-   git add .
-   git commit -m "Update fitur"
-   git push origin main
