@@ -56,7 +56,16 @@ class DetailNotaBarangKeluarsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()
+                    ->label('Tambah Barang')
+                    ->disabled(function (RelationManager $livewire) {
+                        $nota = $livewire->getOwnerRecord();
+
+                        // Disable jika SUDAH divalidasi
+                        return $nota?->divalidasi_oleh !== null;
+                    })
+                    ->tooltip('Nota sudah divalidasi, tidak bisa menambah barang'),
+
 
                 Action::make('validasi_nota')
                     ->label('Validasi Nota')

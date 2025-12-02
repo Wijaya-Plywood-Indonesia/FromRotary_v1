@@ -50,4 +50,5 @@ class DetailBongkarKediResource extends Resource
             'edit' => EditDetailBongkarKedi::route('/{record}/edit'),
         ];
     }
+
 }

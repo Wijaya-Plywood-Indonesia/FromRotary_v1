@@ -12,11 +12,24 @@ Route::get('/laporan-kayu-masuk', [LaporanKayuMasukController::class, 'index'])
 Route::get('/laporan-kayu-masuk/export', [LaporanKayuMasukController::class, 'export'])
     ->name('laporan.kayu-masuk.export');
 
+//Barang Masuk
 Route::get('/nota-barang-masuk/{record}/print', [NotaBMController::class, 'show'])
     ->name('nota-bm.print');
 
+Route::get('/nota-barang-masuk/rekap', [NotaBMController::class, 'rekap'])
+    ->name('nota-bm.rekap');
+
+Route::get('/nota-barang-masuk/rekap/export', [NotaBMController::class, 'exportExcel'])
+    ->name('nota-bm.export');
+
 Route::get('/nota-barang-keluar/{record}/print', [NotaBKController::class, 'show'])
     ->name('nota-bk.print');
+
+Route::get('/nota-barang-keluar/rekap', [NotaBKController::class, 'rekap'])
+    ->name('nota-bk.rekap');
+
+Route::get('/nota-barang-keluar/rekap/export', [NotaBKController::class, 'exportExcel'])
+    ->name('nota-bk.export');
 
 Route::get('/nota-kayu/{record}', [NotaKayuController::class, 'show'])
     ->name('nota-kayu.show');

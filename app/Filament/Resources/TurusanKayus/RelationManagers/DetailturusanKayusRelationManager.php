@@ -315,7 +315,29 @@ class DetailturusanKayusRelationManager extends RelationManager
                     ->label('D')
                     ->numeric()
                     ->sortable(),
+                TextColumn::make('kubikasi')
+                    ->label('Kubikasi')
+                    ->getStateUsing(function ($record) {
 
+                        $diameter = (int) $record->diameter;
+                        $kuantitas = $record->kuantitas ?? 1;
+
+                        $kubikasi =
+                            $diameter * $diameter * $kuantitas * 0.785 / 1_000_000;
+
+                        return number_format($kubikasi, 6, ',', '.');
+                    })
+                    ->suffix(' m³')
+                    ->alignRight()
+                    ->toggleable(isToggledHiddenByDefault: true)
+
+                    // OPTIONAL: kalau mau bisa di-sort
+                    ->sortable(
+                        query: fn($q, $direction) =>
+                        $q->orderByRaw(
+                            '(diameter * diameter * kuantitas * 0.785 / 1000000) ' . $direction
+                        )
+                    ),
                 TextColumn::make('createdBy.name')
                     ->label('Dibuat Oleh')
                     ->sortable()
