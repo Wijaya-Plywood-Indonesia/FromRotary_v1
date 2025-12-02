@@ -1,61 +1,79 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🚀 Laravel CI/CD — GitHub Actions → Jagoan Hosting (SSH Key)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Pipeline ini terdiri dari dua proses utama: **CI (Continuous Integration)** dan **CD (Continuous Deployment)**.  
+Semua proses berjalan otomatis setiap kali kamu melakukan **push ke branch `main`**.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+# 🧩 1. Continuous Integration (CI)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+CI bertanggung jawab untuk memastikan bahwa kode yang dikirim aman, tidak rusak, dan siap untuk diproduksi.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### ✔ Yang dilakukan CI:
+- **Checkout source code**
+- **Setup PHP (8.x)**
+- **Copy `.env` untuk environment testing**
+- **Install Composer dependencies**
+- **Generate aplikasi key**
+- **Set permission storage**
+- **Setup MariaDB untuk pengujian**
+- **Menjalankan migration untuk testing**
+- **Menjalankan Unit Test (`php artisan test`)**
 
-## Learning Laravel
+### 🎯 Tujuan CI:
+Menjamin aplikasi selalu **stabil**, **bebas error**, dan **siap dideploy**.  
+Jika CI gagal → deploy **dibatalkan otomatis**.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+# 🚚 2. Continuous Deployment (CD)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Jika CI lulus, tahap deployment berjalan otomatis ke hosting.
 
-## Laravel Sponsors
+### ✔ Yang dilakukan CD:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+#### **A. Build Aplikasi**
+- Install Composer (mode production, no-dev)
+- Setup Node.js
+- Install NPM dependencies
+- Build frontend (Vite)
+- Generate ZIP build yang bersih:
+  - Menghapus `.git`, `.github`, `node_modules`, `tests`, `storage`, `.env`
 
-### Premium Partners
+#### **B. Koneksi ke Server (SSH Key)**
+- Menggunakan **private key dari GitHub Secrets**
+- Server menggunakan **public key** yang disimpan di panel hosting
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+#### **C. Upload & Deploy**
+- Upload file `deploy.zip` via SCP
+- Backup file penting:
+  - **Tidak menghapus `.env`**
+  - **Tidak menghapus `storage/`**
+- Replace file kode dengan build terbaru
+- Extract ZIP
+- Jalankan optimisasi Laravel:
+  - `php artisan optimize:clear`
+  - `php artisan config:cache`
+  - `php artisan route:cache`
+  - `php artisan view:cache`
+- Jalankan `php artisan migrate --force`
+- Keluarkan dari maintenance mode
 
-## Contributing
+### 🎯 Tujuan CD:
+Membuat proses deploy menjadi **otomatis**, **aman**, dan **cepat** (tanpa perlu unggah manual ke File Manager).
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+# 🛠 Cara Menggunakan Pipeline CI/CD
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1. **Pastikan GitHub Secrets sudah diisi:**
+   - `SSH_HOST`
+   - `SSH_PORT`
+   - `SSH_USERNAME`
+   - `SSH_PRIVATE_KEY`
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+2. **Push kode ke branch `main`:**
+   ```bash
+   git add .
+   git commit -m "Update fitur"
+   git push origin main
