@@ -1,4 +1,4 @@
-# 🚀 Laravel CI/CD — GitHub Actions → Jagoan Hosting (SSH Key)
+# 🚀 Laravel CI/CD — GitHub Actions → Jagoan Hosting
 
 Pipeline ini terdiri dari dua proses utama: **CI (Continuous Integration)** dan **CD (Continuous Deployment)**.  
 Semua proses berjalan otomatis setiap kali kamu melakukan **push ke branch `main`**.
