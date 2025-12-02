@@ -13,7 +13,7 @@ class NotaBKController extends Controller
     public function show(NotaBarangKeluar $record)
     {
         // Muat relasi yang diperlukan
-        php
+
 
         return view('nota-barang.bk-print', [
             'record' => $record,
