@@ -70,11 +70,12 @@ jobs:
           DB_PASSWORD: password
         run: php artisan test
 
+
   # ------------------------------------------------------------
   # JOB 2: DEPLOY (CD)
   # ------------------------------------------------------------
   deploy:
-    name: Deploy to Jagoan Hosting
+    name: Deploy to Jagoan Hosting (SSH Key)
     needs: laravel-tests
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -85,7 +86,7 @@ jobs:
           fetch-depth: 0
 
       # --------------------------------------------------------
-      # A. Build PHP Dependencies (Production)
+      # A. Build PHP Dependencies
       # --------------------------------------------------------
       - name: Setup PHP for Production
         uses: shivammathur/setup-php@v2
@@ -96,7 +97,7 @@ jobs:
         run: composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
 
       # --------------------------------------------------------
-      # B. Build Frontend Assets (Vite)
+      # B. Build Frontend (Vite)
       # --------------------------------------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -110,7 +111,7 @@ jobs:
         run: npm run build
 
       # --------------------------------------------------------
-      # C. Create ZIP file (Smart ZIP Deploy)
+      # C. Create Smart ZIP Package
       # --------------------------------------------------------
       - name: Create ZIP package
         run: |
@@ -119,7 +120,7 @@ jobs:
           rm -rf "$BUILD_DIR"
           mkdir -p "$BUILD_DIR"
 
-          # Build staging directory excl .env & storage & others
+          # Copy clean deploy tree (exclude backend important files)
           rsync -a --delete \
             --exclude '.git/' \
             --exclude '.github/' \
@@ -129,57 +130,59 @@ jobs:
             --exclude 'storage/' \
             ./ "$BUILD_DIR/"
 
-          # Create ZIP from staging
           (cd "$BUILD_DIR" && zip -r ../deploy.zip . -q)
-
-          # Show size (optional)
           du -h deploy.zip || true
 
       # --------------------------------------------------------
-      # D. Upload ZIP to server via SSH
+      # D. Setup SSH PRIVATE KEY
+      # --------------------------------------------------------
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      # --------------------------------------------------------
+      # E. Upload ZIP via SCP (SSH KEY)
       # --------------------------------------------------------
       - name: Upload ZIP via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "deploy.zip"
-          target: "/home/wijayapl"
+          target: "/home/${{ secrets.SSH_USERNAME }}"
 
       # --------------------------------------------------------
-      # E. Extract & Replace Files in Server
+      # F. Remote Deploy Commands (SSH KEY)
       # --------------------------------------------------------
       - name: Execute Remote SSH Commands
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/wijayapl/prarelease.wijayaplywoods.com
+            cd /home/${{ secrets.SSH_USERNAME }}/prarelease.wijayaplywoods.com
 
-            # Put app into maintenance
             php artisan down || true
 
-            # Remove files that exist in zip but not in server
+            # Remove old files except storage & .env
             find . -mindepth 1 -maxdepth 1 ! -name 'storage' ! -name '.env' -exec rm -rf {} \;
 
-            # Extract new files
             unzip -oq ../deploy.zip -d .
 
-            # Optimizations
             php artisan optimize:clear
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
 
-            # Run migrations
             php artisan migrate --force
 
-            # Bring application up
             php artisan up
 
-            echo "🚀 Deployment Sukses!"
+            echo "🚀 Deployment Success!"
