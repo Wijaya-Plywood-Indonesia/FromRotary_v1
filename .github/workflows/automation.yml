@@ -32,17 +32,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Cache Composer
+      - name: Cache Composer
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
       - name: Setup PHP 8.4
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           extensions: mbstring, dom, fileinfo, mysql, pdo_mysql
+          coverage: none
 
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
 
       - name: Install Dependencies
-        run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        run: composer install --no-interaction --prefer-dist
 
       - name: Generate App Key
         run: php artisan key:generate
@@ -50,7 +59,7 @@ jobs:
       - name: Set Permissions
         run: chmod -R 777 storage bootstrap/cache
 
-      - name: Run Migrations (Testing)
+      - name: Run Migrations
         env:
           DB_CONNECTION: mysql
           DB_HOST: 127.0.0.1
@@ -75,7 +84,7 @@ jobs:
   # JOB 2: DEPLOY (CD)
   # ------------------------------------------------------------
   deploy:
-    name: Deploy to Jagoan Hosting (SSH Key)
+    name: Deploy to Jagoan Hosting (Optimized)
     needs: laravel-tests
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -85,20 +94,32 @@ jobs:
         with:
           fetch-depth: 0
 
-      # --------------------------------------------------------
-      # A. Build PHP Dependencies
-      # --------------------------------------------------------
-      - name: Setup PHP for Production
+      # Cache Composer
+      - name: Cache Composer
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: composer-prod-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-prod-
+
+      # Cache NPM (FAST)
+      - name: Cache NPM
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: npm-
+
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
+          extensions: mbstring, dom, fileinfo, mysql, pdo_mysql
+          coverage: none
 
       - name: Install Composer Dependencies (Prod)
         run: composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
 
-      # --------------------------------------------------------
-      # B. Build Frontend (Vite)
-      # --------------------------------------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -107,72 +128,68 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Build Frontend Assets
+      - name: Build Frontend (Vite)
         run: npm run build
 
       # --------------------------------------------------------
-      # C. Create Smart ZIP Package
+      # Create Deploy Package
       # --------------------------------------------------------
-      - name: Create ZIP package
+      - name: Create Optimized ZIP
         run: |
-          set -euo pipefail
-          BUILD_DIR=./build_deploy
-          rm -rf "$BUILD_DIR"
-          mkdir -p "$BUILD_DIR"
+          BUILD_DIR=build_deploy
+          rm -rf $BUILD_DIR && mkdir -p $BUILD_DIR
 
-          # Copy clean deploy tree (exclude backend important files)
           rsync -a --delete \
-            --exclude '.git/' \
-            --exclude '.github/' \
-            --exclude 'node_modules/' \
-            --exclude 'tests/' \
-            --exclude '.env' \
-            --exclude 'storage/' \
-            ./ "$BUILD_DIR/"
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='node_modules/' \
+            --exclude='tests/' \
+            --exclude='.env' \
+            --exclude='storage/' \
+            ./ $BUILD_DIR/
 
-          (cd "$BUILD_DIR" && zip -r ../deploy.zip . -q)
-          du -h deploy.zip || true
+          (cd $BUILD_DIR && zip -r ../deploy.zip . -q)
+          echo "ZIP created."
 
       # --------------------------------------------------------
-      # D. Setup SSH PRIVATE KEY
+      # Setup SSH for Deployment
       # --------------------------------------------------------
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          printf "%s" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       # --------------------------------------------------------
-      # E. Upload ZIP via SCP (SSH KEY)
+      # Upload ZIP
       # --------------------------------------------------------
       - name: Upload ZIP via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
           source: "deploy.zip"
           target: "/home/${{ secrets.SSH_USERNAME }}"
 
       # --------------------------------------------------------
-      # F. Remote Deploy Commands (SSH KEY)
+      # Execute Deploy Commands
       # --------------------------------------------------------
-      - name: Execute Remote SSH Commands
+      - name: Execute Remote Deployment
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
           script: |
             cd /home/${{ secrets.SSH_USERNAME }}/prarelease.wijayaplywoods.com
 
             php artisan down || true
 
-            # Remove old files except storage & .env
-            find . -mindepth 1 -maxdepth 1 ! -name 'storage' ! -name '.env' -exec rm -rf {} \;
+            rm -rf !(storage|.env)
 
             unzip -oq ../deploy.zip -d .
 
