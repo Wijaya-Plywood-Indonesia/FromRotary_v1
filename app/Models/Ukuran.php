@@ -60,14 +60,9 @@ class Ukuran extends Model
         return $this->hasMany(VeneerBahanHp::class, 'id_ukuran');
     }
 
-    public function platformHasilHp()
+        public function barangSetengahJadiHp()
     {
-        return $this->hasMany(platformHasilHp::class, 'id_ukuran');
-    }
-
-    public function triplekHasilHp()
-    {
-        return $this->hasMany(TriplekHasilHp::class, 'id_ukuran');
+        return $this->hasMany(BarangSetengahJadiHp::class, 'id_ukuran');
     }
 
     public function targets()

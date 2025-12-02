@@ -5,6 +5,7 @@ namespace App\Filament\Resources\TriplekHasilHps\Schemas;
 use Filament\Schemas\Schema;
 use App\Models\JenisKayu;
 use App\Models\Ukuran;
+use App\Models\BarangSetengahJadiHp;
 use App\Models\Mesin;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -45,19 +46,18 @@ class TriplekHasilHpForm
                     ->default(fn() => session('last_jenis_kayu'))
                     ->required(),
 
-                // Relasi ke Kayu Masuk (Optional)
-                Select::make('id_ukuran')
+                Select::make('id_ukuran_setengah_jadi')
                     ->label('Ukuran')
                     ->options(
-                        Ukuran::all()
-                            ->pluck('dimensi', 'id') // ← memanggil accessor getDimensiAttribute()
+                        BarangSetengahJadiHp::orderBy('grade')
+                            ->pluck('grade', 'id')
                     )
                     ->searchable()
                     ->afterStateUpdated(function ($state) {
-                        session(['last_ukuran' => $state]);
+                        session(['last_ukuran_setengah_jadi' => $state]);
                     })
-                    ->default(fn() => session('last_ukuran'))
-                    ->required(), // Sesuai dengan migrasi
+                    ->default(fn() => session('last_ukuran_setengah_jadi'))
+                    ->required(),
 
                 TextInput::make('kw')
                     ->label('KW (Kualitas)')

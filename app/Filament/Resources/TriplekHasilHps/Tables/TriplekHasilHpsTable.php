@@ -30,10 +30,11 @@ class TriplekHasilHpsTable
                     ->searchable()
                     ->placeholder('N/A'),
 
-                TextColumn::make('Ukuran.nama_ukuran')
+                // ✅ RELASI BARU: BARANG SETENGAH JADI
+                TextColumn::make('barangSetengahJadi.grade')
                     ->label('Ukuran')
-                    ->searchable(false)
-                    ->placeholder('Ukuran'),
+                    ->searchable()
+                    ->placeholder('-'),
 
                 TextColumn::make('kw')
                     ->label('Kualitas (KW)')
