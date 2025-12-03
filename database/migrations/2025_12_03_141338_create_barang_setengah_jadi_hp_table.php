@@ -20,12 +20,12 @@ return new class extends Migration
                 ->restrictOnDelete();
             $table->foreignId('id_jenis_barang')
                 ->nullable()
-                ->constrained('jenis_barangs')
+                ->constrained('jenis_barang')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->foreignId('id_grade')
                 ->nullable()
-                ->constrained('grades')
+                ->constrained('grade')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->string('keterangan')->nullable();
