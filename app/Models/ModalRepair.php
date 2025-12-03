@@ -41,4 +41,9 @@ class ModalRepair extends Model
     {
         return $this->belongsTo(JenisKayu::class, 'id_jenis_kayu');
     }
+
+    public function rencanaRepairs()
+    {
+        return $this->hasMany(RencanaRepair::class, 'id_modal_repair');
+    }
 }

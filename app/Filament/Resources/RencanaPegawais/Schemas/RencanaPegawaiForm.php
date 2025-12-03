@@ -30,6 +30,18 @@ class RencanaPegawaiForm
 
         return $form->schema([
 
+            TimePicker::make('jam_masuk')
+                ->label('Jam Masuk')
+                ->default('06:00')
+                ->seconds(false)
+                ->required(),
+
+            TimePicker::make('jam_pulang')
+                ->label('Jam Pulang')
+                ->default('17:00')
+                ->seconds(false)
+                ->required(),
+
             Select::make('id_pegawai')
                 ->label('Pegawai')
                 ->options(function () use ($usedPegawaiIds) {
@@ -59,18 +71,6 @@ class RencanaPegawaiForm
                 ->numeric()
                 ->minValue(1)
                 ->default($lastMeja)
-                ->required(),
-
-            TimePicker::make('jam_masuk')
-                ->label('Jam Masuk')
-                ->default('06:00')
-                ->seconds(false)
-                ->required(),
-
-            TimePicker::make('jam_pulang')
-                ->label('Jam Pulang')
-                ->default('17:00')
-                ->seconds(false)
                 ->required(),
         ]);
     }
