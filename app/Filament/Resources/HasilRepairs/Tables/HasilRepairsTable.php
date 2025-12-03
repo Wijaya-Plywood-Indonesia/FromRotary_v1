@@ -79,7 +79,7 @@ class HasilRepairsTable
                     ->color(fn($state) => $state >= 60 ? 'success' : ($state >= 40 ? 'warning' : 'danger')),
             ])
 
-            ->actions([
+            ->recordActions([
                 Action::make('tambah')
                     ->label('Tambah')
                     ->icon('heroicon-o-plus-circle')
@@ -121,8 +121,6 @@ class HasilRepairsTable
                     })
                     ->modalHeading(fn($record) => "Tambah Hasil - Meja " . ($record->rencanaPegawai?->nomor_meja ?? 'Unknown'))
                     ->modalSubmitActionLabel('Tambah Sekarang'),
-            ])
-            ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
             ])
