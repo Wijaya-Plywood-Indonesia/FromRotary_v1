@@ -11,29 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('triplek_hasil_hp', function (Blueprint $table) {
+        Schema::create('barang_setengah_jadi_hp', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_produksi_hp')
-                ->constrained('produksi_hp')
-                ->cascadeOnUpdate()
-                ->restrictOnDelete();
-            $table->foreignId('id_mesin')
-                ->constrained('mesins')
-                ->cascadeOnUpdate()
-                ->restrictOnDelete();
-            $table->integer('no_palet');
-            $table->foreignId('id_jenis_kayu')
+            $table->foreignId('id_ukuran')
                 ->nullable()
-                ->constrained('jenis_kayus')
+                ->constrained('ukurans')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->foreignId('id_ukuran_setengah_jadi')
+            $table->foreignId('id_jenis_barang')
                 ->nullable()
-                ->constrained('barang_setengah_jadi_hp')
+                ->constrained('jenis_barang')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->integer('kw');
-            $table->integer('isi');
+            $table->foreignId('id_grade')
+                ->nullable()
+                ->constrained('grade')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->string('keterangan')->nullable();
             $table->timestamps();
         });
     }
@@ -43,6 +38,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('triplek_hasil_hp');
+        Schema::dropIfExists('barang_setengah_jadi_hp');
     }
 };

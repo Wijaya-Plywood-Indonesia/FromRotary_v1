@@ -21,7 +21,6 @@ class PlatformHasilHpsTable
                     ->searchable()
                     ->placeholder('-'),
 
-
                 TextColumn::make('no_palet')
                     ->label('No. Palet')
                     ->searchable(),
@@ -31,10 +30,11 @@ class PlatformHasilHpsTable
                     ->searchable()
                     ->placeholder('N/A'),
 
-                TextColumn::make('Ukuran.nama_ukuran')
+                // ✅ RELASI BARU: BARANG SETENGAH JADI
+                TextColumn::make('barangSetengahJadi.grade')
                     ->label('Ukuran')
-                    ->searchable(false)
-                    ->placeholder('Ukuran'),
+                    ->searchable()
+                    ->placeholder('-'),
 
                 TextColumn::make('kw')
                     ->label('Kualitas (KW)')
@@ -44,36 +44,29 @@ class PlatformHasilHpsTable
                     ->label('Jumlah Lembar'),
             ])
             ->filters([
-                // Tempat filter jika Anda membutuhkannya
+                //
             ])
             ->headerActions([
-                // Create Action — HILANG jika status sudah divalidasi
                 CreateAction::make()
-                    ->hidden(
-                        fn($livewire) =>
+                    ->hidden(fn ($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
             ])
             ->recordActions([
-                // Edit Action — HILANG jika status sudah divalidasi
                 EditAction::make()
-                    ->hidden(
-                        fn($livewire) =>
+                    ->hidden(fn ($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
 
-                // Delete Action — HILANG jika status sudah divalidasi
                 DeleteAction::make()
-                    ->hidden(
-                        fn($livewire) =>
+                    ->hidden(fn ($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->hidden(
-                            fn($livewire) =>
+                        ->hidden(fn ($livewire) =>
                             $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                         ),
                 ]),

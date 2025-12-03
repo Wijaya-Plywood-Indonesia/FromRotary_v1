@@ -14,11 +14,6 @@ class PlatformBahanHpForm
     {
         return $schema
             ->components([
-                TextInput::make('no_palet')
-                    ->label('Nomor Palet')
-                    ->numeric()
-                    ->required(),
-
                 // Relasi ke Jenis Kayu
                 Select::make('id_jenis_kayu')
                     ->label('Jenis Kayu')
@@ -57,6 +52,10 @@ class PlatformBahanHpForm
                     ->required()
                     ->numeric()
                     ->placeholder('Cth: 1.5 atau 100'),
+                TextInput::make('no_palet')
+                    ->label('Nomor Palet')
+                    ->numeric()
+                    ->required(),
             ]);
     }
 }

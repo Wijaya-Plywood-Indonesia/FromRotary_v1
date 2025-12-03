@@ -12,6 +12,7 @@ class TriplekHasilHp extends Model
         'id_produksi_hp',
         'id_mesin',
         'no_palet',
+        'id_ukuran_setengah_jadi',
         'id_jenis_kayu',
         'id_ukuran',
         'kw',
@@ -20,6 +21,14 @@ class TriplekHasilHp extends Model
     public function mesin()
     {
         return $this->belongsTo(Mesin::class, 'id_mesin');
+    }
+
+    public function barangSetengahJadi()
+    {
+        return $this->belongsTo(
+            \App\Models\BarangSetengahJadiHp::class,
+            'id_ukuran_setengah_jadi'
+        );
     }
 
     public function produksiHp()
@@ -34,6 +43,6 @@ class TriplekHasilHp extends Model
 
     public function jenisKayu()
     {
-        return $this->belongsTo(JenisKayu::class, 'id_jenis_kayu','id');
+        return $this->belongsTo(JenisKayu::class, 'id_jenis_kayu', 'id');
     }
 }

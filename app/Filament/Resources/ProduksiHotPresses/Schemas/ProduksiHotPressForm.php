@@ -4,7 +4,7 @@ namespace App\Filament\Resources\ProduksiHotPresses\Schemas;
 
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms;
+use App\Models\ProduksiHp;
 
 class ProduksiHotPressForm
 {
@@ -14,9 +14,22 @@ class ProduksiHotPressForm
             ->components([
                 DatePicker::make('tanggal_produksi')
                     ->label('Tanggal Produksi')
-                    ->default(fn() => now()->addDay()) // 👈 default besok
-                    ->displayFormat('d F Y') // 👈 tampil seperti: 01 Januari 2025
-                    ->required(),
+                    ->default(fn () => now()->addDay())
+                    ->displayFormat('d F Y')
+                    ->required()
+
+                    // ✅ VALIDASI TANGGAL TIDAK BOLEH SAMA
+                    ->rules([
+                        function () {
+                            return function (string $attribute, $value, $fail) {
+                                $exists = ProduksiHp::whereDate('tanggal_produksi', $value)->exists();
+
+                                if ($exists) {
+                                    $fail('Tanggal ini sudah digunakan. Pilih tanggal lain.');
+                                }
+                            };
+                        },
+                    ])
             ]);
-}
+    }
 }
