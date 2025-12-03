@@ -109,7 +109,20 @@ class RencanaPegawaisTable
                     ->modalSubmitActionLabel('Simpan')
                     ->modalWidth('lg'),
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->before(function ($record) {
+                        // Cek apakah ada rencana repair yang masih terkait
+                        if ($record->rencanaRepairs()->exists()) {
+                            Notification::make()
+                                ->title('Tidak bisa dihapus!')
+                                ->body('Rencana Pegawai ini masih memiliki data repair yang terkait. Hapus data repair terlebih dahulu.')
+                                ->warning()
+                                ->send();
+
+                            // Hentikan aksi delete
+                            return false;
+                        }
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

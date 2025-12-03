@@ -9,8 +9,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
 
 use App\Models\RencanaRepair;
 use App\Models\HasilRepair;
@@ -21,11 +19,9 @@ class HasilRepairsTable
     {
         return $table
 
-            /**
-             * QUERY UTAMA:
-             * Ambil semua RencanaRepair
-             * Join ke hasil_repairs jika ada (left join)
-             */
+            // -----------------------------
+            // QUERY UTAMA
+            // -----------------------------
             ->query(function () {
                 return RencanaRepair::query()
                     ->leftJoin('hasil_repairs', 'hasil_repairs.id_rencana_repair', '=', 'rencana_repairs.id')
@@ -41,7 +37,9 @@ class HasilRepairsTable
                     ]);
             })
 
-
+            // -----------------------------
+            // COLUMNS
+            // -----------------------------
             ->columns([
                 TextColumn::make('ukuran.dimensi')
                     ->label('Ukuran')
@@ -78,7 +76,9 @@ class HasilRepairsTable
                     ->weight('bold')
                     ->color(fn($state) => $state >= 60 ? 'success' : ($state >= 40 ? 'warning' : 'danger')),
             ])
-
+            // -----------------------------
+            // RECORD ACTIONS
+            // -----------------------------
             ->recordActions([
                 Action::make('tambah')
                     ->label('Tambah')
@@ -98,10 +98,8 @@ class HasilRepairsTable
                             ->autofocus(),
                     ])
                     ->action(function ($record, array $data) {
-
                         $tambah = (int) $data['tambah'];
 
-                        // Jika belum ada hasil → buat baru
                         if (!$record->hasil_id) {
                             HasilRepair::create([
                                 'id_rencana_repair' => $record->id,
@@ -109,7 +107,6 @@ class HasilRepairsTable
                                 'jumlah' => $tambah,
                             ]);
                         } else {
-                            // Jika sudah ada → update incremental
                             HasilRepair::where('id', $record->hasil_id)
                                 ->increment('jumlah', $tambah);
                         }
@@ -121,14 +118,69 @@ class HasilRepairsTable
                     })
                     ->modalHeading(fn($record) => "Tambah Hasil - Meja " . ($record->rencanaPegawai?->nomor_meja ?? 'Unknown'))
                     ->modalSubmitActionLabel('Tambah Sekarang'),
-                EditAction::make(),
-                DeleteAction::make(),
+                // Edit hasil
+                Action::make('edit_hasil')
+                    ->label('Edit Hasil')
+                    ->icon('heroicon-o-pencil-square')
+                    ->color('primary')
+                    ->form([
+                        TextInput::make('jumlah_hasil')
+                            ->label('Jumlah Hasil Produksi')
+                            ->numeric()
+                            ->minValue(0)
+                            ->required()
+                            ->default(fn($record) => $record->jumlah_hasil ?? 0),
+                    ])
+                    ->action(function ($record, array $data) {
+                        if ($record->hasil_id) {
+                            HasilRepair::where('id', $record->hasil_id)
+                                ->update(['jumlah' => $data['jumlah_hasil']]);
+                        } else {
+                            HasilRepair::create([
+                                'id_rencana_repair' => $record->id,
+                                'id_produksi_repair' => $record->id_produksi_repair,
+                                'jumlah' => $data['jumlah_hasil'],
+                            ]);
+                        }
+
+                        Notification::make()
+                            ->success()
+                            ->title('Hasil berhasil diperbarui!')
+                            ->send();
+                    })
+                    ->modalHeading(fn($record) => "Edit Hasil - Meja " . ($record->rencanaPegawai?->nomor_meja ?? 'Unknown'))
+                    ->modalSubmitActionLabel('Simpan Perubahan'),
+
+                // Delete hasil
+                Action::make('delete_hasil')
+                    ->label('Hapus Hasil')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        if ($record->hasil_id) {
+                            HasilRepair::where('id', $record->hasil_id)->delete();
+
+                            Notification::make()
+                                ->success()
+                                ->title('Hasil berhasil dihapus!')
+                                ->send();
+                        } else {
+                            Notification::make()
+                                ->warning()
+                                ->title('Tidak ada data hasil untuk dihapus')
+                                ->send();
+                        }
+                    }),
             ])
+
+            // -----------------------------
+            // BULK ACTIONS
+            // -----------------------------
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->before(function ($records) {
-                            // Hapus juga HasilRepair yang terkait
                             foreach ($records as $r) {
                                 if ($r->hasil_id) {
                                     HasilRepair::where('id', $r->hasil_id)->delete();
