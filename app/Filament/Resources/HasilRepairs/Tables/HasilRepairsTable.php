@@ -9,6 +9,8 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 
 use App\Models\RencanaRepair;
 use App\Models\HasilRepair;
@@ -120,7 +122,10 @@ class HasilRepairsTable
                     ->modalHeading(fn($record) => "Tambah Hasil - Meja " . ($record->rencanaPegawai?->nomor_meja ?? 'Unknown'))
                     ->modalSubmitActionLabel('Tambah Sekarang'),
             ])
-
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
+            ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
