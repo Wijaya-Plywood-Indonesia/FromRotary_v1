@@ -20,12 +20,9 @@ return new class extends Migration {
                 ->constrained('rencana_pegawais')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->foreignId('id_ukuran')
-                ->constrained('ukurans')
-                ->cascadeOnUpdate()
-                ->restrictOnDelete();
-            $table->foreignId('id_jenis_kayu')
-                ->constrained('jenis_kayus')
+            $table->foreignId('id_modal_repair')
+                ->nullable()
+                ->constrained('modal_repairs')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->string('kw');

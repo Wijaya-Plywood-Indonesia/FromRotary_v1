@@ -12,12 +12,7 @@ return new class extends Migration {
     {
         Schema::create('pegawai_rotaries', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignId('id_repair')
-                ->constrained('repairs')
-                ->cascadeOnUpdate()
-                ->cascadeOnDelete();
-
+            
             $table->foreignId('id_produksi')
                 ->constrained('produksi_rotaries')
                 ->cascadeOnUpdate()

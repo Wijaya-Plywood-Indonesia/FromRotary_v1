@@ -30,11 +30,6 @@ class DetailMasukKediForm
                     ->searchable()
                     ->required(),
 
-                TextInput::make('no_palet')
-                    ->label('Nomor Palet')
-                    ->numeric()
-                    ->required(),
-
                 // Relasi ke Jenis Kayu
                 Select::make('id_jenis_kayu')
                     ->label('Jenis Kayu')
@@ -83,6 +78,10 @@ class DetailMasukKediForm
 
                 TextInput::make('jumlah')
                     ->label('Jumlah')
+                    ->required(),
+                TextInput::make('no_palet')
+                    ->label('Nomor Palet')
+                    ->numeric()
                     ->required(),
 
 

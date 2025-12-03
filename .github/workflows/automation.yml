@@ -1,0 +1,194 @@
+name: Laravel 12 CI/CD Full Automation
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  # ------------------------------------------------------------
+  # JOB 1: TESTING (CI)
+  # ------------------------------------------------------------
+  laravel-tests:
+    name: Run Tests (CI)
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:10.6
+        env:
+          MARIADB_ROOT_PASSWORD: password
+          MARIADB_DATABASE: laravel_testing
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, fileinfo, mysql, pdo_mysql
+
+      - name: Copy .env
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+      - name: Install Dependencies
+        run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Generate App Key
+        run: php artisan key:generate
+
+      - name: Set Permissions
+        run: chmod -R 777 storage bootstrap/cache
+
+      - name: Run Migrations (Testing)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: laravel_testing
+          DB_USERNAME: root
+          DB_PASSWORD: password
+        run: php artisan migrate --force
+
+      - name: Run Tests
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: laravel_testing
+          DB_USERNAME: root
+          DB_PASSWORD: password
+        run: php artisan test
+
+
+  # ------------------------------------------------------------
+  # JOB 2: DEPLOY (CD)
+  # ------------------------------------------------------------
+  deploy:
+    name: Deploy to Jagoan Hosting (SSH Key)
+    needs: laravel-tests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # --------------------------------------------------------
+      # A. Build PHP dependencies
+      # --------------------------------------------------------
+      - name: Setup PHP for Production
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Install Composer Dependencies (Prod)
+        run: composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
+
+      # --------------------------------------------------------
+      # B. Build Frontend (Vite)
+      # --------------------------------------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Build Frontend Assets
+        run: npm run build
+
+      # --------------------------------------------------------
+      # C. Create Smart ZIP Package
+      # --------------------------------------------------------
+      - name: Create ZIP package
+        run: |
+          set -euo pipefail
+          BUILD_DIR=./build_deploy
+          rm -rf "$BUILD_DIR"
+          mkdir -p "$BUILD_DIR"
+
+          rsync -a --delete \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude 'node_modules/' \
+            --exclude 'tests/' \
+            --exclude '.env' \
+            --exclude 'storage/' \
+            ./ "$BUILD_DIR/"
+
+          (cd "$BUILD_DIR" && zip -r ../deploy.zip . -q)
+          du -h deploy.zip || true
+
+      # --------------------------------------------------------
+      # D. Setup SSH PRIVATE KEY
+      # --------------------------------------------------------
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      # --------------------------------------------------------
+      # E. Upload ZIP via SCP
+      # --------------------------------------------------------
+      - name: Upload ZIP to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "deploy.zip"
+          target: "/home/${{ secrets.SSH_USERNAME }}"
+
+      # --------------------------------------------------------
+      # F. Remote Deploy Commands (SSH)
+      # --------------------------------------------------------
+      - name: Execute Remote SSH Commands
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/${{ secrets.SSH_USERNAME }}/prarelease.wijayaplywoods.com
+
+            php artisan down || true
+
+            # SAFE DELETE (compatible for all shared hosting)
+            find . -mindepth 1 -maxdepth 1 \
+              ! -name 'storage' \
+              ! -name '.env' \
+              -exec rm -rf {} \;
+
+            unzip -oq ../deploy.zip -d .
+
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            php artisan migrate --force
+
+            # Generate Filament Shield (all roles & permissions)
+            php artisan shield:generate --all
+            echo '✅ Filament Shield: All roles & permissions generated!'
+
+            php artisan up
+
+            echo "🚀 Deployment Success!"

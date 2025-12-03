@@ -15,16 +15,8 @@ class RencanaRepair extends Model
     protected $fillable = [
         'id_produksi_repair',
         'id_rencana_pegawai',
-        'id_ukuran',
-        'id_jenis_kayu',
+        'id_modal_repair',
         'kw',
-    ];
-
-    protected $with = [
-        'produksiRepair',
-        'rencanaPegawai',
-        'ukuran',
-        'jenisKayu',
     ];
 
     // === RELASI ===
@@ -40,17 +32,9 @@ class RencanaRepair extends Model
     /**
      * Relasi ke Ukuran
      */
-    public function ukuran(): BelongsTo
+    public function modalRepairs()
     {
-        return $this->belongsTo(Ukuran::class, 'id_ukuran');
-    }
-
-    /**
-     * Relasi ke Jenis Kayu
-     */
-    public function jenisKayu(): BelongsTo
-    {
-        return $this->belongsTo(JenisKayu::class, 'id_jenis_kayu');
+        return $this->belongsTo(ModalRepair::class, 'id_modal_repair');
     }
 
     public function rencanaPegawai()
