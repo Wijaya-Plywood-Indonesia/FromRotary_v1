@@ -22,7 +22,7 @@ class RekapKayuMasukResource extends Resource
     //Identitas Menu/Model/Feartue atau apalah itu/
     protected static ?string $modelLabel = 'Laporan Kayu Masuk';
     protected static ?string $pluralModelLabel = 'Laporan Kayu Masuk';
-    protected static string|UnitEnum|null $navigationGroup = 'Kayu';
+    protected static string|UnitEnum|null $navigationGroup = 'Laporan';
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     //end
 

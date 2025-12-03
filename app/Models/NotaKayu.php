@@ -14,10 +14,12 @@ class NotaKayu extends Model
         'penanggung_jawab',
         'penerima',
         'satpam',
+        'status'
     ];
     public function kayuMasuk()
     {
         return $this->belongsTo(KayuMasuk::class, 'id_kayu_masuk');
     }
+
 
 }

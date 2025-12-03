@@ -4,74 +4,137 @@ namespace App\Http\Controllers;
 
 use App\Exports\LaporanKayu;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Facades\Excel;
+use Excel;
 
 class LaporanKayuMasukController extends Controller
 {
-    // ❗ Query dipisah agar index() dan export() bisa pakai bersama
+    /**
+     * =======================================
+     * BASE SQL QUERY – dipakai index & export
+     * (SESUAI SQL FINAL — AMAN FLOATING)
+     * =======================================
+     */
     private function baseQuery()
     {
+        // ================================
+        // RUMUS KUBIKASI TUNGGAL
+        // ================================
+        $m3Formula = "
+            CAST(
+                detail_turusan_kayus.panjang
+              * detail_turusan_kayus.diameter
+              * detail_turusan_kayus.diameter
+              * detail_turusan_kayus.kuantitas
+              * 0.785 / 1000000
+            AS DECIMAL(18,8))
+        ";
+
         return DB::table('detail_turusan_kayus')
+
+            // ======================
+            // RELASI — TIDAK DIUBAH
+            // ======================
             ->join('kayu_masuks', 'kayu_masuks.id', '=', 'detail_turusan_kayus.id_kayu_masuk')
             ->join('supplier_kayus', 'supplier_kayus.id', '=', 'kayu_masuks.id_supplier_kayus')
             ->join('jenis_kayus', 'jenis_kayus.id', '=', 'detail_turusan_kayus.jenis_kayu_id')
             ->leftJoin('lahans', 'lahans.id', '=', 'detail_turusan_kayus.lahan_id')
-            ->join('harga_kayus', function ($join) {
-                $join->on('harga_kayus.id_jenis_kayu', '=', 'detail_turusan_kayus.jenis_kayu_id')
-                    ->whereColumn('harga_kayus.panjang', 'detail_turusan_kayus.panjang')
-                    ->whereRaw('detail_turusan_kayus.diameter BETWEEN harga_kayus.diameter_terkecil AND harga_kayus.diameter_terbesar');
+
+            // ======================
+            // JOIN HARGA — anti dobel
+            // ======================
+            ->leftJoin('harga_kayus AS hk', function ($join) {
+                $join->on('hk.id', '=', DB::raw("
+                    (
+                        SELECT hx.id
+                        FROM harga_kayus hx
+                        WHERE hx.id_jenis_kayu = detail_turusan_kayus.jenis_kayu_id
+                          AND hx.grade         = detail_turusan_kayus.grade
+                          AND hx.panjang       = detail_turusan_kayus.panjang
+                          AND detail_turusan_kayus.diameter
+                              BETWEEN hx.diameter_terkecil
+                              AND hx.diameter_terbesar
+                        ORDER BY hx.diameter_terkecil DESC
+                        LIMIT 1
+                    )
+                "));
             })
+
             ->select([
-                DB::raw('DATE_FORMAT(kayu_masuks.tgl_kayu_masuk, "%e/%c/%Y") as tanggal'),
-                'supplier_kayus.nama_supplier as nama',
+
+                // ======================
+                // HEADER (TETAP)
+                // ======================
+                DB::raw('DATE(kayu_masuks.tgl_kayu_masuk) AS tanggal'),
+                'supplier_kayus.nama_supplier AS nama',
                 'kayu_masuks.seri',
                 'detail_turusan_kayus.panjang',
-                'jenis_kayus.nama_kayu as jenis',
-                'lahans.kode_lahan as lahan',
-                DB::raw('SUM(detail_turusan_kayus.kuantitas) as banyak'),
-                DB::raw('SUM(
-                    detail_turusan_kayus.panjang
-                    * detail_turusan_kayus.diameter
-                    * detail_turusan_kayus.diameter
-                    * detail_turusan_kayus.kuantitas
-                    * 0.785 / 1000000
-                ) as m3'),
-                DB::raw('SUM(
-                    (
-                        detail_turusan_kayus.panjang
-                        * detail_turusan_kayus.diameter
-                        * detail_turusan_kayus.diameter
-                        * detail_turusan_kayus.kuantitas
-                        * 0.785 / 1000000
-                    ) * harga_kayus.harga_beli * 1000
-                ) as poin'),
+                'jenis_kayus.nama_kayu AS jenis',
+                'lahans.kode_lahan AS lahan',
+
+                // ======================
+                // TOTAL BATANG
+                // ======================
+                DB::raw('SUM(detail_turusan_kayus.kuantitas) AS banyak'),
+
+                // ======================
+                // KUBIKASI
+                // ROUND PER BARIS
+                // ======================
+                DB::raw("
+                    ROUND(
+                        SUM(
+                            ROUND($m3Formula, 4)
+                        ),
+                    4) AS m3
+                "),
+
+                // ======================
+                // POIN
+                // TIDAK DIBULATKAN INT
+                // ======================
+                DB::raw("
+                    ROUND(
+                        SUM(
+                            ROUND($m3Formula, 4)
+                            * CAST( COALESCE(hk.harga_beli,0) AS DECIMAL(12,2) )
+                            * 1000
+                        ),
+                    2) AS poin
+                "),
             ])
-            ->groupBy(
-                'kayu_masuks.tgl_kayu_masuk',
+
+            ->groupBy([
+                DB::raw('DATE(kayu_masuks.tgl_kayu_masuk)'),
                 'supplier_kayus.nama_supplier',
                 'kayu_masuks.seri',
                 'detail_turusan_kayus.panjang',
                 'jenis_kayus.nama_kayu',
-                'lahans.kode_lahan'
-            )
-            ->orderBy('kayu_masuks.tgl_kayu_masuk', 'desc');
+                'lahans.kode_lahan',
+            ])
+
+            ->orderByDesc('kayu_masuks.seri');
     }
 
-    // =======================
-    //   HALAMAN BLADE
-    // =======================
+
+    /**
+     * ======================
+     * INDEX
+     * ======================
+     */
     public function index()
     {
         $data = $this->baseQuery()->get();
+
         return view('nota-kayu.laporan-kayu', compact('data'));
     }
 
-    // =======================
-    //   EXPORT EXCEL
-    // =======================
+    /**
+     * =======================
+     * EXPORT EXCEL ✅
+     * =======================
+     */
     public function export()
     {
-        // kolom export
         $columns = [
             ['label' => 'Tanggal', 'field' => 'tanggal'],
             ['label' => 'Nama', 'field' => 'nama'],
@@ -89,4 +152,5 @@ class LaporanKayuMasukController extends Controller
             'laporan_kayu.xlsx'
         );
     }
+
 }

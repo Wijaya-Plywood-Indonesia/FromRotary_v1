@@ -3,111 +3,61 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RekapKayuMasuk extends Model
 {
-    protected $table = 'detail_turusan_kayus';
+    protected $table = 'kayu_masuks';
 
-    // Hanya digunakan untuk laporan, read-only
-    protected $guarded = [];
-
+    // read-only
+    protected $guarded = ['*'];
     public $timestamps = false;
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(fn() => false);
-        static::updating(fn() => false);
-        static::deleting(fn() => false);
-    }
-
-    public function save(array $options = [])
-    {
-        return false;
-    }
-
-    public function delete()
-    {
-        return false;
-    }
-
-    public function update(array $attributes = [], array $options = [])
-    {
-        return false;
-    }
-
-    public static function create(array $attributes = [])
-    {
-        return false;
-    }
-
-
     // =======================
-    // RELASI (dipakai laporan)
+    // RELASI
     // =======================
 
-    public function kayuMasuk()
+    public function penggunaanSupplier()
     {
-        return $this->belongsTo(KayuMasuk::class, 'id_kayu_masuk');
+        return $this->belongsTo(SupplierKayu::class, 'id_supplier_kayus');
     }
 
-    public function lahan()
+    public function penggunaanKendaraanSupplier()
     {
-        return $this->belongsTo(Lahan::class, 'lahan_id');
+        return $this->belongsTo(KendaraanSupplierKayu::class, 'id_kendaraan_supplier_kayus');
     }
 
-    public function jenisKayu()
+    public function penggunaanDokumenKayu()
     {
-        return $this->belongsTo(JenisKayu::class, 'jenis_kayu_id');
+        return $this->belongsTo(DokumenKayu::class, 'id_dokumen_kayus');
     }
 
-
-    // =======================
-    // ACCESSOR OTOMATIS LAPORAN
-    // =======================
-
-    protected $appends = ['tanggal', 'nama', 'kubikasi', 'harga_satuan', 'total_harga'];
-
-    public function getTanggalAttribute()
+    public function tempatKayu()
     {
-        return $this->kayuMasuk->tgl_kayu_masuk ?? null;
+        return $this->belongsTo(TempatKayu::class, 'id_tempat_kayu');
     }
 
-    public function getNamaAttribute()
+    public function detailMasukanKayu(): HasMany
     {
-        return $this->kayuMasuk->penggunaanSupplier->nama_supplier
-            ?? $this->kayuMasuk->penggunaanPenerima->nama_penerima
-            ?? null;
+        return $this->hasMany(DetailKayuMasuk::class, 'id_kayu_masuk');
     }
 
-    public function getKubikasiAttribute()
+    public function detailTurunKayu(): HasMany
     {
-        $diameter = (float) ($this->diameter ?? 0);
-        $jumlah = (float) ($this->kuantitas ?? 0);
-        $panjang = (float) ($this->panjang ?? 0);
-
-        return ($panjang * $diameter * $diameter * $jumlah * 0.785) / 1000000;
+        return $this->hasMany(DetailTurunKayu::class, 'id_kayu_masuk');
     }
 
-    public function getHargaSatuanAttribute()
+    public function detailTurusanKayu(): HasMany
     {
-        return (float) (
-            \App\Models\HargaKayu::where('id_jenis_kayu', $this->id_jenis_kayu)
-                ->where('grade', $this->grade)
-                ->where('panjang', $this->panjang)
-                ->where('diameter_terkecil', '<=', $this->diameter)
-                ->where('diameter_terbesar', '>=', $this->diameter)
-                ->value('harga_beli') ?? 0
-        );
+        return $this->hasMany(DetailTurusanKayu::class, 'id_kayu_masuk');
     }
 
-    public function getTotalHargaAttribute()
+    public function detailMasuk(): HasMany
     {
-        return round(
-            $this->harga_satuan * $this->kubikasi * 1000,
-            2
-        );
+        return $this->hasMany(DetailMasuk::class, 'id_kayu_masuk');
+    }
+    public function notaKayu(): HasMany
+    {
+        return $this->hasMany(NotaKayu::class, 'id_kayu_masuk');
     }
 }
-

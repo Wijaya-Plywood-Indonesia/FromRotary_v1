@@ -16,7 +16,6 @@ class KayuMasuk extends Model
         'upload_dokumen_angkut',
         'tgl_kayu_masuk',
         'seri',
-        'kubikasi',
         'id_supplier_kayus',
         'id_kendaraan_supplier_kayus',
         'id_dokumen_kayus',
