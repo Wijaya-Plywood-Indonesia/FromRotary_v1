@@ -10,7 +10,6 @@ use Filament\Tables\Table;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
-use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Actions\CreateAction;
 
@@ -109,20 +108,28 @@ class RencanaPegawaisTable
                     ->modalSubmitActionLabel('Simpan')
                     ->modalWidth('lg'),
                 EditAction::make(),
-                DeleteAction::make()
-                    ->before(function ($record) {
-                        // Cek apakah ada rencana repair yang masih terkait
+                Action::make('delete_rencana')
+                    ->label('Hapus')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
                         if ($record->rencanaRepairs()->exists()) {
                             Notification::make()
                                 ->title('Tidak bisa dihapus!')
                                 ->body('Rencana Pegawai ini masih memiliki data repair yang terkait. Hapus data repair terlebih dahulu.')
                                 ->warning()
                                 ->send();
-
-                            // Hentikan aksi delete
-                            return false;
+                            return; // Hentikan delete
                         }
-                    }),
+
+                        $record->delete();
+
+                        Notification::make()
+                            ->success()
+                            ->title('Data berhasil dihapus')
+                            ->send();
+                    })
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

@@ -5,10 +5,11 @@ namespace App\Filament\Resources\RencanaRepairs\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\CreateAction;
+use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 
 class RencanaRepairsTable
 {
@@ -84,9 +85,28 @@ class RencanaRepairsTable
                     ->icon('heroicon-o-pencil-square')
                     ->color('warning'),
 
-                DeleteAction::make()
+                Action::make('delete_rencana')
+                    ->label('Hapus')
                     ->icon('heroicon-o-trash')
-                    ->requiresConfirmation(),
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        if ($record->hasilRepairs()->exists()) {
+                            Notification::make()
+                                ->title('Tidak bisa dihapus!')
+                                ->body('Rencana Repair terhubung dengan data Hasil Repair, pastikan data tersebut bersih (tidak memiliki hasil) sebelum menghapus.')
+                                ->warning()
+                                ->send();
+                            return; // Hentikan delete
+                        }
+
+                        $record->delete();
+
+                        Notification::make()
+                            ->success()
+                            ->title('Data berhasil dihapus')
+                            ->send();
+                    })
             ])
 
             ->bulkActions([
