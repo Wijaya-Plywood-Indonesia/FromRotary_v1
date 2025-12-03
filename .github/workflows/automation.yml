@@ -185,40 +185,6 @@ jobs:
 
             php artisan migrate --force
 
-            # ----------------------------------------------------
-            # One-Time Secure Admin Setup + Filament Shield
-            # ----------------------------------------------------
-            EXISTS=$(php -r "
-              require 'vendor/autoload.php';
-              \$user = \App\Models\User::where('email', '${{ secrets.ADMIN_EMAIL }}')->first();
-              echo \$user ? 1 : 0;
-            ")
-
-            if [ $EXISTS -eq 1 ]; then
-              echo 'Admin already exists — skipping secure setup.'
-            else
-              echo 'Creating first-time ADMIN securely...'
-
-              php -r "
-                require 'vendor/autoload.php';
-                use App\Models\User;
-
-                // Create Admin
-                \$user = User::create([
-                  'name' => '${{ secrets.ADMIN_NAME }}',
-                  'email' => '${{ secrets.ADMIN_EMAIL }}',
-                  'password' => bcrypt('${{ secrets.ADMIN_PASSWORD }}'),
-                ]);
-
-                // Assign super_admin role
-                if (!\$user->hasRole('super_admin')) {
-                    \$user->assignRole('super_admin');
-                }
-              "
-
-              echo '✅ Secure admin user created with super_admin role!'
-            fi
-
             # Generate Filament Shield (all roles & permissions)
             php artisan shield:generate --all
             echo '✅ Filament Shield: All roles & permissions generated!'
