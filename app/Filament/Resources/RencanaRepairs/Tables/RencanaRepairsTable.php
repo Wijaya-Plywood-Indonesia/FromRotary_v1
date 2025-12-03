@@ -18,14 +18,14 @@ class RencanaRepairsTable
         return $table
             ->columns([
                 // 1. UKURAN — PAKAI ACCESSOR dimensi
-                TextColumn::make('ukuran.dimensi')
+                TextColumn::make('modalRepair.ukuran.dimensi')
                     ->label('Ukuran')
                     ->formatStateUsing(fn($state) => $state . ' × 0.5')
                     ->searchable()
                     ->sortable(),
 
                 // 2. JENIS KAYU
-                TextColumn::make('jenisKayu.nama_kayu')
+                TextColumn::make('modalRepair.jenisKayu.nama_kayu')
                     ->label('Jenis Kayu')
                     ->searchable()
                     ->sortable(),

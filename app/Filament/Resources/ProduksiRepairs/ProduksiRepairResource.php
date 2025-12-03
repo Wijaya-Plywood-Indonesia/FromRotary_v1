@@ -50,10 +50,10 @@ class ProduksiRepairResource extends Resource
     public static function getRelations(): array
     {
         return [
+            ModalRepairRelationManager::class,
             DetailRencanaPegawaiRelationManager::class,
             RencanaRepairRelationManager::class,
             HasilRepairRelationManager::class,
-            ModalRepairRelationManager::class,
             ValidasiRepairRelationManager::class,
         ];
     }
