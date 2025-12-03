@@ -43,23 +43,6 @@ class DetailPegawaiStikRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                Select::make('id_pegawai')
-                    ->label('Pegawai')
-                    ->options(
-                        Pegawai::query()
-                            ->get()
-                            ->mapWithKeys(fn($pegawai) => [
-                                $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
-                            ])
-                    )
-                    //   ->multiple() // bisa pilih banyak
-                    ->searchable()
-                    ->required(),
-
-                TextInput::make('tugas')
-                    ->label('Tugas')
-                    ->maxLength(255),
-
                 Select::make('masuk')
                     ->label('Jam Masuk')
                     ->options(self::timeOptions())
@@ -76,6 +59,21 @@ class DetailPegawaiStikRelationManager extends RelationManager
                     ->searchable()
                     ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
                     ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null),
+                Select::make('id_pegawai')
+                    ->label('Pegawai')
+                    ->options(
+                        Pegawai::query()
+                            ->get()
+                            ->mapWithKeys(fn($pegawai) => [
+                                $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
+                            ])
+                    )
+                    //   ->multiple() // bisa pilih banyak
+                    ->searchable()
+                    ->required(),
+                TextInput::make('tugas')
+                    ->label('Tugas')
+                    ->maxLength(255),
             ]);
     }
 

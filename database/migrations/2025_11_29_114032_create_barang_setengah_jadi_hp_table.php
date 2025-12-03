@@ -18,7 +18,16 @@ return new class extends Migration
                 ->constrained('ukurans')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->string('grade');
+            $table->foreignId('id_jenis_barang')
+                ->nullable()
+                ->constrained('jenis_barang')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->foreignId('id_grade')
+                ->nullable()
+                ->constrained('grade')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->string('keterangan')->nullable();
             $table->timestamps();
         });

@@ -11,4 +11,9 @@ class JenisBarang extends Model
         'kode_jenis_barang',
         'nama_jenis_barang',
     ];
+
+    public function barangSetengahJadiHp()
+    {
+        return $this->hasMany(BarangSetengahJadiHp::class, 'id_jenis_barang');
+    }
 }

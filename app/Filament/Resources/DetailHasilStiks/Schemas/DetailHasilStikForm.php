@@ -12,11 +12,6 @@ class DetailHasilStikForm
     {
         return $schema
             ->components([
-                TextInput::make('no_palet')
-                    ->label('Nomor Palet')
-                    ->numeric()
-                    ->required(),
-
                 TextInput::make('kw')
                     ->label('Kualitas (KW)')
                     ->numeric()          // memastikan input angka
@@ -29,6 +24,10 @@ class DetailHasilStikForm
                     ->required()
                     ->numeric()
                     ->placeholder('Cth: 1.5 atau 100'),
+                TextInput::make('no_palet')
+                    ->label('Nomor Palet')
+                    ->numeric()
+                    ->required(),
             ]);
     }
 }

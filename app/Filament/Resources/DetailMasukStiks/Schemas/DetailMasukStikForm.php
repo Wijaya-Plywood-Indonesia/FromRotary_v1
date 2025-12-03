@@ -14,11 +14,6 @@ class DetailMasukStikForm
     {
         return $schema
             ->schema([
-                TextInput::make('no_palet')
-                    ->label('Nomor Palet')
-                    ->numeric()
-                    ->required(),
-
                 // Relasi ke Jenis Kayu
                 Select::make('id_jenis_kayu')
                     ->label('Jenis Kayu')
@@ -58,6 +53,10 @@ class DetailMasukStikForm
                     ->required()
                     ->numeric()
                     ->placeholder('Cth: 1.5 atau 100'),
+                TextInput::make('no_palet')
+                    ->label('Nomor Palet')
+                    ->numeric()
+                    ->required(),
             ]);
     }
 }

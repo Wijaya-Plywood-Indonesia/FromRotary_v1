@@ -65,29 +65,6 @@ class DetailPegawaisRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                Select::make('id_pegawai')
-                    ->label('Pegawai')
-                    ->options(
-                        Pegawai::query()
-                            ->get()
-                            ->mapWithKeys(fn($pegawai) => [
-                                $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
-                            ])
-                    )
-                    //   ->multiple() // bisa pilih banyak
-                    ->searchable()
-                    ->required(),
-
-                Select::make('tugas')
-                    ->label('Tugas')
-                    ->options([
-                        'operator' => 'Operator',
-                        'asistenoperator' => 'Asisten Operator',
-                        'dll' => 'Dll',
-                    ])
-                    ->required()
-                    ->native(false)
-                    ->searchable(),
 
                 Select::make('masuk')
                     ->label('Jam Masuk')
@@ -105,6 +82,28 @@ class DetailPegawaisRelationManager extends RelationManager
                     ->searchable()
                     ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
                     ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null),
+                Select::make('id_pegawai')
+                    ->label('Pegawai')
+                    ->options(
+                        Pegawai::query()
+                            ->get()
+                            ->mapWithKeys(fn($pegawai) => [
+                                $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
+                            ])
+                    )
+                    //   ->multiple() // bisa pilih banyak
+                    ->searchable()
+                    ->required(),
+                Select::make('tugas')
+                    ->label('Tugas')
+                    ->options([
+                        'operator' => 'Operator',
+                        'asistenoperator' => 'Asisten Operator',
+                        'dll' => 'Dll',
+                    ])
+                    ->required()
+                    ->native(false)
+                    ->searchable(),
             ]);
     }
 

@@ -27,11 +27,6 @@ class PlatformHasilHpForm
                     ->searchable()
                     ->required(),
 
-                TextInput::make('no_palet')
-                    ->label('Nomor Palet')
-                    ->numeric()
-                    ->required(),
-
                 // Relasi ke Jenis Kayu
                 Select::make('id_jenis_kayu')
                     ->label('Jenis Kayu')
@@ -69,6 +64,10 @@ class PlatformHasilHpForm
                     ->required()
                     ->numeric()
                     ->placeholder('Cth: 1.5 atau 100'),
+                TextInput::make('no_palet')
+                    ->label('Nomor Palet')
+                    ->numeric()
+                    ->required(),
             ]);
     }
 }

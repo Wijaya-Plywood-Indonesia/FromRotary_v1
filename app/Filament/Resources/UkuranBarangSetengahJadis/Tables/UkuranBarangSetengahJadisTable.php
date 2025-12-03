@@ -14,11 +14,13 @@ class UkuranBarangSetengahJadisTable
     {
         return $table
             ->columns([
-                TextColumn::make('Ukuran.nama_ukuran')
-                    ->label('Ukuran')
-                    ->searchable(false)
-                    ->placeholder('Ukuran'),
-                TextColumn::make('grade')
+                TextColumn::make('ukuran.dimensi')
+                    ->label('Ukuran'),
+
+                TextColumn::make('jenisBarang.kode_jenis_barang')
+                    ->label('Jenis Barang'),
+
+                TextColumn::make('grade.nama_grade')
                     ->label('Grade'),
                 TextColumn::make('keterangan')
                     ->label('Keterangan'),

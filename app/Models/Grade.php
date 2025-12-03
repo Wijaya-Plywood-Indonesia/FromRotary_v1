@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Grade extends Model
 {
-    protected $table = 'grade';
+    protected $table = 'grades';
     protected $fillable = [
         'nama_grade',
         'id_kategori_barang',
@@ -15,5 +15,10 @@ class Grade extends Model
     public function kategoriBarang ()
     {
         return $this->belongsTo(KategoriBarang::class, 'id_kategori_barang');
+    }
+
+    public function barangSetengahJadiHp()
+    {
+        return $this->hasMany(BarangSetengahJadiHp::class, 'id_grade');
     }
 }
