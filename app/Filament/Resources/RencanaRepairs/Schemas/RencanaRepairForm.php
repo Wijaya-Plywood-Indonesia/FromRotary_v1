@@ -26,11 +26,10 @@ class RencanaRepairForm
                         ->get()
                         ->mapWithKeys(fn($modal) => [
                             $modal->id => sprintf(
-                                '%s × 0.5 | %s | KW %s | Stok: %s pcs',
+                                '%s | %s | %s',
                                 $modal->ukuran->dimensi ?? '-',
                                 $modal->jenisKayu->nama_kayu ?? '-',
-                                $modal->kw,
-                                $modal->jumlah
+                                $modal->nomor_palet ?? '-'
                             )
                         ]);
                 })
