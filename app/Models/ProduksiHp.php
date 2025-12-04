@@ -52,4 +52,9 @@ class ProduksiHp extends Model
     {
         return $this->hasMany(BahanPenolongHp::class, 'id_produksi_hp');
     }
+
+    public function rencanaKerjaHp()
+    {
+        return $this->hasMany(RencanaKerjaHp::class, 'id_produksi_hp');
+    }
 }
