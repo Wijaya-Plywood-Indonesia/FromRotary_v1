@@ -20,6 +20,11 @@ return new class extends Migration {
                 ->constrained('produksi_rotaries')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
+            $table->foreignId('id_jenis_kayu')
+                ->nullable()
+                ->constrained('jenis_kayus')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->integer('jumlah_batang')->default(0);
             $table->timestamps();
         });

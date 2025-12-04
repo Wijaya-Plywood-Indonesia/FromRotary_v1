@@ -71,7 +71,22 @@ class RencanaPegawaiForm
                 ->numeric()
                 ->minValue(1)
                 ->default($lastMeja)
-                ->required(),
+                ->required()
+                ->reactive()
+                ->rules([
+                    fn() => function ($attribute, $value, $fail) use ($produksiId, $record) {
+
+                        // Ambil jumlah pekerja di meja itu
+                        $count = RencanaPegawai::where('id_produksi_repair', $produksiId)
+                            ->where('nomor_meja', $value)
+                            ->when($record, fn($q) => $q->where('id', '!=', $record->id)) // kecualikan record saat edit
+                            ->count();
+
+                        if ($count >= 2) {
+                            $fail("Meja nomor {$value} sudah penuh (maksimal 2 orang).");
+                        }
+                    }
+                ])
         ]);
     }
 }

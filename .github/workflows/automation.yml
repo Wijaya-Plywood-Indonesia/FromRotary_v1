@@ -58,7 +58,7 @@ jobs:
           DB_DATABASE: laravel_testing
           DB_USERNAME: root
           DB_PASSWORD: password
-        run: php artisan migrate --force
+        run: php artisan migrate 
 
       - name: Run Tests
         env:
@@ -183,7 +183,7 @@ jobs:
             php artisan route:cache
             php artisan view:cache
 
-            php artisan migrate --force
+            php artisan migrate 
 
             # Generate Filament Shield (all roles & permissions)
             php artisan shield:generate --all
