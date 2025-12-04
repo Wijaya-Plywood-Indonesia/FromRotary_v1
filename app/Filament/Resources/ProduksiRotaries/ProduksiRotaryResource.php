@@ -11,6 +11,7 @@ use App\Filament\Resources\ProduksiRotaries\Pages\ViewProduksiRotary;
 use App\Filament\Resources\ProduksiRotaries\Schemas\ProduksiRotaryForm;
 use App\Filament\Resources\ProduksiRotaries\Schemas\ProduksiRotaryInfolist;
 use App\Filament\Resources\ProduksiRotaries\Tables\ProduksiRotariesTable;
+use App\Filament\Resources\ProduksiRotaries\Widgets\ProduksiSummaryWidget;
 use App\Models\ProduksiRotary;
 use BackedEnum;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -59,6 +60,13 @@ class ProduksiRotaryResource extends Resource
 
             RelationManagers\DetailValidasiHasilRotaryRelationManager::class,
 
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            ProduksiSummaryWidget::class,
         ];
     }
 
