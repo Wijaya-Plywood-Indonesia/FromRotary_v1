@@ -10,7 +10,6 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 use App\Models\RencanaRepair;
 use App\Models\HasilRepair;
@@ -20,10 +19,6 @@ class HasilRepairsTable
     public static function configure(Table $table): Table
     {
         return $table
-
-            // ============================================
-            // QUERY UTAMA - FIXED SUBQUERY ALIASES
-            // ============================================
             ->query(function () {
                 return RencanaRepair::query()
                     ->select([
@@ -47,9 +42,6 @@ class HasilRepairsTable
                     ->orderBy('rencana_pegawais.nomor_meja', 'asc');
             })
 
-            // ============================================
-            // COLUMNS
-            // ============================================
             ->columns([
                 TextColumn::make('ukuran')
                     ->label('Ukuran')
@@ -57,7 +49,6 @@ class HasilRepairsTable
                         $rencana = RencanaRepair::with('modalRepairs.ukuran')->find($record->id);
                         return $rencana?->modalRepairs?->ukuran?->dimensi ?? '-';
                     })
-                    ->formatStateUsing(fn($state) => $state)
                     ->searchable(false)
                     ->sortable(false),
 
@@ -72,6 +63,8 @@ class HasilRepairsTable
 
                 TextColumn::make('kw')
                     ->label('KW')
+                    ->badge()
+                    ->color('warning')
                     ->sortable()
                     ->searchable(),
 
@@ -79,10 +72,46 @@ class HasilRepairsTable
                     ->label('Meja')
                     ->formatStateUsing(
                         fn($state, $record) =>
-                        "Meja {$state} - {$record->jumlah_pekerja} pekerja"
+                        "Meja {$state}"
                     )
                     ->badge()
-                    ->color('gray'),
+                    ->color('info'),
+
+                // ========================================
+                // KOLOM PEGAWAI - PAKAI implode()!
+                // ========================================
+                TextColumn::make('pegawai')
+                    ->label('Pegawai')
+                    ->wrap()
+                    ->getStateUsing(function ($record) {
+                        // Parse IDs
+                        $rencanaIds = array_filter(
+                            array_map('intval', explode(',', $record->rencana_ids ?? ''))
+                        );
+
+                        // Fallback jika GROUP_CONCAT gagal
+                        if (empty($rencanaIds)) {
+                            $rencanaIds = RencanaRepair::query()
+                                ->join('rencana_pegawais', 'rencana_pegawais.id', '=', 'rencana_repairs.id_rencana_pegawai')
+                                ->where('rencana_repairs.id_modal_repair', $record->id_modal_repair)
+                                ->where('rencana_repairs.kw', $record->kw)
+                                ->where('rencana_repairs.id_produksi_repair', $record->id_produksi_repair)
+                                ->where('rencana_pegawais.nomor_meja', $record->nomor_meja)
+                                ->pluck('rencana_repairs.id')
+                                ->toArray();
+                        }
+
+                        // Ambil nama pegawai tanpa kode
+                        return RencanaRepair::whereIn('id', $rencanaIds)
+                            ->with('rencanaPegawai.pegawai')
+                            ->get()
+                            ->map(
+                                fn($r) =>
+                                $r->rencanaPegawai?->pegawai?->nama_pegawai ?? 'N/A'
+                            )
+                            ->implode(', ') ?: '-';
+                    }),
+
 
                 TextColumn::make('total_hasil')
                     ->label('Hasil Produksi')
@@ -94,9 +123,7 @@ class HasilRepairsTable
                     ->weight('bold')
                     ->color(fn($state) => $state >= 60 ? 'success' : ($state >= 40 ? 'warning' : 'danger')),
             ])
-            // ============================================
-            // ACTIONS - CINEMA MODE 🎬
-            // ============================================
+
             ->recordActions([
                 // ➕ TAMBAH HASIL
                 Action::make('tambah')
@@ -105,7 +132,7 @@ class HasilRepairsTable
                     ->color('success')
                     ->form([
                         TextInput::make('tambah')
-                            ->label('Tambah Berapa Lembar? (Per Pekerja)')
+                            ->label('Tambah Berapa Lembar?')
                             ->numeric()
                             ->minValue(1)
                             ->maxValue(200)
@@ -113,13 +140,11 @@ class HasilRepairsTable
                             ->required()
                             ->prefix('+')
                             ->suffix(' lembar')
-                            ->helperText(fn($record) => "Akan ditambahkan untuk {$record->jumlah_pekerja} pekerja di Meja {$record->nomor_meja}")
                             ->autofocus(),
                     ])
                     ->action(function ($record, array $data) {
                         $tambah = (int) $data['tambah'];
 
-                        // Get IDs dengan fallback
                         $rencanaIds = array_filter(
                             array_map('intval', explode(',', $record->rencana_ids ?? ''))
                         );
@@ -157,73 +182,12 @@ class HasilRepairsTable
 
                         Notification::make()
                             ->success()
-                            ->title("✅ Berhasil menambah {$tambah} lembar per pekerja!")
-                            ->body("🎯 Total: {$totalAdded} lembar untuk " . count($rencanaIds) . " pekerja di Meja {$record->nomor_meja}")
+                            ->title("Berhasil menambah {$tambah} lembar per pekerja!")
+                            ->body("Total: {$totalAdded} lembar untuk " . " pekerja di Meja {$record->nomor_meja}")
                             ->send();
                     })
-                    ->modalHeading(fn($record) => "➕ Tambah Hasil - Meja {$record->nomor_meja}")
-                    ->modalSubmitActionLabel('🚀 Tambah Sekarang'),
-
-                Action::make('view_pekerja')
-                    ->label('Lihat Pekerja')
-                    ->icon('heroicon-o-users')
-                    ->color('gray')
-                    ->modalContent(function ($record) {
-                        // Parse IDs dengan aman
-                        $rencanaIdsString = $record->rencana_ids ?? '';
-                        $rencanaIds = array_filter(
-                            array_map('intval', explode(',', $rencanaIdsString))
-                        );
-
-                        // FALLBACK: Query langsung jika GROUP_CONCAT bermasalah
-                        if (empty($rencanaIds)) {
-                            Log::warning('GROUP_CONCAT returned empty, using fallback query');
-
-                            $rencanaIds = RencanaRepair::query()
-                                ->join('rencana_pegawais', 'rencana_pegawais.id', '=', 'rencana_repairs.id_rencana_pegawai')
-                                ->where('rencana_repairs.id_modal_repair', $record->id_modal_repair)
-                                ->where('rencana_repairs.kw', $record->kw)
-                                ->where('rencana_repairs.id_produksi_repair', $record->id_produksi_repair)
-                                ->where('rencana_pegawais.nomor_meja', $record->nomor_meja)
-                                ->pluck('rencana_repairs.id')
-                                ->toArray();
-                        }
-
-                        // Log untuk debug
-                        Log::info('=== 🎬 VIEW PEKERJA CLICKED ===');
-                        Log::info('Record ID: ' . $record->id);
-                        Log::info('Nomor Meja: ' . $record->nomor_meja);
-                        Log::info('Modal Repair ID: ' . $record->id_modal_repair);
-                        Log::info('KW: ' . $record->kw);
-                        Log::info('Rencana IDs String: ' . $rencanaIdsString);
-                        Log::info('Rencana IDs Array: ', $rencanaIds);
-
-                        // Query detail pekerja
-                        $details = RencanaRepair::whereIn('id', $rencanaIds)
-                            ->with([
-                                'rencanaPegawai.pegawai',
-                                'hasilRepairs',
-                            ])
-                            ->orderBy('id', 'asc')
-                            ->get();
-
-                        Log::info('✅ Details Count: ' . $details->count());
-                        Log::info('Details IDs: ', $details->pluck('id')->toArray());
-
-                        if ($details->count() !== count($rencanaIds)) {
-                            Log::error('⚠️ MISMATCH! Expected ' . count($rencanaIds) . ' but got ' . $details->count());
-                        }
-
-                        return view('filament.tables.hasil-repair-detail', [
-                            'meja' => $record->nomor_meja,
-                            'details' => $details,
-                        ]);
-                    })
-                    ->modalHeading(fn($record) => "🎬 Detail Pekerja - Meja {$record->nomor_meja}")
-                    ->modalWidth('md')
-                    ->slideOver()
-                    ->modalFooterActions([]),
-
+                    ->modalHeading(fn($record) => " Tambah Hasil - Meja {$record->nomor_meja}")
+                    ->modalSubmitActionLabel('Tambah Sekarang'),
 
                 // ✏️ EDIT HASIL
                 Action::make('edit_hasil')
@@ -285,12 +249,12 @@ class HasilRepairsTable
 
                         Notification::make()
                             ->success()
-                            ->title('✅ Hasil berhasil diperbarui!')
-                            ->body("📊 Total: {$totalSaved} lembar untuk Meja {$record->nomor_meja}")
+                            ->title('Hasil berhasil diperbarui!')
+                            ->body("Total: {$totalSaved} lembar untuk Meja {$record->nomor_meja}")
                             ->send();
                     })
-                    ->modalHeading(fn($record) => "✏️ Edit Hasil - Meja {$record->nomor_meja}")
-                    ->modalSubmitActionLabel('💾 Simpan Perubahan'),
+                    ->modalHeading(fn($record) => "Edit Hasil - Meja {$record->nomor_meja}")
+                    ->modalSubmitActionLabel('Simpan Perubahan'),
 
                 // 🗑️ DELETE HASIL
                 Action::make('delete_hasil')
@@ -298,7 +262,7 @@ class HasilRepairsTable
                     ->icon('heroicon-o-trash')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->modalDescription(fn($record) => "⚠️ Akan menghapus hasil untuk {$record->jumlah_pekerja} pekerja di Meja {$record->nomor_meja}")
+                    ->modalDescription(fn($record) => "Akan menghapus hasil untuk Meja {$record->nomor_meja}")
                     ->action(function ($record) {
                         $rencanaIds = array_filter(
                             array_map('intval', explode(',', $record->rencana_ids ?? ''))
@@ -320,13 +284,13 @@ class HasilRepairsTable
                         if ($deleted > 0) {
                             Notification::make()
                                 ->success()
-                                ->title('✅ Hasil berhasil dihapus!')
-                                ->body("🗑️ Dihapus untuk {$deleted} pekerja di Meja {$record->nomor_meja}")
+                                ->title('Hasil berhasil dihapus!')
+                                ->body("Dihapus untuk {$deleted} pekerja di Meja {$record->nomor_meja}")
                                 ->send();
                         } else {
                             Notification::make()
                                 ->warning()
-                                ->title('⚠️ Tidak ada data hasil untuk dihapus')
+                                ->title('Tidak ada data hasil untuk dihapus')
                                 ->send();
                         }
                     }),
@@ -361,7 +325,7 @@ class HasilRepairsTable
             ->defaultSort('nomor_meja', 'asc')
             ->poll('6s')
 
-            ->emptyStateHeading('🎬 Belum ada rencana repair')
+            ->emptyStateHeading('Belum ada rencana repair')
             ->emptyStateDescription('Tambahkan rencana repair untuk memulai produksi!')
             ->emptyStateIcon('heroicon-o-film');
     }

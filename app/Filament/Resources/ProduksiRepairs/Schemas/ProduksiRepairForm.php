@@ -21,8 +21,6 @@ class ProduksiRepairForm
                     ->required()
                     ->maxDate(now()->addDays(30))
                     ->default(now()->addDay())
-                    ->suffixIcon('heroicon-o-calendar')
-                    ->suffixIconColor('primary'),
             ]);
     }
 }

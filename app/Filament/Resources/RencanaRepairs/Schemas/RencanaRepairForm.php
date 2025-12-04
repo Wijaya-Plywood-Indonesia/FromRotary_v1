@@ -3,10 +3,11 @@
 namespace App\Filament\Resources\RencanaRepairs\Schemas;
 
 use Filament\Forms\Components\Select;
-use Filament\Forms\Set;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use App\Models\ModalRepair;
 use App\Models\RencanaPegawai;
+use App\Models\RencanaRepair;
 
 class RencanaRepairForm
 {
@@ -18,6 +19,7 @@ class RencanaRepairForm
             ?? request()->route('record');
 
         return $schema->schema([
+
             Select::make('id_modal_repair')
                 ->label('Pilih Kayu (Ukuran - Jenis - KW)')
                 ->options(function () use ($produksiId) {
@@ -29,7 +31,7 @@ class RencanaRepairForm
                                 '%s | %s | %s',
                                 $modal->ukuran->dimensi ?? '-',
                                 $modal->jenisKayu->nama_kayu ?? '-',
-                                $modal->nomor_palet ?? '-'
+                                'Palet - ' . ($modal->nomor_palet ?? '-')
                             )
                         ]);
                 })
@@ -37,23 +39,26 @@ class RencanaRepairForm
                 ->preload()
                 ->required()
                 ->reactive()
-                ->afterStateUpdated(function (Set $set, $state) {
+                ->afterStateUpdated(function (callable $set, $state) {
                     if ($state) {
                         $modal = ModalRepair::find($state);
-                        if ($modal) {
-                            $set('kw', $modal->kw);
-                        }
+                        $set('kw', $modal?->kw); // ← Otomatis mengisi KW
                     } else {
                         $set('kw', null);
                     }
                 })
-                ->placeholder('🔍 Pilih modal kayu yang tersedia...')
-                ->helperText('Pilih kombinasi Ukuran, Jenis Kayu, dan KW yang tersedia'),
+                ->placeholder('Pilih Modal Repair'),
 
             Select::make('id_rencana_pegawai')
                 ->label('Penempatan Meja & Pegawai')
-                ->options(function () use ($produksiId) {
+                ->options(function () use ($produksiId, $record) {
+                    $usedPegawaiIds = RencanaRepair::where('id_produksi_repair', $produksiId)
+                        ->when($record, fn($q) => $q->where('id', '!=', $record->id))
+                        ->pluck('id_rencana_pegawai')
+                        ->toArray();
+
                     return RencanaPegawai::where('id_produksi_repair', $produksiId)
+                        ->whereNotIn('id', $usedPegawaiIds)
                         ->with('pegawai')
                         ->orderBy('nomor_meja')
                         ->get()
@@ -71,14 +76,12 @@ class RencanaRepairForm
                 ->required()
                 ->placeholder('Pilih meja dan pegawai...'),
 
-            // KW - Readonly (tidak bisa diedit)
-            Select::make('kw')
-                ->label('KW (dari Modal Repair)')
-                ->required()
-                ->disabled() // ← Tidak bisa diedit
-                ->dehydrated() // ← PENTING! Tetap save ke database meski disabled
-                ->helperText('KW otomatis sesuai dengan modal kayu yang dipilih')
-                ->placeholder('Pilih modal repair terlebih dahulu...'),
+            TextInput::make('kw')
+                ->label('KW')
+                ->disabled()          // Tidak bisa diubah
+                ->dehydrated()        // Tetap tersimpan ke DB
+                ->reactive(),
+
         ]);
     }
 }
