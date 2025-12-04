@@ -46,6 +46,7 @@ class ProduksiHotPressResource extends Resource
     public static function getRelations(): array
     {
         return [
+            RelationManagers\RencanaKerjaHpRelationManager::class,
             RelationManagers\DetailPegawaiHpRelationManager::class,
             RelationManagers\VeneerBahanHpRelationManager::class,
             RelationManagers\PlatformBahanHpRelationManager::class,

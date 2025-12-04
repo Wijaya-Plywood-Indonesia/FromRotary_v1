@@ -23,7 +23,8 @@ class UkuranBarangSetengahJadisTable
                 TextColumn::make('grade.nama_grade')
                     ->label('Grade'),
                 TextColumn::make('keterangan')
-                    ->label('Keterangan'),
+                    ->label('Keterangan')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

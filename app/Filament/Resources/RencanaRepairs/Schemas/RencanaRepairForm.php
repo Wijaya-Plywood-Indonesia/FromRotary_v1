@@ -3,11 +3,11 @@
 namespace App\Filament\Resources\RencanaRepairs\Schemas;
 
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
-use App\Models\Ukuran;
-use App\Models\JenisKayu;
 use App\Models\ModalRepair;
 use App\Models\RencanaPegawai;
+use App\Models\RencanaRepair;
 
 class RencanaRepairForm
 {
@@ -18,54 +18,70 @@ class RencanaRepairForm
             ?? $schema->getLivewire()->ownerRecord?->id
             ?? request()->route('record');
 
-        // Ambil semua modal repair untuk produksi ini
-        $modalRepairs = ModalRepair::where('id_produksi_repair', $produksiId)
-            ->with(['ukuran', 'jenisKayu'])
-            ->get();
-
-        // Ambil semua opsi unik untuk Ukuran, Jenis Kayu, KW dari modal repair
-        $ukuranOptions = $modalRepairs->pluck('ukuran')->unique('id')->mapWithKeys(fn($u) => [$u->id => $u->dimensi])->toArray();
-        $jenisKayuOptions = $modalRepairs->pluck('jenisKayu')->unique('id')->mapWithKeys(fn($k) => [$k->id => $k->nama_kayu])->toArray();
-        $kwOptions = $modalRepairs->pluck('kw')->unique()->mapWithKeys(fn($kw) => [$kw => $kw])->toArray();
-
-        // Ambil semua rencana pegawai
-        $rencanaPegawaiOptions = RencanaPegawai::where('id_produksi_repair', $produksiId)
-            ->with('pegawai')
-            ->orderBy('nomor_meja')
-            ->get()
-            ->mapWithKeys(fn($rp) => [
-                $rp->id => "Meja {$rp->nomor_meja} - {$rp->pegawai?->nama_pegawai} ({$rp->pegawai?->kode_pegawai})"
-            ])->toArray();
-
         return $schema->schema([
-            Select::make('id_ukuran')
-                ->label('Ukuran')
-                ->options($ukuranOptions)
-                ->searchable()
-                ->preload()
-                ->required(),
 
-            Select::make('id_jenis_kayu')
-                ->label('Jenis Kayu')
-                ->options($jenisKayuOptions)
-                ->searchable()
-                ->preload()
-                ->required(),
-
-            Select::make('kw')
-                ->label('KW')
-                ->options($kwOptions)
-                ->searchable()
-                ->preload()
-                ->required(),
-
-            Select::make('id_rencana_pegawai')
-                ->label('Penempatan Meja')
-                ->options($rencanaPegawaiOptions)
+            Select::make('id_modal_repair')
+                ->label('Pilih Kayu (Ukuran - Jenis - KW)')
+                ->options(function () use ($produksiId) {
+                    return ModalRepair::where('id_produksi_repair', $produksiId)
+                        ->with(['ukuran', 'jenisKayu'])
+                        ->get()
+                        ->mapWithKeys(fn($modal) => [
+                            $modal->id => sprintf(
+                                '%s | %s | %s',
+                                $modal->ukuran->dimensi ?? '-',
+                                $modal->jenisKayu->nama_kayu ?? '-',
+                                'Palet - ' . ($modal->nomor_palet ?? '-')
+                            )
+                        ]);
+                })
                 ->searchable()
                 ->preload()
                 ->required()
-                ->placeholder('Pilih Meja...'),
+                ->reactive()
+                ->afterStateUpdated(function (callable $set, $state) {
+                    if ($state) {
+                        $modal = ModalRepair::find($state);
+                        $set('kw', $modal?->kw); // ← Otomatis mengisi KW
+                    } else {
+                        $set('kw', null);
+                    }
+                })
+                ->placeholder('Pilih Modal Repair'),
+
+            Select::make('id_rencana_pegawai')
+                ->label('Penempatan Meja & Pegawai')
+                ->options(function () use ($produksiId, $record) {
+                    $usedPegawaiIds = RencanaRepair::where('id_produksi_repair', $produksiId)
+                        ->when($record, fn($q) => $q->where('id', '!=', $record->id))
+                        ->pluck('id_rencana_pegawai')
+                        ->toArray();
+
+                    return RencanaPegawai::where('id_produksi_repair', $produksiId)
+                        ->whereNotIn('id', $usedPegawaiIds)
+                        ->with('pegawai')
+                        ->orderBy('nomor_meja')
+                        ->get()
+                        ->mapWithKeys(fn($rp) => [
+                            $rp->id => sprintf(
+                                'Meja %s - %s (%s)',
+                                $rp->nomor_meja,
+                                $rp->pegawai?->nama_pegawai ?? '-',
+                                $rp->pegawai?->kode_pegawai ?? '-'
+                            )
+                        ]);
+                })
+                ->searchable()
+                ->preload()
+                ->required()
+                ->placeholder('Pilih meja dan pegawai...'),
+
+            TextInput::make('kw')
+                ->label('KW')
+                ->disabled()          // Tidak bisa diubah
+                ->dehydrated()        // Tetap tersimpan ke DB
+                ->reactive(),
+
         ]);
     }
 }
