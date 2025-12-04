@@ -32,7 +32,7 @@ class ModalRepairForm
                         JenisKayu::query()
                             ->get()
                             ->mapWithKeys(fn($jenis) => [
-                                $jenis->id => "{$jenis->kode_kayu} - {$jenis->nama_kayu}",
+                                $jenis->id => "{$jenis->nama_kayu}",
                             ])
                     )
                     ->searchable()
