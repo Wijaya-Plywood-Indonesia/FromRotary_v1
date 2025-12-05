@@ -18,4 +18,8 @@ class ProduksiSanding extends Model
     protected $casts = [
         'tanggal' => 'date',
     ];
+    public function modalSandings()
+    {
+        return $this->hasMany(ModalSanding::class, 'id_produksi_sanding');
+    }
 }
