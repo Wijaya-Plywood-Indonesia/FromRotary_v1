@@ -13,7 +13,7 @@
 /.zed
 /auth.json
 /node_modules
-# /public/build
+/public/build
 /public/hot
 /public/storage
 /storage/*.key
@@ -22,8 +22,3 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
-
-database/migrations/2025_10_20_085000_create_penggunaan_lahan_rotaries_table.php
-database/migrations/2025_11_25_154938_create_validasi_hp_table.php
-database/migrations/2025_11_27_161723_create_detail_turun_kayus_table.php
-database/migrations/2025_11_29_114532_create_validasi_repairs_table.php

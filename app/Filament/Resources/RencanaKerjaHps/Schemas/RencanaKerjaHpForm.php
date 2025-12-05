@@ -8,11 +8,11 @@ use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 
-// Model
 use App\Models\JenisBarang;
 use App\Models\Grade;
 use App\Models\Ukuran;
 use App\Models\BarangSetengahJadiHp;
+use Filament\Forms\Components\Hidden;
 
 class RencanaKerjaHpForm
 {
@@ -21,10 +21,6 @@ class RencanaKerjaHpForm
         return $schema
             ->columns(2)
             ->components([
-
-                // ======================
-                // ROW 1 - JENIS BARANG
-                // ======================
                 Select::make('jenis_barang_id')
                     ->label('Jenis Barang')
                     ->options(
@@ -42,9 +38,6 @@ class RencanaKerjaHpForm
                     })
                     ->required(),
 
-                // ======================
-                // ROW 1 - GRADE
-                // ======================
                 Select::make('id_grade')
                     ->label('Grade')
                     ->reactive()
@@ -67,9 +60,6 @@ class RencanaKerjaHpForm
                     })
                     ->required(),
 
-                // ======================
-                // ROW 2 - UKURAN
-                // ======================
                 Select::make('id_ukuran')
                     ->label('Ukuran')
                     ->reactive()
@@ -131,30 +121,22 @@ class RencanaKerjaHpForm
                     })
                     ->required(),
 
-                // ======================
-                // ROW 2 - JUMLAH
-                // ======================
                 TextInput::make('jumlah')
                     ->label('Jumlah')
                     ->numeric()
                     ->required(),
 
-                // ======================
-                // DISPLAY ONLY
-                // ======================
                 TextInput::make('barang_setengah_jadi_text')
                     ->label('Barang Setengah Jadi')
                     ->disabled()
                     ->dehydrated(false)
                     ->columnSpanFull(),
 
-                // ======================
-                // FIELD YANG DISIMPAN
-                // ======================
-                TextInput::make('id_barang_setengah_jadi_hp')
-                    ->dehydrated(true)
-                    ->visible(false)
-                    ->required(),
+
+                // FIX UTAMA
+                Hidden::make('id_barang_setengah_jadi_hp')
+                    ->required()
+                    ->dehydrated(true),
             ]);
     }
 }

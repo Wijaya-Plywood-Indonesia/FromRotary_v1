@@ -14,7 +14,7 @@ class RencanaKerjaHp extends Model
         'jumlah',
     ];
 
-    public function barangSetangahJadiHp()
+    public function barangSetengahJadiHp()
     {
         return $this->belongsTo(BarangSetengahJadiHp::class, 'id_barang_setengah_jadi_hp');
     }
