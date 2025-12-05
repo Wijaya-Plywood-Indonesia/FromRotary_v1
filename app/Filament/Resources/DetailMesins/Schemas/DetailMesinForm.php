@@ -18,11 +18,15 @@ class DetailMesinForm
             ->schema([
                 Select::make('id_mesin_dryer')
                     ->label('Mesin Dryer')
-                    // Asumsi: relasi 'mesinDryer' & kolom 'nama' atau 'kode_mesin'
-                    ->relationship('mesin', 'nama_mesin')
+                    ->options(
+                        Mesin::whereHas('kategoriMesin', function ($query) {
+                            $query->where('nama_kategori_mesin', 'DRYER');
+                        })
+                            ->orderBy('nama_mesin')
+                            ->pluck('nama_mesin', 'id')
+                    )
                     ->searchable()
-                    ->preload()
-                    ->nullable(), // Sesuai dengan migrasi Anda
+                    ->required(),
 
                 TextInput::make('jam_kerja_mesin')
                     ->default(12)        // otomatis 12
