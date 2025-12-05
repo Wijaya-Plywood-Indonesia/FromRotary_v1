@@ -31,15 +31,15 @@ class DetailMasukStikForm
                 Select::make('id_ukuran')
                     ->label('Ukuran')
                     ->options(
-                        Ukuran::orderBy('dimensi')
-                            ->pluck('dimensi', 'id')
+                        Ukuran::all()
+                            ->pluck('dimensi', 'id') // ← memanggil accessor getDimensiAttribute()
                     )
                     ->searchable()
                     ->afterStateUpdated(function ($state) {
                         session(['last_ukuran' => $state]);
                     })
                     ->default(fn() => session('last_ukuran'))
-                    ->required(), // Sesuai dengan migrasi
+                    ->required(),
 
                 TextInput::make('kw')
                     ->label('KW (Kualitas)')
