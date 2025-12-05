@@ -13,11 +13,8 @@ class ProduksiSandingInfolist
             ->components([
                 TextEntry::make('tanggal')
                     ->date(),
-                TextEntry::make('kendala'),
-                TextEntry::make('created_at')
-                    ->dateTime(),
-                TextEntry::make('updated_at')
-                    ->dateTime(),
+                TextEntry::make('kendala')
+                    ->placeholder('Belum Ada / Kendala Tidak Di-isi'),
             ]);
     }
 }

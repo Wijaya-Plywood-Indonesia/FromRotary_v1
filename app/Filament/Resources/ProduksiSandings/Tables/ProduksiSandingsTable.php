@@ -2,10 +2,15 @@
 
 namespace App\Filament\Resources\ProduksiSandings\Tables;
 
+use Carbon\Carbon;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Textarea;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -16,9 +21,21 @@ class ProduksiSandingsTable
         return $table
             ->columns([
                 TextColumn::make('tanggal')
-                    ->date()
-                    ->sortable(),
+                    ->label('Tanggal Repair')
+                    ->formatStateUsing(
+                        fn($state) =>
+                        Carbon::parse($state)
+                            ->locale('id')
+                            ->translatedFormat('l, j F Y')
+                    )
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('kendala')
+                    ->label('Kendala')
+                    ->placeholder('Tidak Ada / Belum Menemukan Kendala')
+                    ->wrap()
+                    ->limit(50)
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -33,8 +50,49 @@ class ProduksiSandingsTable
                 //
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+                Action::make('kendala')
+                    ->label(fn($record) => $record->kendala ? 'Perbarui Kendala' : 'Tambah Kendala')
+                    ->icon(fn($record) => $record->kendala ? 'heroicon-o-pencil-square' : 'heroicon-o-plus')
+                    ->color(fn($record) => $record->kendala ? 'info' : 'warning')
+
+                    // ✅ Form style baru di Filament 4
+                    ->schema([
+                        Textarea::make('kendala')
+                            ->label('Kendala')
+                            ->required()
+                            ->rows(4),
+                    ])
+
+                    // ✅ Saat modal dibuka — isi form dengan data kendala lama jika ada
+                    ->mountUsing(function ($form, $record) {
+                        $form->fill([
+                            'kendala' => $record->kendala ?? '',
+                        ]);
+                    })
+
+                    // ✅ Saat tombol Simpan ditekan
+                    ->action(function (array $data, $record): void {
+                        $record->update([
+                            'kendala' => trim($data['kendala']),
+                        ]);
+
+                        Notification::make()
+                            ->title($record->kendala ? 'Kendala diperbarui' : 'Kendala ditambahkan')
+                            ->success()
+                            ->send();
+                    })
+
+                    ->modalHeading(fn($record) => $record->kendala ? 'Perbarui Kendala' : 'Tambah Kendala')
+                    ->modalSubmitActionLabel('Simpan'),
+                ViewAction::make()
+                    ->label('')
+                    ->tooltip('Lihat Data'),
+                EditAction::make()
+                    ->label('')
+                    ->tooltip('Edit Data'),
+                DeleteAction::make()
+                    ->label('')
+                    ->tooltip('Hapus Data'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
