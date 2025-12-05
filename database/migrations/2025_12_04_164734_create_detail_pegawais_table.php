@@ -11,18 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rencana_kerja_hp', function (Blueprint $table) {
+        Schema::create('detail_pegawais', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_produksi_hp')
-                ->constrained('produksi_hp')
+            $table->string('tugas')->nullable();
+            $table->time('masuk');
+            $table->time('pulang');
+            $table->string('ijin')->nullable();
+            $table->string('ket')->nullable();
+
+            $table->foreignId('id_produksi_dryer')
+                ->constrained('produksi_press_dryers')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->foreignId('id_barang_setengah_jadi_hp')
-                ->nullable()
-                ->constrained('barang_setengah_jadi_hp')
+            $table->foreignId('id_pegawai')
+                ->constrained('pegawais')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->integer('jumlah');
             $table->timestamps();
         });
     }
@@ -32,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('rencana_kerja_hp');
+        Schema::dropIfExists('detail_pegawais');
     }
 };
