@@ -13,8 +13,16 @@ class ProduksiSandingForm
         return $schema
             ->components([
                 DatePicker::make('tanggal')
-                    ->required(),
-                TextInput::make('kendala'),
+                    ->label('Tanggal')
+                    ->native(false)
+                    ->locale('id')                          // Bahasa Indonesia di kalender
+                    ->format('Y-m-d')                      // format simpan DB
+                    ->displayFormat('l, j F Y')            // Rabu, 1 Januari 2025
+                    ->live()
+                    ->closeOnDateSelection()
+                    ->required()
+                    ->maxDate(now()->addDays(30))
+                    ->default(now()->addDay()),
             ]);
     }
 }
