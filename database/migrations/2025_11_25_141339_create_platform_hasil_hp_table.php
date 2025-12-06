@@ -4,28 +4,28 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    /**
-     * Run the migrations.
-     */
+return new class extends Migration
+{
+
     public function up(): void
     {
-        Schema::create('penggunaan_lahan_rotaries', function (Blueprint $table) {
+        Schema::create('platform_hasil_hp', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_lahan')
-                ->constrained('lahans')
+            $table->foreignId('id_produksi_hp')
+                ->constrained('produksi_hp')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->foreignId('id_produksi')
-                ->constrained('produksi_rotaries')
+            $table->foreignId('id_mesin')
+                ->constrained('mesins')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->foreignId('id_jenis_kayu')
+            $table->integer('no_palet');
+            $table->foreignId('id_barang_setengah_jadi')
                 ->nullable()
-                ->constrained('jenis_kayus')
+                ->constrained('barang_setengah_jadi_hp')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->integer('jumlah_batang')->default(0);
+            $table->integer('isi');
             $table->timestamps();
         });
     }
@@ -35,6 +35,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('penggunaan_lahan_rotaries');
+        Schema::dropIfExists('platform_hasil_hp');
     }
 };
