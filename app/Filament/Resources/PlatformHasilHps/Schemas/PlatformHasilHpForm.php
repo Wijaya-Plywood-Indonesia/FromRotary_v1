@@ -53,6 +53,7 @@ class PlatformHasilHpForm
                         $set('id_ukuran', null);
                         $set('id_barang_setengah_jadi_hp', null);
                         $set('barang_setengah_jadi_text', null);
+                        $set('id_barang_setengah_jadi', null);
                     })
                     ->required(),
 
@@ -84,6 +85,7 @@ class PlatformHasilHpForm
                         $set('id_ukuran', null);
                         $set('id_barang_setengah_jadi_hp', null);
                         $set('barang_setengah_jadi_text', null);
+                        $set('id_barang_setengah_jadi', null);
                     })
                     ->required(),
 
@@ -102,7 +104,10 @@ class PlatformHasilHpForm
                             $q->where('id_jenis_barang', $get('jenis_barang_id'))
                               ->where('id_grade', $get('id_grade'));
                         })
-                            ->pluck('nama_ukuran', 'id');
+                            ->get()
+                            ->mapWithKeys(fn ($u) => [
+                                $u->id => $u->nama_ukuran
+                            ]);
                     })
                     ->default(fn ($livewire) =>
                         optional(
@@ -119,6 +124,7 @@ class PlatformHasilHpForm
                         if (!$get('jenis_barang_id') || !$get('id_grade') || !$get('id_ukuran')) {
                             $set('id_barang_setengah_jadi_hp', null);
                             $set('barang_setengah_jadi_text', null);
+                            $set('id_barang_setengah_jadi', null);
                             return;
                         }
 
@@ -137,9 +143,13 @@ class PlatformHasilHpForm
                                 $barang->grade->nama_grade . ' | ' .
                                 $barang->ukuran->nama_ukuran
                             );
+                            
+                            // Set ID pada hidden field saat ada interaksi
+                            $set('id_barang_setengah_jadi', $barang->id); 
                         } else {
                             $set('id_barang_setengah_jadi_hp', null);
                             $set('barang_setengah_jadi_text', '⚠ KOMBINASI TIDAK TERDAFTAR');
+                            $set('id_barang_setengah_jadi', null);
                         }
                     })
                     ->required(),
@@ -151,10 +161,64 @@ class PlatformHasilHpForm
                     ->label('Barang Setengah Jadi')
                     ->disabled()
                     ->dehydrated(false)
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->afterStateHydrated(function (callable $set, $livewire) {
 
-                Hidden::make('id_barang_setengah_jadi_hp')
-                    ->required(),
+                        if (!$livewire->ownerRecord) {
+                            return;
+                        }
+
+                        $last = $livewire->ownerRecord
+                            ->rencanaKerjaHp()
+                            ->latest()
+                            ->with([
+                                'barangSetengahJadiHp.jenisBarang',
+                                'barangSetengahJadiHp.grade',
+                                'barangSetengahJadiHp.ukuran',
+                            ])
+                            ->first();
+
+                        if (!$last || !$last->barangSetengahJadiHp) {
+                            return;
+                        }
+
+                        $b = $last->barangSetengahJadiHp;
+                        
+                        // ✅ SET TEXT
+                        $set(
+                            'barang_setengah_jadi_text',
+                            $b->jenisBarang->nama_jenis_barang . ' | ' .
+                            $b->grade->nama_grade . ' | ' .
+                            $b->ukuran->nama_ukuran
+                        );
+                    }),
+
+                Hidden::make('id_barang_setengah_jadi')
+                    ->required()
+                    ->dehydrated(true)
+                    // 💡 SOLUSI FINAL: Set nilai ID tepat sebelum disubmit (dehydrate)
+                    ->dehydrateStateUsing(function (callable $get) {
+                        // Jika nilai sudah ada (karena user select ulang), kembalikan nilai tersebut
+                        if ($get('id_barang_setengah_jadi')) {
+                            return $get('id_barang_setengah_jadi');
+                        }
+
+                        // Jika nilai masih null (karena tidak select ulang), cari ID-nya
+                        $jenisBarangId = $get('jenis_barang_id');
+                        $idGrade = $get('id_grade');
+                        $idUkuran = $get('id_ukuran');
+
+                        if ($jenisBarangId && $idGrade && $idUkuran) {
+                            $barang = BarangSetengahJadiHp::where('id_jenis_barang', $jenisBarangId)
+                                ->where('id_grade', $idGrade)
+                                ->where('id_ukuran', $idUkuran)
+                                ->first();
+
+                            return $barang ? $barang->id : null;
+                        }
+
+                        return null; // Akan gagal validasi required jika null
+                    }),
 
                 /*
                  * FIELD LAIN

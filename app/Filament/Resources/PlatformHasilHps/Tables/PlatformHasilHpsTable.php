@@ -30,9 +30,9 @@ class PlatformHasilHpsTable
                     ->searchable(),
 
                 /*
-                 * JENIS BARANG (dari BarangSetengahJadiHp)
+                 * JENIS BARANG
                  */
-                TextColumn::make('barangSetengahJadiHp.jenisBarang.nama_jenis_barang')
+                TextColumn::make('barangSetengahJadi.jenisBarang.nama_jenis_barang')
                     ->label('Jenis Barang')
                     ->searchable()
                     ->placeholder('-'),
@@ -40,7 +40,7 @@ class PlatformHasilHpsTable
                 /*
                  * GRADE
                  */
-                TextColumn::make('barangSetengahJadiHp.grade.nama_grade')
+                TextColumn::make('barangSetengahJadi.grade.nama_grade')
                     ->label('Grade')
                     ->searchable()
                     ->placeholder('-'),
@@ -48,7 +48,7 @@ class PlatformHasilHpsTable
                 /*
                  * UKURAN
                  */
-                TextColumn::make('barangSetengahJadiHp.ukuran.nama_ukuran')
+                TextColumn::make('barangSetengahJadi.ukuran.nama_ukuran')
                     ->label('Ukuran')
                     ->searchable()
                     ->placeholder('-'),
@@ -59,8 +59,6 @@ class PlatformHasilHpsTable
                 TextColumn::make('isi')
                     ->label('Jumlah Lembar'),
             ])
-
-            ->filters([])
 
             ->headerActions([
                 CreateAction::make()
