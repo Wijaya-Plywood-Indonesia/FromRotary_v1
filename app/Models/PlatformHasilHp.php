@@ -12,10 +12,7 @@ class PlatformHasilHp extends Model
         'id_produksi_hp',
         'id_mesin',
         'no_palet',
-        'id_ukuran_setengah_jadi',
-        'id_jenis_kayu',
-        'id_ukuran',
-        'kw',
+        'id_barang_setengah_jadi',
         'isi',
     ];
 
@@ -28,7 +25,7 @@ class PlatformHasilHp extends Model
     {
         return $this->belongsTo(
             \App\Models\BarangSetengahJadiHp::class,
-            'id_ukuran_setengah_jadi'
+            'id_barang_setengah_jadi'
         );
     }
 

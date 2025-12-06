@@ -16,6 +16,10 @@ class PlatformHasilHpsTable
     {
         return $table
             ->columns([
+
+                /*
+                 * MESIN
+                 */
                 TextColumn::make('mesin.nama_mesin')
                     ->label('Mesin')
                     ->searchable()
@@ -25,33 +29,46 @@ class PlatformHasilHpsTable
                     ->label('No. Palet')
                     ->searchable(),
 
-                TextColumn::make('jenisKayu.nama_kayu')
-                    ->label('Jenis Kayu')
+                /*
+                 * JENIS BARANG (dari BarangSetengahJadiHp)
+                 */
+                TextColumn::make('barangSetengahJadiHp.jenisBarang.nama_jenis_barang')
+                    ->label('Jenis Barang')
                     ->searchable()
-                    ->placeholder('N/A'),
+                    ->placeholder('-'),
 
-                // ✅ RELASI BARU: BARANG SETENGAH JADI
-                TextColumn::make('barangSetengahJadi.grade')
+                /*
+                 * GRADE
+                 */
+                TextColumn::make('barangSetengahJadiHp.grade.nama_grade')
+                    ->label('Grade')
+                    ->searchable()
+                    ->placeholder('-'),
+
+                /*
+                 * UKURAN
+                 */
+                TextColumn::make('barangSetengahJadiHp.ukuran.nama_ukuran')
                     ->label('Ukuran')
                     ->searchable()
                     ->placeholder('-'),
 
-                TextColumn::make('kw')
-                    ->label('Kualitas (KW)')
-                    ->searchable(),
-
+                /*
+                 * ISI
+                 */
                 TextColumn::make('isi')
                     ->label('Jumlah Lembar'),
             ])
-            ->filters([
-                //
-            ])
+
+            ->filters([])
+
             ->headerActions([
                 CreateAction::make()
                     ->hidden(fn ($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
             ])
+
             ->recordActions([
                 EditAction::make()
                     ->hidden(fn ($livewire) =>
@@ -63,6 +80,7 @@ class PlatformHasilHpsTable
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
             ])
+
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()

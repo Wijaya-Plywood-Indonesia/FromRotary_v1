@@ -20,17 +20,11 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->integer('no_palet');
-            $table->foreignId('id_jenis_kayu')
-                ->nullable()
-                ->constrained('jenis_kayus')
-                ->cascadeOnUpdate()
-                ->restrictOnDelete();
-            $table->foreignId('id_ukuran_setengah_jadi')
+            $table->foreignId('id_barang_setengah_jadi')
                 ->nullable()
                 ->constrained('barang_setengah_jadi_hp')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->integer('kw');
             $table->integer('isi');
             $table->timestamps();
         });

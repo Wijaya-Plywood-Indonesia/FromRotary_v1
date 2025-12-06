@@ -27,7 +27,7 @@ return new class extends Migration
                 ->constrained('jenis_kayus')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->foreignId('id_ukuran_setengah_jadi')
+            $table->foreignId('id_barang_setengah_jadi')
                 ->nullable()
                 ->constrained('barang_setengah_jadi_hp')
                 ->cascadeOnUpdate()
