@@ -39,7 +39,7 @@ class DetailMasukStikForm
                         session(['last_ukuran' => $state]);
                     })
                     ->default(fn() => session('last_ukuran'))
-                    ->required(), // Sesuai dengan migrasi
+                    ->required(),
 
                 TextInput::make('kw')
                     ->label('KW (Kualitas)')
