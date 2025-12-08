@@ -16,64 +16,76 @@ class TriplekHasilHpsTable
     {
         return $table
             ->columns([
+
+                /*
+                 * MESIN
+                 */
                 TextColumn::make('mesin.nama_mesin')
                     ->label('Mesin')
                     ->searchable()
                     ->placeholder('-'),
 
+                /*
+                 * NO PALET
+                 */
                 TextColumn::make('no_palet')
                     ->label('No. Palet')
                     ->searchable(),
 
-                TextColumn::make('jenisKayu.nama_kayu')
-                    ->label('Jenis Kayu')
+                /*
+                 * JENIS BARANG
+                 */
+                TextColumn::make('barangSetengahJadi.jenisBarang.nama_jenis_barang')
+                    ->label('Jenis Barang')
                     ->searchable()
-                    ->placeholder('N/A'),
+                    ->placeholder('-'),
 
-                // ✅ RELASI BARU: BARANG SETENGAH JADI
-                TextColumn::make('barangSetengahJadi.grade')
+                /*
+                 * GRADE
+                 */
+                TextColumn::make('barangSetengahJadi.grade.nama_grade')
+                    ->label('Grade')
+                    ->searchable()
+                    ->placeholder('-'),
+
+                /*
+                 * UKURAN
+                 */
+                TextColumn::make('barangSetengahJadi.ukuran.nama_ukuran')
                     ->label('Ukuran')
                     ->searchable()
                     ->placeholder('-'),
 
-                TextColumn::make('kw')
-                    ->label('Kualitas (KW)')
-                    ->searchable(),
-
+                /*
+                 * ISI
+                 */
                 TextColumn::make('isi')
                     ->label('Jumlah Lembar'),
             ])
-            ->filters([
-                // Tempat filter jika Anda membutuhkannya
-            ])
+
             ->headerActions([
-                // Create Action — HILANG jika status sudah divalidasi
                 CreateAction::make()
-                    ->hidden(
-                        fn($livewire) =>
+                    ->hidden(fn ($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
             ])
+
             ->recordActions([
-                // Edit Action — HILANG jika status sudah divalidasi
                 EditAction::make()
-                    ->hidden(
-                        fn($livewire) =>
+                    ->hidden(fn ($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
 
-                // Delete Action — HILANG jika status sudah divalidasi
                 DeleteAction::make()
-                    ->hidden(
-                        fn($livewire) =>
+                    ->hidden(fn ($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
             ])
+
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->hidden(
-                            fn($livewire) =>
+                        ->hidden(fn ($livewire) =>
                             $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                         ),
                 ]),

@@ -10,6 +10,7 @@ use App\Models\JenisBarang;
 use App\Models\Grade;
 use App\Models\Ukuran;
 use App\Models\BarangSetengahJadiHp;
+use App\Models\Mesin;
 use Illuminate\Database\Eloquent\Builder;
 
 class PlatformHasilHpForm
@@ -20,20 +21,10 @@ class PlatformHasilHpForm
             ->columns(2)
             ->components([
 
-                Hidden::make('last_rencana')
-                    ->default(function ($livewire) {
-                        return $livewire->ownerRecord
-                            ->rencanaKerjaHp()
-                            ->latest()
-                            ->with('barangSetengahJadiHp')
-                            ->first();
-                    })
-                    ->dehydrated(false),
-
                 /*
-                 * ==========================
-                 * JENIS BARANG
-                 * ==========================
+                 |--------------------------------------------------------------------------
+                 | JENIS BARANG
+                 |--------------------------------------------------------------------------
                  */
                 Select::make('jenis_barang_id')
                     ->label('Jenis Barang')
@@ -41,7 +32,7 @@ class PlatformHasilHpForm
                     ->default(fn ($livewire) =>
                         optional(
                             $livewire->ownerRecord
-                                ->rencanaKerjaHp()
+                                ?->rencanaKerjaHp()
                                 ->latest()
                                 ->with('barangSetengahJadiHp')
                                 ->first()
@@ -51,16 +42,15 @@ class PlatformHasilHpForm
                     ->afterStateUpdated(function (callable $set) {
                         $set('id_grade', null);
                         $set('id_ukuran', null);
-                        $set('id_barang_setengah_jadi_hp', null);
-                        $set('barang_setengah_jadi_text', null);
                         $set('id_barang_setengah_jadi', null);
+                        $set('barang_setengah_jadi_text', null);
                     })
                     ->required(),
 
                 /*
-                 * ==========================
-                 * GRADE
-                 * ==========================
+                 |--------------------------------------------------------------------------
+                 | GRADE
+                 |--------------------------------------------------------------------------
                  */
                 Select::make('id_grade')
                     ->label('Grade')
@@ -74,7 +64,7 @@ class PlatformHasilHpForm
                     ->default(fn ($livewire) =>
                         optional(
                             $livewire->ownerRecord
-                                ->rencanaKerjaHp()
+                                ?->rencanaKerjaHp()
                                 ->latest()
                                 ->with('barangSetengahJadiHp')
                                 ->first()
@@ -83,36 +73,34 @@ class PlatformHasilHpForm
                     ->reactive()
                     ->afterStateUpdated(function (callable $set) {
                         $set('id_ukuran', null);
-                        $set('id_barang_setengah_jadi_hp', null);
-                        $set('barang_setengah_jadi_text', null);
                         $set('id_barang_setengah_jadi', null);
+                        $set('barang_setengah_jadi_text', null);
                     })
                     ->required(),
 
                 /*
-                 * ==========================
-                 * UKURAN
-                 * ==========================
+                 |--------------------------------------------------------------------------
+                 | UKURAN
+                 |--------------------------------------------------------------------------
                  */
                 Select::make('id_ukuran')
                     ->label('Ukuran')
                     ->searchable()
                     ->options(function (callable $get) {
-                        if (!$get('jenis_barang_id') || !$get('id_grade')) return [];
+                        if (!$get('jenis_barang_id') || !$get('id_grade')) {
+                            return [];
+                        }
 
                         return Ukuran::whereHas('barangSetengahJadiHp', function (Builder $q) use ($get) {
                             $q->where('id_jenis_barang', $get('jenis_barang_id'))
                               ->where('id_grade', $get('id_grade'));
                         })
-                            ->get()
-                            ->mapWithKeys(fn ($u) => [
-                                $u->id => $u->nama_ukuran
-                            ]);
+                        ->get() ->mapWithKeys(fn ($u) => [ $u->id => $u->nama_ukuran ]);
                     })
                     ->default(fn ($livewire) =>
                         optional(
                             $livewire->ownerRecord
-                                ->rencanaKerjaHp()
+                                ?->rencanaKerjaHp()
                                 ->latest()
                                 ->with('barangSetengahJadiHp')
                                 ->first()
@@ -122,9 +110,8 @@ class PlatformHasilHpForm
                     ->afterStateUpdated(function (callable $get, callable $set) {
 
                         if (!$get('jenis_barang_id') || !$get('id_grade') || !$get('id_ukuran')) {
-                            $set('id_barang_setengah_jadi_hp', null);
-                            $set('barang_setengah_jadi_text', null);
                             $set('id_barang_setengah_jadi', null);
+                            $set('barang_setengah_jadi_text', null);
                             return;
                         }
 
@@ -135,27 +122,23 @@ class PlatformHasilHpForm
                             ->first();
 
                         if ($barang) {
-                            $set('id_barang_setengah_jadi_hp', $barang->id);
+                            $set('id_barang_setengah_jadi', $barang->id);
 
                             $set(
                                 'barang_setengah_jadi_text',
-                                $barang->jenisBarang->nama_jenis_barang . ' | ' .
-                                $barang->grade->nama_grade . ' | ' .
-                                $barang->ukuran->nama_ukuran
+                                "{$barang->jenisBarang->nama_jenis_barang} | {$barang->grade->nama_grade} | {$barang->ukuran->nama_ukuran}"
                             );
-                            
-                            // Set ID pada hidden field saat ada interaksi
-                            $set('id_barang_setengah_jadi', $barang->id); 
                         } else {
-                            $set('id_barang_setengah_jadi_hp', null);
-                            $set('barang_setengah_jadi_text', '⚠ KOMBINASI TIDAK TERDAFTAR');
                             $set('id_barang_setengah_jadi', null);
+                            $set('barang_setengah_jadi_text', '⚠ KOMBINASI TIDAK TERDAFTAR');
                         }
                     })
                     ->required(),
 
                 /*
-                 * TEXT READ ONLY
+                 |--------------------------------------------------------------------------
+                 | TEXT VIEW (READ ONLY)
+                 |--------------------------------------------------------------------------
                  */
                 TextInput::make('barang_setengah_jadi_text')
                     ->label('Barang Setengah Jadi')
@@ -164,12 +147,8 @@ class PlatformHasilHpForm
                     ->columnSpanFull()
                     ->afterStateHydrated(function (callable $set, $livewire) {
 
-                        if (!$livewire->ownerRecord) {
-                            return;
-                        }
-
                         $last = $livewire->ownerRecord
-                            ->rencanaKerjaHp()
+                            ?->rencanaKerjaHp()
                             ->latest()
                             ->with([
                                 'barangSetengahJadiHp.jenisBarang',
@@ -183,52 +162,50 @@ class PlatformHasilHpForm
                         }
 
                         $b = $last->barangSetengahJadiHp;
-                        
-                        // ✅ SET TEXT
+
                         $set(
                             'barang_setengah_jadi_text',
-                            $b->jenisBarang->nama_jenis_barang . ' | ' .
-                            $b->grade->nama_grade . ' | ' .
-                            $b->ukuran->nama_ukuran
+                            "{$b->jenisBarang->nama_jenis_barang} | {$b->grade->nama_grade} | {$b->ukuran->nama_ukuran}"
                         );
                     }),
 
+                /*
+                 |--------------------------------------------------------------------------
+                 | HIDDEN ID – ✅ FIX UTAMA
+                 |--------------------------------------------------------------------------
+                 */
                 Hidden::make('id_barang_setengah_jadi')
                     ->required()
-                    ->dehydrated(true)
-                    // 💡 SOLUSI FINAL: Set nilai ID tepat sebelum disubmit (dehydrate)
-                    ->dehydrateStateUsing(function (callable $get) {
-                        // Jika nilai sudah ada (karena user select ulang), kembalikan nilai tersebut
+                    ->afterStateHydrated(function (callable $set, callable $get, $livewire) {
+
+                        // Jangan override kalau user sudah interaksi
                         if ($get('id_barang_setengah_jadi')) {
-                            return $get('id_barang_setengah_jadi');
+                            return;
                         }
 
-                        // Jika nilai masih null (karena tidak select ulang), cari ID-nya
-                        $jenisBarangId = $get('jenis_barang_id');
-                        $idGrade = $get('id_grade');
-                        $idUkuran = $get('id_ukuran');
+                        $last = $livewire->ownerRecord
+                            ?->rencanaKerjaHp()
+                            ->latest()
+                            ->with('barangSetengahJadiHp')
+                            ->first();
 
-                        if ($jenisBarangId && $idGrade && $idUkuran) {
-                            $barang = BarangSetengahJadiHp::where('id_jenis_barang', $jenisBarangId)
-                                ->where('id_grade', $idGrade)
-                                ->where('id_ukuran', $idUkuran)
-                                ->first();
-
-                            return $barang ? $barang->id : null;
+                        if ($last && $last->barangSetengahJadiHp) {
+                            $set('id_barang_setengah_jadi', $last->barangSetengahJadiHp->id);
                         }
-
-                        return null; // Akan gagal validasi required jika null
-                    }),
+                    })
+                    ->dehydrated(true),
 
                 /*
-                 * FIELD LAIN
+                 |--------------------------------------------------------------------------
+                 | FIELD LAINNYA
+                 |--------------------------------------------------------------------------
                  */
                 Select::make('id_mesin')
                     ->label('Mesin Hotpress')
                     ->options(
-                        \App\Models\Mesin::whereHas('kategoriMesin', function ($q) {
-                            $q->where('nama_kategori_mesin', 'HOTPRESS');
-                        })
+                        Mesin::whereHas('kategoriMesin', fn ($q) =>
+                            $q->where('nama_kategori_mesin', 'HOTPRESS')
+                        )
                         ->orderBy('nama_mesin')
                         ->pluck('nama_mesin', 'id')
                     )
