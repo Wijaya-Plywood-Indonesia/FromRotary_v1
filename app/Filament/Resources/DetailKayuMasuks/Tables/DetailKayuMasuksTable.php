@@ -26,50 +26,39 @@ class DetailKayuMasuksTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->striped()
 
-
-            ->striped() // gunakan striping bawaan
+            // recordClasses tetap aman karena hanya membaca property model
             ->recordClasses(function ($record) {
-                // Tambahkan class kondisional per record (grade)
-                // Kita mengembalikan string atau array kelas tailwind yang valid.
                 $grade = (int) ($record->grade ?? 0);
 
                 return match ($grade) {
-                    1 => 'bg-opacity-5 filament-row-grade-a', // tambahkan hook class custom
+                    1 => 'bg-opacity-5 filament-row-grade-a',
                     2 => 'bg-opacity-5 filament-row-grade-b',
                     default => null,
                 };
             })
+
             ->columns([
-
-                // TextColumn::make('no')
-                //     ->label('No')
-                //     ->rowIndex()
-                //     ->alignCenter()
-                //     ->width('60px'),
-
-                TextColumn::make('lahan_display')
+                // Gunakan dot-notation relasi langsung sehingga Filament membuat JOIN yang benar.
+                TextColumn::make('lahan.kode_lahan')
                     ->label('Lahan')
-                    ->getStateUsing(fn($record) => "{$record->lahan->kode_lahan}")
-                    ->sortable(['lahan.kode_lahan'])
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(['lahan.kode_lahan']),
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make('keterangan_kayu')
+                // Gabungkan state dari relasi + atribut model via formatStateUsing.
+                TextColumn::make('jenisKayu.nama_kayu')
                     ->label('Kayu')
-                    ->getStateUsing(function ($record) {
-
-                        $namaKayu = $record->jenisKayu?->nama_kayu ?? '-';
+                    ->formatStateUsing(function ($state, $record) {
+                        $namaKayu = $state ?? '-';
                         $panjang = $record->panjang ?? '-';
 
-                        // --- NORMALISASI NILAI GRADE ---
-                        $raw = trim((string) $record->grade);     // hapus spasi
-                        $rawUpper = strtoupper($raw);            // samakan huruf
-            
-                        // kalau numeric, ubah ke int (misal: "01" atau " 1 ")
+                        // Normalisasi grade (terima angka atau huruf)
+                        $raw = trim((string) ($record->grade ?? ''));
+                        $rawUpper = strtoupper($raw);
                         $gradeNorm = is_numeric($rawUpper) ? (int) $rawUpper : $rawUpper;
 
-                        // match paling aman: terima angka maupun huruf
                         $grade = match ($gradeNorm) {
                             1, '1', 'A' => 'A',
                             2, '2', 'B' => 'B',
@@ -78,71 +67,58 @@ class DetailKayuMasuksTable
 
                         return "{$namaKayu} {$panjang} ({$grade})";
                     })
+                    ->searchable()
+                    // sortable() on relation column will generate proper join-sort
+                    ->sortable(),
 
-                    ->sortable(['jenisKayu.nama_kayu', 'panjang', 'grade'])
-                    ->searchable(['jenisKayu.nama_kayu', 'panjang'])
-
-                    ->color(function ($record) {
-
-                        // NORMALISASI juga untuk warna badge
-                        $raw = trim((string) $record->grade);
-                        $rawUpper = strtoupper($raw);
-                        $gradeNorm = is_numeric($rawUpper) ? (int) $rawUpper : $rawUpper;
-
-                        return match ($gradeNorm) {
-                            1, '1', 'A' => 'success',
-                            2, '2', 'B' => 'primary',
-                            default => 'gray',
-                        };
-                    }),
                 TextColumn::make('diameter')
                     ->label('Diameter')
                     ->numeric()
+                    ->searchable()
                     ->sortable(),
 
                 TextColumn::make('jumlah_batang')
                     ->label('Batang')
                     ->numeric()
                     ->suffix(' btg')
+                    ->searchable()
                     ->sortable(),
+
+                // Model sudah memiliki accessor `getKubikasiAttribute` sehingga kita bisa gunakan kolom 'kubikasi'.
+                // Jangan set sortable() karena kubikasi adalah accessor (bukan kolom DB).
                 TextColumn::make('kubikasi')
                     ->label('Kubikasi')
-                    ->getStateUsing(function ($record) {
-                        $diameter = $record->diameter ?? 0;
-                        $jumlahBatang = $record->jumlah_batang ?? 0;
-
-                        // Rumus: diameter × jumlah_batang × 0.785 / 1_000_000
-                        $kubikasi = $diameter * $diameter * $jumlahBatang * 0.785 / 1_000_000;
-
-                        // Tampilkan hingga 6 angka di belakang koma
-                        return number_format($kubikasi, 6, ',', '.');
-                    })
+                    ->formatStateUsing(fn($state) => is_null($state) ? '-' : number_format($state, 6, ',', '.'))
                     ->suffix(' m³')
-                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->alignRight(),
+
                 TextColumn::make('createdBy.name')
                     ->label('Dibuat Oleh')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
+
                 TextColumn::make('updatedBy.name')
                     ->label('Diubah Oleh')
                     ->sortable()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-
             ])
+
+            // Grouping berdasarkan relasi dot-notation juga aman
             ->groups([
                 Group::make('lahan.kode_lahan')
                     ->label('Lahan')
                     ->collapsible()
                     ->orderQueryUsing(function ($query, $direction) {
+                        // join eksplisit agar Filament dapat mengurutkan grup berdasarkan kolom relasi
                         return $query
                             ->join('lahans', 'detail_kayu_masuks.id_lahan', '=', 'lahans.id')
                             ->orderBy('lahans.kode_lahan', $direction)
@@ -156,61 +132,53 @@ class DetailKayuMasuksTable
                         $parentId = $record->id_kayu_masuk ?? $record->kayu_masuk_id ?? null;
                         $lahanId = $record->id_lahan;
 
-                        // CASE 1: Jika Filament sudah memberi Collection ($records)
                         if ($records instanceof Collection && $records->isNotEmpty()) {
-
                             $filtered = $records
                                 ->where('id_kayu_masuk', $parentId)
                                 ->where('id_lahan', $lahanId);
 
                             $totalBatang = $filtered->sum(fn($r) => (int) ($r->jumlah_batang ?? 0));
 
-                            // Hitung kubikasi manual (karena tidak ada di DB)
                             $totalKubikasi = $filtered->sum(function ($r) {
                                 $diameter = $r->diameter ?? 0;
                                 $jumlah = $r->jumlah_batang ?? 0;
-                                return $diameter * $diameter * $jumlah * 0.785 / 1000000;
+                                $panjang = $r->panjang ?? 0;
+                                return ($panjang * $diameter * $diameter * $jumlah * 0.785) / 1000000;
                             });
 
                         } else {
-
-                            // CASE 2: Tidak ada records collection → query DB
                             $query = DetailKayuMasuk::query()
                                 ->where('id_kayu_masuk', $parentId)
                                 ->where('id_lahan', $lahanId)
-                                ->get(); // convert → collection
-            
+                                ->get();
+
                             $totalBatang = $query->sum('jumlah_batang');
 
-                            // Hitung kubikasi manual
                             $totalKubikasi = $query->sum(function ($r) {
                                 $diameter = $r->diameter ?? 0;
                                 $jumlah = $r->jumlah_batang ?? 0;
-                                return $diameter * $diameter * $jumlah * 0.785 / 1000000;
+                                $panjang = $r->panjang ?? 0;
+                                return ($panjang * $diameter * $diameter * $jumlah * 0.785) / 1000000;
                             });
                         }
 
-                        // Format angka
                         $kubikasiFormatted = number_format($totalKubikasi, 4, ',', '.');
 
                         return "{$kode} {$nama} {$jenis_kayu} - {$totalBatang} batang ({$kubikasiFormatted} m³)";
-                    })
-                ,
+                    }),
             ])
-
-
 
             ->defaultGroup('lahan.kode_lahan')
             ->groupingSettingsHidden()
             ->filters([
-                //
+                // tambahkan filter yang diperlukan di sini
             ])
             ->defaultSort('created_at', 'desc')
+
             ->headerActions([
                 CreateAction::make(),
-
-
             ])
+
             ->recordActions([
                 Action::make('kurangiBatang')
                     ->label('')
@@ -221,8 +189,7 @@ class DetailKayuMasuksTable
                     ->size('sm')
                     ->action(function (DetailKayuMasuk $record) {
                         if ($record->jumlah_batang > 0) {
-                            $record->jumlah_batang = $record->jumlah_batang - 1;
-                            $record->save();
+                            $record->decrement('jumlah_batang');
                         }
                     }),
 
@@ -234,24 +201,24 @@ class DetailKayuMasuksTable
                     ->outlined(false)
                     ->size('sm')
                     ->action(function (DetailKayuMasuk $record) {
-                        $record->jumlah_batang = $record->jumlah_batang + 1;
-                        $record->save();
+                        $record->increment('jumlah_batang');
                     }),
-
 
                 EditAction::make(),
                 DeleteAction::make(),
             ])
+
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+
                     BulkAction::make('update_lahan')
                         ->label('Update Lahan')
                         ->icon('heroicon-o-map')
                         ->schema([
                             Select::make('id_lahan')
                                 ->label('Lahan Baru')
-                                ->options(Lahan::pluck('kode_lahan', 'id'))
+                                ->options(Lahan::pluck('kode_lahan', 'id')->toArray())
                                 ->required(),
                         ])
                         ->action(function (array $data, Collection $records) {
@@ -286,7 +253,6 @@ class DetailKayuMasuksTable
                         ->deselectRecordsAfterCompletion()
                         ->successNotificationTitle(fn($count) => "{$count} data berhasil diupdate"),
                 ]),
-
             ]);
     }
 }

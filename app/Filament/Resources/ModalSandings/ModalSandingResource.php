@@ -16,6 +16,10 @@ use Filament\Tables\Table;
 
 class ModalSandingResource extends Resource
 {
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
     protected static ?string $model = ModalSanding::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

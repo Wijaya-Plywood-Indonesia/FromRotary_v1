@@ -16,6 +16,7 @@ class ModalSanding extends Model
         'id_barang_setengah_jadi',
         'kuantitas',
         'jumlah_sanding',
+        'no_palet',
     ];
 
     /**

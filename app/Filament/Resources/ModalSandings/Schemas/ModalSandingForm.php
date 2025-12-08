@@ -34,7 +34,7 @@ class ModalSandingForm
                     ->placeholder('Semua Grade'),
 
                 // FILTER JENIS BARANG
-                Select::make('jenis_barang_id')
+                Select::make('id_jenis_barang')
                     ->label('Jenis Barang')
                     ->options(
                         JenisBarang::pluck('nama_jenis_barang', 'id')
@@ -44,7 +44,7 @@ class ModalSandingForm
                     ->placeholder('Semua Jenis Barang'),
 
                 // BARANG SETENGAH JADI (DIPENGARUHI FILTER)
-                Select::make('barang_id')
+                Select::make('id_barang_setengah_jadi')
                     ->label('Barang Setengah Jadi')
                     ->options(function (callable $get) {
 
@@ -91,6 +91,11 @@ class ModalSandingForm
 
                 TextInput::make('jumlah_sanding')
                     ->label('Jumlah Sanding (Pass)')
+                    ->numeric()
+                    ->minValue(1)
+                    ->required(),
+                TextInput::make('no_palet')
+                    ->label('No Palet')
                     ->numeric()
                     ->minValue(1)
                     ->required(),

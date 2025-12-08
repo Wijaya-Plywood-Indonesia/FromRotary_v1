@@ -12,6 +12,10 @@ use ModalSanding;
 class ModalSandingRelationManager extends RelationManager
 {
     protected static string $relationship = 'modalSandings';
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
 
     public function form(Schema $schema): Schema
     {

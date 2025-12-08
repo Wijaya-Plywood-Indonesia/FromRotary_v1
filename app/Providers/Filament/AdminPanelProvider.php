@@ -43,6 +43,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->globalSearch(false)
             ->viteTheme('resources/css/app.css')
             ->colors([
                 'primary' => Color::Amber,
@@ -93,7 +94,7 @@ class AdminPanelProvider extends PanelProvider
 
                 NavigationGroup::make('Dryer')
                     ->icon('heroicon-o-fire'),
-                
+
                 NavigationGroup::make('Hot Press')
                     ->icon('heroicon-o-cpu-chip'),
 

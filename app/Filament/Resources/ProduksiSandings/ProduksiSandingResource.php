@@ -19,8 +19,9 @@ use Filament\Tables\Table;
 class ProduksiSandingResource extends Resource
 {
     protected static ?string $model = ProduksiSanding::class;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ?string $modelLabel = 'Produksi Sanding';
+    protected static ?string $pluralModelLabel = 'Produksi Sanding';
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDivide;
 
     public static function form(Schema $schema): Schema
     {

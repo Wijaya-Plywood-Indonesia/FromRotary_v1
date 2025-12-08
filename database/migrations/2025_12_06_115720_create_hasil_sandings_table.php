@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('modal_sandings', function (Blueprint $table) {
+        Schema::create('hasil_sandings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_produksi_sanding')
                 ->nullable()
@@ -25,8 +25,7 @@ return new class extends Migration {
             $table->integer('kuantitas');
             $table->integer('jumlah_sanding');
             $table->integer('no_palet');
-
-
+            $table->string('status');
             $table->timestamps();
         });
     }
@@ -36,6 +35,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('modal_sanding');
+        Schema::dropIfExists('hasil_sandings');
     }
 };
