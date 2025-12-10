@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\ModalSanding;
+use App\Observers\ModalSandingObserver;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\ServiceProvider;
@@ -21,13 +23,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
-        // FilamentAsset::register([
-        //     Css::make(
-        //         'custom-theme',
-        //         __DIR__ . '/../../resources/css/filament/admin/theme.css'
-        //     ),
-
-        // ]);
+        ModalSanding::observe(ModalSandingObserver::class);
     }
 }

@@ -183,7 +183,7 @@ jobs:
             php artisan route:cache
             php artisan view:cache
 
-            php artisan migrate 
+            php artisan migrate --force
 
             # Generate Filament Shield (all roles & permissions)
             php artisan shield:generate --all
