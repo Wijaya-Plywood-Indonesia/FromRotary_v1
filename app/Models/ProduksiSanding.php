@@ -22,4 +22,8 @@ class ProduksiSanding extends Model
     {
         return $this->hasMany(ModalSanding::class, 'id_produksi_sanding');
     }
+    public function hasilSandings()
+    {
+        return $this->hasMany(HasilSanding::class, 'id_produksi_sanding');
+    }
 }

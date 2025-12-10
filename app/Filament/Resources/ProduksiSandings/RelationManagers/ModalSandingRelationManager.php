@@ -11,6 +11,8 @@ use ModalSanding;
 
 class ModalSandingRelationManager extends RelationManager
 {
+
+    protected static ?string $title = 'Modal';
     protected static string $relationship = 'modalSandings';
     public function isReadOnly(): bool
     {

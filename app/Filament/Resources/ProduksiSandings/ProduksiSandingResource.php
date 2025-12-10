@@ -6,6 +6,8 @@ use App\Filament\Resources\ProduksiSandings\Pages\CreateProduksiSanding;
 use App\Filament\Resources\ProduksiSandings\Pages\EditProduksiSanding;
 use App\Filament\Resources\ProduksiSandings\Pages\ListProduksiSandings;
 use App\Filament\Resources\ProduksiSandings\Pages\ViewProduksiSanding;
+use App\Filament\Resources\ProduksiSandings\RelationManagers\HasilSandingRelationManager;
+use App\Filament\Resources\ProduksiSandings\RelationManagers\ModalSandingRelationManager;
 use App\Filament\Resources\ProduksiSandings\Schemas\ProduksiSandingForm;
 use App\Filament\Resources\ProduksiSandings\Schemas\ProduksiSandingInfolist;
 use App\Filament\Resources\ProduksiSandings\Tables\ProduksiSandingsTable;
@@ -43,7 +45,9 @@ class ProduksiSandingResource extends Resource
         return [
                 //
 
-            RelationManagers\ModalSandingRelationManager::class,
+            ModalSandingRelationManager::class,
+            HasilSandingRelationManager::class,
+
         ];
     }
 

@@ -19,6 +19,7 @@ class ModalSandingsTable
             ->columns([
                 TextColumn::make('no_palet')
                     ->label('No Palet')
+                    ->alignCenter()
                     ->numeric()
                     ->sortable(),
 
@@ -30,9 +31,10 @@ class ModalSandingsTable
                         $grade = $record->barangSetengahJadi?->grade?->nama_grade ?? '-';
                         $jenis = $record->barangSetengahJadi?->jenisBarang?->nama_jenis_barang ?? '-';
 
-                        return "{$kategori} — {$ukuran}- {$jenis} - {$grade}";
+                        return "{$kategori} — {$ukuran} - {$jenis} - {$grade}";
                     })
                 ,
+                //--- INI BUAT FILTER AJA
                 TextColumn::make('barangSetengahJadi.grade.kategoriBarang.nama_kategori')
                     ->label('Kategori')
                     ->sortable()
@@ -41,6 +43,11 @@ class ModalSandingsTable
 
                 TextColumn::make('barangSetengahJadi.ukuran.dimensi')
                     ->label('Ukuran')
+                    ->searchable(query: function ($query, $search) {
+                        $query->whereHas('barangSetengahJadi.ukuran', function ($q) use ($search) {
+                            $q->whereRaw("CONCAT(panjang, ' x ', lebar, ' x ', tebal) LIKE ?", ["%{$search}%"]);
+                        });
+                    })
                     ->toggleable(isToggledHiddenByDefault: true)
                 ,
 
@@ -58,11 +65,13 @@ class ModalSandingsTable
 
                 TextColumn::make('kuantitas')
                     ->label('Kuantitas')
+                    ->suffix(' Lbr')
                     ->numeric()
                     ->sortable(),
 
                 TextColumn::make('jumlah_sanding')
                     ->label('Jumlah Sanding (Pass)')
+                    ->suffix(' x')
                     ->numeric()
                     ->sortable(),
 
@@ -77,11 +86,12 @@ class ModalSandingsTable
                 //
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()
+                    ->label('+ Tambah Modal'),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()->label(''),
+                DeleteAction::make()->label(''),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
