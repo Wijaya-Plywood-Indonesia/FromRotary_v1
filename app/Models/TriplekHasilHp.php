@@ -13,9 +13,6 @@ class TriplekHasilHp extends Model
         'id_mesin',
         'no_palet',
         'id_barang_setengah_jadi',
-        'id_jenis_kayu',
-        'id_ukuran',
-        'kw',
         'isi',
     ];
     public function mesin()
