@@ -95,7 +95,8 @@ class PlatformHasilHpForm
                             $q->where('id_jenis_barang', $get('jenis_barang_id'))
                               ->where('id_grade', $get('id_grade'));
                         })
-                        ->get() ->mapWithKeys(fn ($u) => [ $u->id => $u->nama_ukuran ]);
+                        ->get() 
+                        ->mapWithKeys(fn ($u) => [ $u->id => $u->nama_ukuran ]);
                     })
                     ->default(fn ($livewire) =>
                         optional(
