@@ -13,9 +13,13 @@ class ProduksiSandingInfolist
         return $schema
             ->components([
                 TextEntry::make('tanggal')
-                    ->locale('id')                          // Bahasa Indonesia di kalender
-                    ->displayFormat('l, j F Y')            // Rabu, 1 Januari 2025
-                    ->date(),
+                    ->formatStateUsing(function ($state) {
+                        return Carbon::parse($state)
+                            ->locale('id')
+                            ->translatedFormat('l, j F Y');
+                    }),
+                TextEntry::make('mesin.nama_mesin')
+                    ->numeric(),
                 TextEntry::make('kendala')
                     ->placeholder('Belum Ada / Kendala Tidak Di-isi'),
                 TextEntry::make('shift'),

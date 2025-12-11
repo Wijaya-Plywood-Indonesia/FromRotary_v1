@@ -29,11 +29,6 @@ return new class extends Migration {
             $table->integer('no_palet')->nullable();
             $table->string('status');
 
-            $table->foreignId('id_mesin')
-                ->constrained('mesins')
-                ->nullable()
-                ->cascadeOnUpdate()
-                ->restrictOnDelete();
 
             $table->timestamps();
         });
