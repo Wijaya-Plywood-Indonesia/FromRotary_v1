@@ -9,11 +9,18 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Hidden; // Import Hidden
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
+use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use Carbon\Carbon;
 
 class ProduksiRotariesTable
 {
@@ -22,7 +29,8 @@ class ProduksiRotariesTable
         return $table
             ->columns([
                 TextColumn::make('tgl_produksi')
-                    ->date()
+                    ->label('Tanggal')
+                    ->date('d M Y')
                     ->sortable(),
 
                 TextColumn::make('mesin.nama_mesin')
@@ -34,83 +42,20 @@ class ProduksiRotariesTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
             ])
             ->filters([
                 Filter::make('tgl_produksi')
                     ->schema([
-                        DatePicker::make('from')
-                            ->label('Dari Tanggal'),
-                        DatePicker::make('until')
-                            ->label('Sampai Tanggal'),
+                        DatePicker::make('from')->label('Dari Tanggal'),
+                        DatePicker::make('until')->label('Sampai Tanggal'),
                     ])
                     ->query(function ($query, array $data): void {
                         $query
-                            ->when(
-                                $data['from'],
-                                fn($query, $date) => $query->whereDate('tgl_produksi', '>=', $date),
-                            )
-                            ->when(
-                                $data['until'],
-                                fn($query, $date) => $query->whereDate('tgl_produksi', '<=', $date),
-                            );
-                    })
-                    ->indicateUsing(function (array $data): array {
-                        $indicators = [];
-
-                        if ($data['from'] ?? null) {
-                            $indicators['from'] = 'Dari: ' . \Carbon\Carbon::parse($data['from'])->format('d M Y');
-                        }
-
-                        if ($data['until'] ?? null) {
-                            $indicators['until'] = 'Sampai: ' . \Carbon\Carbon::parse($data['until'])->format('d M Y');
-                        }
-
-                        return $indicators;
+                            ->when($data['from'], fn($q, $d) => $q->whereDate('tgl_produksi', '>=', $d))
+                            ->when($data['until'], fn($q, $d) => $q->whereDate('tgl_produksi', '<=', $d));
                     }),
             ])
             ->recordActions([
-                //  ViewAction::make(),
-                //   EditAction::make(),
-                Action::make('kelola_kendala')
-                    ->label(fn($record) => $record->kendala ? 'Perbarui Kendala' : 'Tambah Kendala')
-                    ->icon(fn($record) => $record->kendala ? 'heroicon-o-pencil-square' : 'heroicon-o-plus')
-                    ->color(fn($record) => $record->kendala ? 'info' : 'warning')
-
-                    // ✅ Form style baru di Filament 4
-                    ->schema([
-                        Textarea::make('kendala')
-                            ->label('Kendala')
-                            ->required()
-                            ->rows(4),
-                    ])
-
-                    // ✅ Saat modal dibuka — isi form dengan data kendala lama jika ada
-                    ->mountUsing(function ($form, $record) {
-                        $form->fill([
-                            'kendala' => $record->kendala ?? '',
-                        ]);
-                    })
-
-                    // ✅ Saat tombol Simpan ditekan
-                    ->action(function (array $data, $record): void {
-                        $record->update([
-                            'kendala' => trim($data['kendala']),
-                        ]);
-
-                        Notification::make()
-                            ->title($record->kendala ? 'Kendala diperbarui' : 'Kendala ditambahkan')
-                            ->success()
-                            ->send();
-                    })
-
-                    ->modalHeading(fn($record) => $record->kendala ? 'Perbarui Kendala' : 'Tambah Kendala')
-                    ->modalSubmitActionLabel('Simpan'),
                 EditAction::make(),
                 ViewAction::make(),
                 DeleteAction::make(),

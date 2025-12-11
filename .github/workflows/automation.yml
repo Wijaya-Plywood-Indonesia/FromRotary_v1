@@ -2,12 +2,15 @@ name: Laravel 12 CI/CD Full Automation
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"] # Push ke main = deploy ke prarelease
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+
+  # Trigger khusus untuk production
+  create:
+    tags: ["v*"] # Setiap Anda membuat TAG seperti v1.0.0 → deploy ke kayu
 
 jobs:
-
   # ------------------------------------------------------------
   # JOB 1: TESTING (CI)
   # ------------------------------------------------------------
@@ -35,7 +38,7 @@ jobs:
       - name: Setup PHP 8.4
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: "8.4"
           extensions: mbstring, dom, fileinfo, mysql, pdo_mysql
 
       - name: Copy .env
@@ -58,7 +61,7 @@ jobs:
           DB_DATABASE: laravel_testing
           DB_USERNAME: root
           DB_PASSWORD: password
-        run: php artisan migrate 
+        run: php artisan migrate
 
       - name: Run Tests
         env:
@@ -70,39 +73,34 @@ jobs:
           DB_PASSWORD: password
         run: php artisan test
 
-
   # ------------------------------------------------------------
-  # JOB 2: DEPLOY (CD)
+  # JOB 2: DEPLOY PRARELEASE
   # ------------------------------------------------------------
-  deploy:
-    name: Deploy to Jagoan Hosting (SSH Key)
+  deploy-prarelease:
+    name: Deploy to prarelease.wijayaplywoods.com
     needs: laravel-tests
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # --------------------------------------------------------
-      # A. Build PHP dependencies
-      # --------------------------------------------------------
+      # --- Build PHP
       - name: Setup PHP for Production
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: "8.4"
 
       - name: Install Composer Dependencies (Prod)
         run: composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
 
-      # --------------------------------------------------------
-      # B. Build Frontend (Vite)
-      # --------------------------------------------------------
+      # --- Build Frontend
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install NPM Dependencies
         run: npm ci
@@ -110,9 +108,7 @@ jobs:
       - name: Build Frontend Assets
         run: npm run build
 
-      # --------------------------------------------------------
-      # C. Create Smart ZIP Package
-      # --------------------------------------------------------
+      # --- Create Smart ZIP
       - name: Create ZIP package
         run: |
           set -euo pipefail
@@ -132,9 +128,7 @@ jobs:
           (cd "$BUILD_DIR" && zip -r ../deploy.zip . -q)
           du -h deploy.zip || true
 
-      # --------------------------------------------------------
-      # D. Setup SSH PRIVATE KEY
-      # --------------------------------------------------------
+      # --- SSH Key
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
@@ -142,9 +136,7 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      # --------------------------------------------------------
-      # E. Upload ZIP via SCP
-      # --------------------------------------------------------
+      # --- Upload to Server
       - name: Upload ZIP to Server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -155,9 +147,7 @@ jobs:
           source: "deploy.zip"
           target: "/home/${{ secrets.SSH_USERNAME }}"
 
-      # --------------------------------------------------------
-      # F. Remote Deploy Commands (SSH)
-      # --------------------------------------------------------
+      # --- Extract & Deploy
       - name: Execute Remote SSH Commands
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -170,7 +160,6 @@ jobs:
 
             php artisan down || true
 
-            # SAFE DELETE (compatible for all shared hosting)
             find . -mindepth 1 -maxdepth 1 \
               ! -name 'storage' \
               ! -name '.env' \
@@ -183,12 +172,115 @@ jobs:
             php artisan route:cache
             php artisan view:cache
 
-            php artisan migrate 
+            php artisan migrate --force
 
-            # Generate Filament Shield (all roles & permissions)
             php artisan shield:generate --all
-            echo '✅ Filament Shield: All roles & permissions generated!'
 
             php artisan up
 
-            echo "🚀 Deployment Success!"
+            echo "🚀 Prarelease Deployment Success!"
+
+  # ------------------------------------------------------------
+  # JOB 3: DEPLOY PRODUCTION (TAGS)
+  # ------------------------------------------------------------
+  deploy-production:
+    name: Deploy to kayu.wijayaplywoods.com (Production)
+    needs: laravel-tests
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # --- Build PHP
+      - name: Setup PHP for Production
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+
+      - name: Install Composer Dependencies (Prod)
+        run: composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
+
+      # --- Build Frontend
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Build Frontend Assets
+        run: npm run build
+
+      # --- Create ZIP
+      - name: Create ZIP package
+        run: |
+          set -euo pipefail
+          BUILD_DIR=./build_deploy
+          rm -rf "$BUILD_DIR"
+          mkdir -p "$BUILD_DIR"
+
+          rsync -a --delete \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude 'node_modules/' \
+            --exclude 'tests/' \
+            --exclude '.env' \
+            --exclude 'storage/' \
+            ./ "$BUILD_DIR/" || [ $? -eq 24 ]
+
+          (cd "$BUILD_DIR" && zip -r ../deploy.zip . -q)
+
+      # --- Setup SSH
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      # --- Upload to server
+      - name: Upload ZIP to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "deploy.zip"
+          target: "/home/${{ secrets.SSH_USERNAME }}"
+
+      # --- Production Deploy
+      - name: Execute Remote SSH Commands
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/${{ secrets.SSH_USERNAME }}/kayu.wijayaplywoods.com
+
+            php artisan down || true
+
+            find . -mindepth 1 -maxdepth 1 \
+              ! -name 'storage' \
+              ! -name '.env' \
+              -exec rm -rf {} \;
+
+            unzip -oq ../deploy.zip -d .
+
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            # ⚠ PRODUCTION TIDAK MENJALANKAN MIGRATE OTOMATIS ⚠
+            echo "Migration disabled for production. Run manually if needed."
+
+            php artisan up
+
+            echo "🚀 Production Deployment Success!"

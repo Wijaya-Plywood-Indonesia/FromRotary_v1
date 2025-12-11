@@ -26,7 +26,7 @@
         count($pekerja); $hasil = $first['hasil'] ?? 0; $target =
         $first['target'] ?? 0; $selisih = $first['selisih'] ?? 0; $warna =
         $selisih >= 0 ? 'text-green-400' : 'text-red-400'; $tanda = $selisih >=
-        0 ? '+' : ''; $jamKerja = $first['jam_kerja'] ?? 0; @endphp
+        0 ? '+' : ''; $jamKerja = $first['jam_kerja'] ?? 0; $kendala = $first['kendala'] ?? '-';@endphp
 
         <!-- CARD MESIN -->
         <div
@@ -164,7 +164,7 @@
                             </tbody>
 
                             <tfoot
-                                class="bg-zinc-100 dark:bg-zinc-800 border-t-2 border-zinc-300 dark:border-zinc-600"
+                                class="bg-zinc-100 dark:bg-zinc-800 border-t-2 border-zinc-300 dark:border-zinc-600 space-y-2"
                             >
                                 <tr>
                                     <td
@@ -218,6 +218,16 @@
                                             >Tanggal:
                                             {{ $first["tanggal"] }}</span
                                         >
+                                        
+                                        <span class="text-zinc-300">|</span>
+                                        
+                                        <div class="flex items-start space-x-1 max-w-xs whitespace-normal break-words"
+                                             title="{{ $kendala }}">
+                                            <span class="font-medium text-zinc-600 dark:text-zinc-400">Kendala:</span>
+                                            <span class="italic text-zinc-600 dark:text-zinc-400 text-start">
+                                                {{ $kendala }}
+                                            </span>
+                                        </div>
                                     </td>
                                 </tr>
                             </tfoot>

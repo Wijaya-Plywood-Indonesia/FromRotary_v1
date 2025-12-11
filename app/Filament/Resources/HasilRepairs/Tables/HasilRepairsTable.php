@@ -39,7 +39,7 @@ class HasilRepairsTable
                         'rencana_repairs.id_produksi_repair',
                         'rencana_pegawais.nomor_meja',
                     ])
-                    ->orderBy('rencana_pegawais.nomor_meja', 'asc');
+                    ->orderByRaw('rencana_pegawais.nomor_meja ASC');
             })
 
             ->columns([
@@ -50,7 +50,7 @@ class HasilRepairsTable
                         return $rencana?->modalRepairs?->ukuran?->dimensi ?? '-';
                     })
                     ->searchable(false)
-                    ->sortable(false),
+                    ->sortable(false), // ✅ Disable sorting
 
                 TextColumn::make('jenis_kayu')
                     ->label('Jenis Kayu')
@@ -59,37 +59,33 @@ class HasilRepairsTable
                         return $rencana?->modalRepairs?->jenisKayu?->nama_kayu ?? '-';
                     })
                     ->searchable(false)
-                    ->sortable(false),
+                    ->sortable(false), // ✅ Disable sorting
 
                 TextColumn::make('kw')
                     ->label('KW')
                     ->badge()
                     ->color('warning')
-                    ->sortable()
+                    ->sortable() // ✅ Bisa sortable karena ada di GROUP BY
                     ->searchable(),
 
                 TextColumn::make('nomor_meja')
                     ->label('Meja')
                     ->formatStateUsing(
-                        fn($state, $record) =>
-                        "Meja {$state}"
+                        fn($state, $record) => "Meja {$state}"
                     )
                     ->badge()
-                    ->color('info'),
+                    ->color('info')
+                    ->sortable(), // ✅ Bisa sortable karena ada di GROUP BY
 
-                // ========================================
-                // KOLOM PEGAWAI - PAKAI implode()!
-                // ========================================
                 TextColumn::make('pegawai')
                     ->label('Pegawai')
                     ->wrap()
+                    ->sortable(false) // ✅ Disable sorting karena computed column
                     ->getStateUsing(function ($record) {
-                        // Parse IDs
                         $rencanaIds = array_filter(
                             array_map('intval', explode(',', $record->rencana_ids ?? ''))
                         );
 
-                        // Fallback jika GROUP_CONCAT gagal
                         if (empty($rencanaIds)) {
                             $rencanaIds = RencanaRepair::query()
                                 ->join('rencana_pegawais', 'rencana_pegawais.id', '=', 'rencana_repairs.id_rencana_pegawai')
@@ -101,17 +97,14 @@ class HasilRepairsTable
                                 ->toArray();
                         }
 
-                        // Ambil nama pegawai tanpa kode
                         return RencanaRepair::whereIn('id', $rencanaIds)
                             ->with('rencanaPegawai.pegawai')
                             ->get()
                             ->map(
-                                fn($r) =>
-                                $r->rencanaPegawai?->pegawai?->nama_pegawai ?? 'N/A'
+                                fn($r) => $r->rencanaPegawai?->pegawai?->nama_pegawai ?? 'N/A'
                             )
                             ->implode(', ') ?: '-';
                     }),
-
 
                 TextColumn::make('total_hasil')
                     ->label('Hasil Produksi')
@@ -121,11 +114,12 @@ class HasilRepairsTable
                     ->badge()
                     ->size('xl')
                     ->weight('bold')
+                    ->sortable(false) // ✅ Disable sorting karena aggregate function
                     ->color(fn($state) => $state >= 60 ? 'success' : ($state >= 40 ? 'warning' : 'danger')),
             ])
 
             ->recordActions([
-                // ➕ TAMBAH HASIL
+                // ... semua actions tetap sama ...
                 Action::make('tambah')
                     ->label('Tambah')
                     ->icon('heroicon-o-plus-circle')
@@ -183,13 +177,12 @@ class HasilRepairsTable
                         Notification::make()
                             ->success()
                             ->title("Berhasil menambah {$tambah} lembar per pekerja!")
-                            ->body("Total: {$totalAdded} lembar untuk " . " pekerja di Meja {$record->nomor_meja}")
+                            ->body("Total: {$totalAdded} lembar untuk pekerja di Meja {$record->nomor_meja}")
                             ->send();
                     })
-                    ->modalHeading(fn($record) => " Tambah Hasil - Meja {$record->nomor_meja}")
+                    ->modalHeading(fn($record) => "Tambah Hasil - Meja {$record->nomor_meja}")
                     ->modalSubmitActionLabel('Tambah Sekarang'),
 
-                // ✏️ EDIT HASIL
                 Action::make('edit_hasil')
                     ->label('Edit Hasil')
                     ->icon('heroicon-o-pencil-square')
@@ -256,7 +249,6 @@ class HasilRepairsTable
                     ->modalHeading(fn($record) => "Edit Hasil - Meja {$record->nomor_meja}")
                     ->modalSubmitActionLabel('Simpan Perubahan'),
 
-                // 🗑️ DELETE HASIL
                 Action::make('delete_hasil')
                     ->label('Hapus Hasil')
                     ->icon('heroicon-o-trash')
@@ -323,6 +315,8 @@ class HasilRepairsTable
             ])
 
             ->defaultSort('nomor_meja', 'asc')
+            ->queryStringIdentifier('hasil_repairs') // ✅ Tambahkan identifier unik
+            ->paginated([10, 25, 50]) // ✅ Tambahkan pagination options
             ->poll('6s')
 
             ->emptyStateHeading('Belum ada rencana repair')

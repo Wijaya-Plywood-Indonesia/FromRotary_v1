@@ -15,19 +15,6 @@ class PegawaiTurunKayuForm
     {
         return $schema
             ->components([
-
-                Select::make('id_pegawai')
-                    ->label('Pegawai')
-                    ->options(
-                        Pegawai::query()
-                            ->get()
-                            ->mapWithKeys(fn($pegawai) => [
-                                $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
-                            ])
-                    )
-                    //   ->multiple() // bisa pilih banyak
-                    ->searchable()
-                    ->required(),
                 Select::make('jam_masuk')
                     ->label('Jam Masuk')
                     ->options(self::timeOptions())
@@ -44,6 +31,18 @@ class PegawaiTurunKayuForm
                     ->searchable()
                     ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
                     ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null),
+                Select::make('id_pegawai')
+                    ->label('Pegawai')
+                    ->options(
+                        Pegawai::query()
+                            ->get()
+                            ->mapWithKeys(fn($pegawai) => [
+                                $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
+                            ])
+                    )
+                    //   ->multiple() // bisa pilih banyak
+                    ->searchable()
+                    ->required(),
             ]);
     }
     public static function timeOptions(): array
