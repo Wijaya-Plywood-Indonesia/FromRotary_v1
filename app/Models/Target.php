@@ -57,6 +57,34 @@ class Target extends Model
         return "{$namaMesin} | {$ukuran} | {$kodeKayu}";
 
     }
+
+    // Target Repair
+    public static function getTargetRepair($id_mesin, $id_ukuran, $id_jenis_kayu, $kw)
+    {
+        // 1. Ambil Data Ukuran untuk mendapatkan Panjang, Lebar, Tebal
+        $dataUkuran = Ukuran::find($id_ukuran);
+
+        if (!$dataUkuran) {
+            return null;
+        }
+
+        $tebalFormatted = str_replace('.', ',', $dataUkuran->tebal);
+
+        $generatedKode = "REPAIR" .
+            $dataUkuran->panjang .
+            $dataUkuran->lebar .
+            $tebalFormatted .
+            $kw .
+            "s";
+
+        $target = self::where('id_mesin', $id_mesin)
+            ->where('id_jenis_kayu', $id_jenis_kayu)
+            ->where('kode_ukuran', $generatedKode)
+            ->first();
+
+        return $target;
+    }
+
     protected $appends = ['deskripsi'];
 
 }

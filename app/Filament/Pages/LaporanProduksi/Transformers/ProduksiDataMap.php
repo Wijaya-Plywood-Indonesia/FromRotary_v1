@@ -145,7 +145,7 @@ class ProduksiDataMap
                 'kode_ukuran' => $ukuranDisplay,
                 'target' => $targetHarian,
                 'hasil' => $totalHasil,
-                'potongan_per_orang' => $potonganPerOrang
+                'potongan_per_orang' => $potonganPerOrang,
             ]);
         }
 

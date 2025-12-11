@@ -1,10 +1,8 @@
 <x-filament-panels::page>
-    <!-- HEADER DENGAN FORM DI KANAN -->
     <div class="p-4 bg-white dark:bg-zinc-900 rounded-lg shadow">
         {{ $this->form }}
     </div>
 
-    <!-- Loading Indicator -->
     @if($isLoading)
     <div
         class="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-75 dark:bg-zinc-900 dark:bg-opacity-75"
@@ -16,26 +14,29 @@
             >
         </div>
     </div>
-    @endif @php $dataProduksi = $dataProduksi ?? []; $groupedByMesin =
-    collect($dataProduksi)->groupBy('mesin'); @endphp
+    @endif @php $dataProduksi = $dataProduksi ?? []; $groupedByMeja =
+    collect($dataProduksi)->groupBy('nomor_meja')->sortKeys(); @endphp
 
     <div class="space-y-12 mt-4">
-        @forelse ($groupedByMesin as $mesinNama => $produksiList) @php $first =
-        $produksiList->first(); $pekerja = $first['pekerja'] ?? []; $kodeUkuran
-        = $first['ukuran'] ?? 'TIDAK ADA UKURAN'; $totalPekerja =
-        count($pekerja); $hasil = $first['hasil'] ?? 0; $target =
-        $first['target'] ?? 0; $selisih = $first['selisih'] ?? 0; $warna =
-        $selisih >= 0 ? 'text-green-400' : 'text-red-400'; $tanda = $selisih >=
-        0 ? '+' : ''; $jamKerja = $first['jam_kerja'] ?? 0; @endphp
+        @forelse ($groupedByMeja as $nomorMeja => $produksiList) @php $first =
+        $produksiList->first(); $pekerja =
+        $produksiList->pluck('pekerja')->flatten(1); $totalPekerja =
+        $pekerja->count(); $kodeUkuranList = $produksiList->map(function($item)
+        { return !empty($item['kode_ukuran']) ? $item['kode_ukuran'] :
+        $item['ukuran']; })->unique()->filter()->implode(', '); $hasil =
+        $produksiList->sum('hasil'); $target = $produksiList->sum('target');
+        $selisih = $hasil - $target; $jamKerja =
+        $produksiList->max('jam_kerja'); $warna = $selisih >= 0 ?
+        'text-green-400' : 'text-red-400'; $tanda = $selisih >= 0 ? '+' : '';
+        @endphp
 
-        <!-- CARD MESIN -->
         <div
             class="bg-white dark:bg-zinc-900 rounded-sm shadow-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden"
         >
             <div class="bg-zinc-800 p-4 text-white">
                 <h2 class="text-lg font-bold text-center">
-                    Pekerja Repair: {{ strtoupper($mesinNama) }} -
-                    {{ strtoupper($kodeUkuran) }}
+                    MEJA {{ strtoupper($nomorMeja) }} -
+                    {{ strtoupper($kodeUkuranList) }}
                 </h2>
             </div>
 
@@ -103,8 +104,7 @@
                                         $i % 2 === 1
                                             ? 'bg-zinc-50 dark:bg-zinc-800/50'
                                             : 'bg-white dark:bg-zinc-900'
-                                    }}
-                                           border-t border-zinc-300 dark:border-zinc-700"
+                                    }} border-t border-zinc-300 dark:border-zinc-700"
                                 >
                                     <td
                                         class="p-2 text-center text-xs border-r border-zinc-300 dark:border-zinc-700"
@@ -143,7 +143,9 @@
                                                 : 'text-zinc-700'
                                         }}"
                                     >
-                                        Rp {{ $p["pot_target"] ?? 0 }}
+                                        {{
+                                            number_format($p["pot_target"] ?? 0)
+                                        }}
                                     </td>
 
                                     <td class="p-2 text-left text-xs">
@@ -156,7 +158,7 @@
                                         colspan="7"
                                         class="p-4 text-center text-zinc-500 dark:text-zinc-400 text-sm"
                                     >
-                                        Tidak ada data pekerja untuk mesin ini.
+                                        Tidak ada data pekerja untuk meja ini.
                                     </td>
                                 </tr>
                                 @endforelse
