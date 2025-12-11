@@ -2808,6 +2808,7 @@
         },
         {
             "name": "laravel/framework",
+<<<<<<< HEAD
             "version": "v12.40.2",
             "source": {
                 "type": "git",
@@ -2818,6 +2819,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/laravel/framework/zipball/1ccd99220b474500e672b373f32bd709ec38de50",
                 "reference": "1ccd99220b474500e672b373f32bd709ec38de50",
+=======
+            "version": "v12.39.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laravel/framework.git",
+                "reference": "1a6176129ef28eaf42b6b4a6250025120c3d8dac"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/1a6176129ef28eaf42b6b4a6250025120c3d8dac",
+                "reference": "1a6176129ef28eaf42b6b4a6250025120c3d8dac",
+>>>>>>> jh
                 "shasum": ""
             },
             "require": {
@@ -3023,7 +3036,11 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
+<<<<<<< HEAD
             "time": "2025-11-26T19:24:25+00:00"
+=======
+            "time": "2025-11-18T15:16:10+00:00"
+>>>>>>> jh
         },
         {
             "name": "laravel/prompts",
@@ -4702,6 +4719,7 @@
         },
         {
             "name": "nette/utils",
+<<<<<<< HEAD
             "version": "v4.1.0",
             "source": {
                 "type": "git",
@@ -4712,6 +4730,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/nette/utils/zipball/fa1f0b8261ed150447979eb22e373b7b7ad5a8e0",
                 "reference": "fa1f0b8261ed150447979eb22e373b7b7ad5a8e0",
+=======
+            "version": "v4.0.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nette/utils.git",
+                "reference": "505a30ad386daa5211f08a318e47015b501cad30"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nette/utils/zipball/505a30ad386daa5211f08a318e47015b501cad30",
+                "reference": "505a30ad386daa5211f08a318e47015b501cad30",
+>>>>>>> jh
                 "shasum": ""
             },
             "require": {
@@ -4785,9 +4815,15 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/utils/issues",
+<<<<<<< HEAD
                 "source": "https://github.com/nette/utils/tree/v4.1.0"
             },
             "time": "2025-12-01T17:49:23+00:00"
+=======
+                "source": "https://github.com/nette/utils/tree/v4.0.9"
+            },
+            "time": "2025-10-31T00:45:47+00:00"
+>>>>>>> jh
         },
         {
             "name": "nikic/php-parser",
@@ -7446,6 +7482,7 @@
         },
         {
             "name": "symfony/http-foundation",
+<<<<<<< HEAD
             "version": "v7.4.0",
             "source": {
                 "type": "git",
@@ -7456,6 +7493,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/symfony/http-foundation/zipball/769c1720b68e964b13b58529c17d4a385c62167b",
                 "reference": "769c1720b68e964b13b58529c17d4a385c62167b",
+=======
+            "version": "v7.3.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/http-foundation.git",
+                "reference": "db488a62f98f7a81d5746f05eea63a74e55bb7c4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/db488a62f98f7a81d5746f05eea63a74e55bb7c4",
+                "reference": "db488a62f98f7a81d5746f05eea63a74e55bb7c4",
+>>>>>>> jh
                 "shasum": ""
             },
             "require": {
@@ -7504,7 +7553,11 @@
             "description": "Defines an object-oriented layer for the HTTP specification",
             "homepage": "https://symfony.com",
             "support": {
+<<<<<<< HEAD
                 "source": "https://github.com/symfony/http-foundation/tree/v7.4.0"
+=======
+                "source": "https://github.com/symfony/http-foundation/tree/v7.3.7"
+>>>>>>> jh
             },
             "funding": [
                 {
@@ -7524,6 +7577,7 @@
                     "type": "tidelift"
                 }
             ],
+<<<<<<< HEAD
             "time": "2025-11-13T08:49:24+00:00"
         },
         {
@@ -7538,6 +7592,22 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/symfony/http-kernel/zipball/7348193cd384495a755554382e4526f27c456085",
                 "reference": "7348193cd384495a755554382e4526f27c456085",
+=======
+            "time": "2025-11-08T16:41:12+00:00"
+        },
+        {
+            "name": "symfony/http-kernel",
+            "version": "v7.3.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/http-kernel.git",
+                "reference": "10b8e9b748ea95fa4539c208e2487c435d3c87ce"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/http-kernel/zipball/10b8e9b748ea95fa4539c208e2487c435d3c87ce",
+                "reference": "10b8e9b748ea95fa4539c208e2487c435d3c87ce",
+>>>>>>> jh
                 "shasum": ""
             },
             "require": {
@@ -7623,7 +7693,11 @@
             "description": "Provides a structured process for converting a Request into a Response",
             "homepage": "https://symfony.com",
             "support": {
+<<<<<<< HEAD
                 "source": "https://github.com/symfony/http-kernel/tree/v7.4.0"
+=======
+                "source": "https://github.com/symfony/http-kernel/tree/v7.3.7"
+>>>>>>> jh
             },
             "funding": [
                 {
@@ -7643,7 +7717,11 @@
                     "type": "tidelift"
                 }
             ],
+<<<<<<< HEAD
             "time": "2025-11-27T13:38:24+00:00"
+=======
+            "time": "2025-11-12T11:38:40+00:00"
+>>>>>>> jh
         },
         {
             "name": "symfony/mailer",
@@ -10696,6 +10774,7 @@
         },
         {
             "name": "phpunit/phpunit",
+<<<<<<< HEAD
             "version": "11.5.45",
             "source": {
                 "type": "git",
@@ -10706,6 +10785,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/faf5fff4fb9beb290affa53f812b05380819c51a",
                 "reference": "faf5fff4fb9beb290affa53f812b05380819c51a",
+=======
+            "version": "11.5.44",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sebastianbergmann/phpunit.git",
+                "reference": "c346885c95423eda3f65d85a194aaa24873cda82"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/c346885c95423eda3f65d85a194aaa24873cda82",
+                "reference": "c346885c95423eda3f65d85a194aaa24873cda82",
+>>>>>>> jh
                 "shasum": ""
             },
             "require": {
@@ -10777,7 +10868,11 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
+<<<<<<< HEAD
                 "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.45"
+=======
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.44"
+>>>>>>> jh
             },
             "funding": [
                 {
@@ -10801,7 +10896,11 @@
                     "type": "tidelift"
                 }
             ],
+<<<<<<< HEAD
             "time": "2025-12-01T07:38:43+00:00"
+=======
+            "time": "2025-11-13T07:17:35+00:00"
+>>>>>>> jh
         },
         {
             "name": "sebastian/cli-parser",
@@ -11977,5 +12076,5 @@
         "php": "^8.2"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

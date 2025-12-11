@@ -5,6 +5,7 @@ use App\Http\Controllers\NotaKayuController;
 use App\Http\Controllers\NotaBKController;
 use App\Http\Controllers\NotaBMController;
 use App\Http\Controllers\LaporanKayuMasukController;
+use App\Http\Controllers\NotaKayuTurusController;
 
 Route::get('/laporan-kayu-masuk', [LaporanKayuMasukController::class, 'index'])
     ->name('laporan.kayu-masuk');
@@ -33,6 +34,9 @@ Route::get('/nota-barang-keluar/rekap/export', [NotaBKController::class, 'export
 
 Route::get('/nota-kayu/{record}', [NotaKayuController::class, 'show'])
     ->name('nota-kayu.show');
+
+Route::get('/nota-kayu/{record}/turus', [NotaKayuTurusController::class, 'show'])
+    ->name('nota-kayu.turus');
 
 Route::get('/', function () {
     return view('welcome');

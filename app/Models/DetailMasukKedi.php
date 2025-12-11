@@ -11,6 +11,7 @@ class DetailMasukKedi extends Model
     protected $fillable = [
         'id_mesin',
         'no_palet',
+        'kode_kedi',
         'id_ukuran',
         'id_jenis_kayu',
         'kw',

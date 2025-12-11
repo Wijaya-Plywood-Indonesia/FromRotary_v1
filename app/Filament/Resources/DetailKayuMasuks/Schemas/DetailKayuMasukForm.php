@@ -84,6 +84,22 @@ class DetailKayuMasukForm
                     }),
 
                 // ==========================
+                // JENIS KAYU → ambil jenis kayu terakhir
+                // ==========================
+                Select::make('id_jenis_kayu')
+                    ->label('Jenis Kayu')
+                    ->options(
+                        JenisKayu::query()
+                            ->get()
+                            ->mapWithKeys(fn($jenis) => [
+                                $jenis->id => "{$jenis->kode_kayu} - {$jenis->nama_kayu}",
+                            ])
+                    )
+                    ->default(fn() => DetailKayuMasuk::latest('id')->value('id_jenis_kayu') ?? 1)
+                    ->searchable()
+                    ->required(),
+
+                // ==========================
                 // DIAMETER
                 // ==========================
                 TextInput::make('diameter')

@@ -13,7 +13,7 @@ use Filament\Notifications\Notification;
 
 class DetailGantiPisauRotaryRelationManager extends RelationManager
 {
-    protected static ?string $title = 'Ganti Pisau';
+    protected static ?string $title = 'Kendala';
     protected static string $relationship = 'detailGantiPisauRotary';
     public function isReadOnly(): bool
     {
@@ -26,25 +26,6 @@ class DetailGantiPisauRotaryRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
-        return GantiPisauRotariesTable::configure($table)
-            ->headerActions([
-                CreateAction::make(),
-
-                Action::make('buat_otomatis')
-                    ->label('Ganti Pisau!')
-                    ->icon('heroicon-o-bolt')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->action(function (RelationManager $livewire) {
-                        $parent = $livewire->getOwnerRecord();
-
-                        $parent->detailGantiPisauRotary()->create([
-                            'jam_mulai_ganti_pisau' => now()->setTimezone('Asia/Jakarta')->format('H:i'),
-                            'jam_selesai_ganti' => now()->setTimezone('Asia/Jakarta')->format('H:i'),
-                        ]);
-                    })
-                    ->successNotificationTitle('Pisau Sedang Diganti!'),
-            ])
-        ;
+        return GantiPisauRotariesTable::configure($table) ;
     }
 }
