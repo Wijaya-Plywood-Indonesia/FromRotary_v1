@@ -16,6 +16,10 @@ use Filament\Tables\Table;
 
 class PegawaiSandingResource extends Resource
 {
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
     protected static ?string $model = PegawaiSanding::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
