@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ProduksiSandings\Schemas;
 
+use App\Models\Mesin;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -24,6 +25,24 @@ class ProduksiSandingForm
                     ->required()
                     ->maxDate(now()->addDays(30))
                     ->default(now()->addDay()),
+
+                Select::make('id_mesin')
+                    ->label('Mesin')
+                    // ->multiple()
+                    ->options(function () {
+                        return Mesin::query()
+                            ->where(function ($q) {
+                                $q->where('kategori_mesin_id', 1)
+                                    ->orWhereHas(
+                                        'kategoriMesin',
+                                        fn($q2) =>
+                                        $q2->where('nama_kategori_mesin', 'SANDING')
+                                    );
+                            })
+                            ->pluck('nama_mesin', 'id');
+                    })
+                    ->required(),
+
                 Select::make('shift')
                     ->label('Shift')
                     ->options([

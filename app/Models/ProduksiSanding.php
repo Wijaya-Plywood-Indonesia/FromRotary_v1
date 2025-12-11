@@ -12,6 +12,7 @@ class ProduksiSanding extends Model
 
     protected $fillable = [
         'tanggal',
+        'id_mesin',
         'kendala',
         'shift',
     ];
@@ -26,5 +27,17 @@ class ProduksiSanding extends Model
     public function hasilSandings()
     {
         return $this->hasMany(HasilSanding::class, 'id_produksi_sanding');
+    }
+    public function pegawaiSandings()
+    {
+        return $this->hasMany(PegawaiSanding::class, 'id_produksi_sanding');
+    }
+    public function validasiSanding()
+    {
+        return $this->hasMany(ValidasiSanding::class, 'id_produksi_sanding');
+    }
+    public function mesin()
+    {
+        return $this->belongsTo(Mesin::class, 'id_mesin');
     }
 }

@@ -59,18 +59,18 @@ class DetailPegawaiHpForm
                 ->required()
                 ->native(false)
                 ->searchable(),
-            
+
             Select::make('id_mesin')
-                    ->label('Mesin Hotpress')
-                    ->options(
-                        Mesin::whereHas('kategoriMesin', function ($query) {
-                            $query->where('nama_kategori_mesin', 'HOTPRESS');
-                        })
-                            ->orderBy('nama_mesin')
-                            ->pluck('nama_mesin', 'id')
-                    )
-                    ->searchable()
-                    ->required(),
+                ->label('Mesin Hotpress')
+                ->options(
+                    Mesin::whereHas('kategoriMesin', function ($query) {
+                        $query->where('nama_kategori_mesin', 'HOTPRESS');
+                    })
+                        ->orderBy('nama_mesin')
+                        ->pluck('nama_mesin', 'id')
+                )
+                ->searchable()
+                ->required(),
 
             // --- ID PEGAWAI (Relation: pegawai) ---
             Select::make('id_pegawai')
