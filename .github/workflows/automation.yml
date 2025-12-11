@@ -1,19 +1,20 @@
-name: Laravel 12 CI/CD Automation (Staging & Prod)
+name: Laravel 12 CI/CD Full Automation
 
 on:
   push:
-    branches: ["main"]
-    tags: ["v*"] # Trigger Production hanya jika ada tag (contoh: v1.0, v1.1)
+    branches: [ "main" ]
   pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
 
 jobs:
+
   # ------------------------------------------------------------
-  # JOB 1: TESTING (CI) - Jalan di semua trigger
+  # JOB 1: TESTING (CI)
   # ------------------------------------------------------------
   laravel-tests:
-    name: Run Unit Tests
+    name: Run Tests (CI)
     runs-on: ubuntu-latest
+
     services:
       mariadb:
         image: mariadb:10.6
@@ -30,19 +31,25 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup PHP 8.4
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.4"
+          php-version: '8.4'
           extensions: mbstring, dom, fileinfo, mysql, pdo_mysql
+
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
       - name: Install Dependencies
-        run: composer install --prefer-dist --no-interaction
+        run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
       - name: Generate App Key
         run: php artisan key:generate
+
       - name: Set Permissions
         run: chmod -R 777 storage bootstrap/cache
+
       - name: Run Migrations (Testing)
         env:
           DB_CONNECTION: mysql
@@ -51,7 +58,8 @@ jobs:
           DB_DATABASE: laravel_testing
           DB_USERNAME: root
           DB_PASSWORD: password
-        run: php artisan migrate
+        run: php artisan migrate 
+
       - name: Run Tests
         env:
           DB_CONNECTION: mysql
@@ -62,138 +70,125 @@ jobs:
           DB_PASSWORD: password
         run: php artisan test
 
-  # ------------------------------------------------------------
-  # JOB 2: DEPLOY STAGING (TESTING)
-  # Trigger: Push ke 'main' (Bukan Tag)
-  # ------------------------------------------------------------
-  deploy-staging:
-    name: Deploy to STAGING
-    needs: laravel-tests
-    # Jalan jika push ke main DAN bukan tag
-    if: github.ref == 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-latest
 
+  # ------------------------------------------------------------
+  # JOB 2: DEPLOY (CD)
+  # ------------------------------------------------------------
+  deploy:
+    name: Deploy to Jagoan Hosting (SSH Key)
+    needs: laravel-tests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v4
-      # ... (Langkah Build sama seperti sebelumnya) ...
-      - name: Setup PHP 8.4
+        with:
+          fetch-depth: 0
+
+      # --------------------------------------------------------
+      # A. Build PHP dependencies
+      # --------------------------------------------------------
+      - name: Setup PHP for Production
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.4"
-      - name: Install Composer (No Dev)
+          php-version: '8.4'
+
+      - name: Install Composer Dependencies (Prod)
         run: composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
-      - name: Setup Node
+
+      # --------------------------------------------------------
+      # B. Build Frontend (Vite)
+      # --------------------------------------------------------
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-      - name: Build Frontend
-        run: |
-          npm ci
-          npm run build
+          node-version: '20'
 
-      - name: Create ZIP
-        run: |
-          zip -r deploy.zip . -x "*.git*" "node_modules/*" "tests/*" "storage/*" ".env"
+      - name: Install NPM Dependencies
+        run: npm ci
 
-      - name: Deploy to Staging Folder
+      - name: Build Frontend Assets
+        run: npm run build
+
+      # --------------------------------------------------------
+      # C. Create Smart ZIP Package
+      # --------------------------------------------------------
+      - name: Create ZIP package
+        run: |
+          set -euo pipefail
+          BUILD_DIR=./build_deploy
+          rm -rf "$BUILD_DIR"
+          mkdir -p "$BUILD_DIR"
+
+          rsync -a --delete \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude 'node_modules/' \
+            --exclude 'tests/' \
+            --exclude '.env' \
+            --exclude 'storage/' \
+            ./ "$BUILD_DIR/" || [ $? -eq 24 ]
+
+          (cd "$BUILD_DIR" && zip -r ../deploy.zip . -q)
+          du -h deploy.zip || true
+
+      # --------------------------------------------------------
+      # D. Setup SSH PRIVATE KEY
+      # --------------------------------------------------------
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      # --------------------------------------------------------
+      # E. Upload ZIP via SCP
+      # --------------------------------------------------------
+      - name: Upload ZIP to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "deploy.zip"
+          target: "/home/${{ secrets.SSH_USERNAME }}"
+
+      # --------------------------------------------------------
+      # F. Remote Deploy Commands (SSH)
+      # --------------------------------------------------------
+      - name: Execute Remote SSH Commands
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # FOLDER KHUSUS STAGING
             cd /home/${{ secrets.SSH_USERNAME }}/prarelease.wijayaplywoods.com
 
             php artisan down || true
 
-            # Hapus file lama kecuali .env dan storage
-            find . -mindepth 1 -maxdepth 1 ! -name 'storage' ! -name '.env' -exec rm -rf {} \;
+            # SAFE DELETE (compatible for all shared hosting)
+            find . -mindepth 1 -maxdepth 1 \
+              ! -name 'storage' \
+              ! -name '.env' \
+              -exec rm -rf {} \;
 
-            # Upload & Unzip (Menggunakan SCP terpisah atau transfer via command ini jika zip kecil)
-            # *Catatan: Di script Anda menggunakan scp-action terpisah, itu bagus. 
-            # Di sini saya sederhanakan logikanya: asumsikan file sudah terkirim via scp-action (lihat bawah)
-
-            # (Anda perlu menambahkan step SCP upload khusus ke folder staging sebelum step ini)
-
-            unzip -oq deploy.zip
-            rm deploy.zip
+            unzip -oq ../deploy.zip -d .
 
             php artisan optimize:clear
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
 
-            php artisan migrate --force
+            php artisan migrate 
 
+            # Generate Filament Shield (all roles & permissions)
             php artisan shield:generate --all
+            echo '✅ Filament Shield: All roles & permissions generated!'
+
             php artisan up
-            echo "✅ Staging Deployed!"
 
-      # PENTING: Tambahkan step SCP upload di sini menargetkan folder staging
-      # target: "/home/${{ secrets.SSH_USERNAME }}/prarelease.wijayaplywoods.com"
-
-  # ------------------------------------------------------------
-  # JOB 3: DEPLOY PRODUCTION
-  # Trigger: HANYA jika ada TAG (v1.0.0, v2.3.1, dsb)
-  # ------------------------------------------------------------
-  deploy-production:
-    name: Deploy to PRODUCTION
-    needs: laravel-tests
-    if: startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      # ... (Langkah Build sama) ...
-      - name: Setup PHP 8.4
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.4"
-      - name: Install Composer
-        run: composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
-      - name: Setup Node & Build
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - run: |
-          npm ci
-          npm run build
-          zip -r deploy.zip . -x "*.git*" "node_modules/*" "tests/*" "storage/*" ".env"
-
-      - name: Upload to Production
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          source: "deploy.zip"
-          # FOLDER KHUSUS PRODUCTION (Subdomain berbeda)
-          target: "/home/${{ secrets.SSH_USERNAME }}/wijayaplywoods.com"
-
-      - name: Execute Production Commands
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            # Masuk ke folder Production
-            cd /home/${{ secrets.SSH_USERNAME }}/wijayaplywoods.com
-
-            php artisan down || true
-
-            # Safe delete
-            find . -mindepth 1 -maxdepth 1 ! -name 'storage' ! -name '.env' -exec rm -rf {} \;
-
-            unzip -oq deploy.zip
-            rm deploy.zip
-
-            php artisan optimize:clear
-            php artisan migrate --force # Pastikan DB Production aman!
-            php artisan shield:generate --all
-            php artisan up
-            echo "🚀 Production Deployed Successfully!"
+            echo "🚀 Deployment Success!"
