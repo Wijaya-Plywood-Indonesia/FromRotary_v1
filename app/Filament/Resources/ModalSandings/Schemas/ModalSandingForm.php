@@ -9,6 +9,7 @@ use App\Models\ModalSanding;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rule;
 
 class ModalSandingForm
 {
@@ -107,8 +108,14 @@ class ModalSandingForm
             | JUMLAH PASS SANDING
             |--------------------------------------------------------------------------
             */
-            TextInput::make('jumlah_sanding')
-                ->label('Jumlah Sanding (Pass)')
+            TextInput::make('jumlah_sanding_face')
+                ->label('Jumlah Sanding Face (Pass)')
+                ->numeric()
+                ->minValue(1)
+                ->default(fn(callable $get) => self::lastValue($get, 'jumlah_sanding'))
+                ->required(),
+            TextInput::make('jumlah_sanding_back')
+                ->label('Jumlah Sanding Back (Pass)')
                 ->numeric()
                 ->minValue(1)
                 ->default(fn(callable $get) => self::lastValue($get, 'jumlah_sanding'))
@@ -122,27 +129,16 @@ class ModalSandingForm
             TextInput::make('no_palet')
                 ->label('No Palet')
                 ->numeric()
-                ->default(fn(callable $get) => self::lastValue($get, 'no_palet'))
                 ->required()
-                ->rule(function (callable $get) {
-                    return function ($attribute, $value, $fail) use ($get) {
+                ->rule(function ($livewire, $component) {
+                    $parent = $livewire->getOwnerRecord(); // parent relation manager
+        
+                    // Ambil ID record yang sedang diedit dari state (Filament 4 way)
+                    $editingId = $component->getState()['id'] ?? null;
 
-                        $idBarang = $get('id_barang_setengah_jadi');
-                        $idProduksi = $get('id_produksi_sanding');
-
-                        if (!$idBarang || !$idProduksi) {
-                            return;
-                        }
-
-                        $exists = ModalSanding::where('id_produksi_sanding', $idProduksi)
-                            ->where('id_barang_setengah_jadi', $idBarang)
-                            ->where('no_palet', $value)
-                            ->exists();
-
-                        if ($exists) {
-                            $fail('Nomor palet ini sudah digunakan untuk kombinasi tersebut.');
-                        }
-                    };
+                    return Rule::unique('modal_sandings', 'no_palet')
+                        ->where('id_produksi_sanding', $parent->id)
+                        ->ignore($editingId);
                 }),
         ]);
     }

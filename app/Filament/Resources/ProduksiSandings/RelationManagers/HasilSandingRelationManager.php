@@ -15,7 +15,10 @@ class HasilSandingRelationManager extends RelationManager
 
     protected static ?string $title = 'Hasil';
     protected static string $relationship = 'hasilSandings';
-
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
     public function form(Schema $schema): Schema
     {
         return HasilSandingForm::configure($schema);

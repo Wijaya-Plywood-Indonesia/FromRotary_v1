@@ -36,8 +36,9 @@ class ModalSandingObserver
             'id_produksi_sanding' => $modalSanding->id_produksi_sanding,
             'id_barang_setengah_jadi' => $modalSanding->id_barang_setengah_jadi,
             'kuantitas' => $modalSanding->kuantitas,
-            'jumlah_sanding' => $modalSanding->jumlah_sanding,
-            'no_palet' => $modalSanding->no_palet,
+            'jumlah_sanding_face' => $modalSanding->jumlah_sanding_face,
+            'jumlah_sanding_back' => $modalSanding->jumlah_sanding_back,
+            //'no_palet' => $modalSanding->no_palet,
             'status' => 'Belum Sanding',
         ]);
     }

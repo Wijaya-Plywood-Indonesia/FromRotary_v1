@@ -69,8 +69,13 @@ class ModalSandingsTable
                     ->numeric()
                     ->sortable(),
 
-                TextColumn::make('jumlah_sanding')
-                    ->label('Jumlah Sanding (Pass)')
+                TextColumn::make('jumlah_sanding_face')
+                    ->label('Sanding Face (Pass)')
+                    ->suffix(' x')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('jumlah_sanding_back')
+                    ->label('Sanding Back (Pass)')
                     ->suffix(' x')
                     ->numeric()
                     ->sortable(),
