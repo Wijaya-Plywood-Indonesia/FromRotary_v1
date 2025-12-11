@@ -1,22 +1,19 @@
 <?php
 
-namespace App\Filament\Resources\RencanaKerjaHps\Tables;
+namespace App\Filament\Resources\Komposisis\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteAction;
 
-class RencanaKerjaHpsTable
+class KomposisisTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-
                 TextColumn::make('grade_display')
                     ->label('Grade')
                     ->getStateUsing(fn ($record) =>
@@ -43,43 +40,16 @@ class RencanaKerjaHpsTable
                 TextColumn::make('barangSetengahJadiHp.ukuran.nama_ukuran')
                     ->label('Ukuran')
                     ->sortable(),
-
-                /*
-                |----------------------------------------------------------
-                | JUMLAH
-                |----------------------------------------------------------
-                */
-                TextColumn::make('jumlah')
-                    ->label('Jumlah')
-                    ->alignCenter(),
             ])
-            ->headerActions([
-                CreateAction::make()
-                    ->hidden(
-                        fn ($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+            ->filters([
+                //
             ])
             ->recordActions([
-                EditAction::make()
-                    ->hidden(
-                        fn ($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
-
-                DeleteAction::make()
-                    ->hidden(
-                        fn ($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+                EditAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()
-                        ->hidden(
-                            fn ($livewire) =>
-                            $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                        ),
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
