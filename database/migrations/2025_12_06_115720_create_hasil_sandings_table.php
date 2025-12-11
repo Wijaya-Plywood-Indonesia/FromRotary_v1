@@ -23,9 +23,18 @@ return new class extends Migration {
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->integer('kuantitas');
-            $table->integer('jumlah_sanding');
-            $table->integer('no_palet');
+
+            $table->integer('jumlah_sanding_face')->nullable();
+            $table->integer('jumlah_sanding_back')->nullable();
+            $table->integer('no_palet')->nullable();
             $table->string('status');
+
+            $table->foreignId('id_mesin')
+                ->constrained('mesins')
+                ->nullable()
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+
             $table->timestamps();
         });
     }

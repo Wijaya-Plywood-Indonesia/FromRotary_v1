@@ -37,6 +37,14 @@ class ProduksiSandingsTable
                     ->limit(50)
                     ->sortable()
                     ->searchable(),
+                TextColumn::make('shift')
+                    ->label('Shift')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'PAGI' => 'success',
+                        'MALAM' => 'gray',
+                    })
+                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

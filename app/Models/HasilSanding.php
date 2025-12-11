@@ -13,7 +13,9 @@ class HasilSanding extends Model
         'id_produksi_sanding',
         'id_barang_setengah_jadi',
         'kuantitas',
-        'jumlah_sanding',
+        'jumlah_sanding_face',
+        'jumlah_sanding_back',
+        'id_mesin',
         'no_palet',
         'status',
     ];
@@ -26,5 +28,9 @@ class HasilSanding extends Model
     public function barangSetengahJadi()
     {
         return $this->belongsTo(BarangSetengahJadiHp::class, 'id_barang_setengah_jadi');
+    }
+    public function mesin()
+    {
+        return $this->belongsTo(Mesin::class, 'id_mesin');
     }
 }

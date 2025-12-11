@@ -13,6 +13,7 @@ class ProduksiSanding extends Model
     protected $fillable = [
         'tanggal',
         'kendala',
+        'shift',
     ];
 
     protected $casts = [

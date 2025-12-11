@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\HasilSanding;
 use App\Models\ModalSanding;
+use Filament\Notifications\Notification;
 
 class ModalSandingObserver
 {
@@ -12,12 +13,21 @@ class ModalSandingObserver
      */
     public function created(ModalSanding $modalSanding): void
     {
-        //
-        // Cek apakah sudah ada hasil sanding untuk produksi ini
-        $exists = HasilSanding::where('id_produksi_sanding', $modalSanding->id_produksi_sanding)->exists();
+        // Cek apakah kombinasi sudah ada
+        $exists = HasilSanding::where('id_produksi_sanding', $modalSanding->id_produksi_sanding)
+            ->where('id_barang_setengah_jadi', $modalSanding->id_barang_setengah_jadi)
+            ->where('no_palet', $modalSanding->no_palet)
+            ->exists();
 
         if ($exists) {
-            // Jika sudah ada, hentikan agar tidak duplikasi
+            // Tampilkan notifikasi Filament
+            Notification::make()
+                ->title('Data Duplikat')
+                ->body('Kombinasi produksi, barang setengah jadi, dan nomor palet sudah pernah dimasukkan.')
+                ->danger()
+                ->send();
+
+            // Stop proses agar tidak insert
             return;
         }
 
@@ -26,8 +36,9 @@ class ModalSandingObserver
             'id_produksi_sanding' => $modalSanding->id_produksi_sanding,
             'id_barang_setengah_jadi' => $modalSanding->id_barang_setengah_jadi,
             'kuantitas' => $modalSanding->kuantitas,
-            'jumlah_sanding' => $modalSanding->jumlah_sanding,
-            'no_palet' => $modalSanding->no_palet,
+            'jumlah_sanding_face' => $modalSanding->jumlah_sanding_face,
+            'jumlah_sanding_back' => $modalSanding->jumlah_sanding_back,
+            //'no_palet' => $modalSanding->no_palet,
             'status' => 'Belum Sanding',
         ]);
     }

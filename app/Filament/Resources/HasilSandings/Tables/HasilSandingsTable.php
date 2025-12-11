@@ -14,20 +14,35 @@ class HasilSandingsTable
     {
         return $table
             ->columns([
-                TextColumn::make('id_produksi_sanding')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('id_barang_setengah_jadi')
-                    ->numeric()
-                    ->sortable(),
+                TextColumn::make('barangSetengahJadiInfo')
+                    ->label('Barang Setengah Jadi')
+                    ->getStateUsing(function ($record) {
+                        $kategori = $record->barangSetengahJadi?->grade?->kategoriBarang?->nama_kategori ?? '-';
+                        $ukuran = $record->barangSetengahJadi?->ukuran?->dimensi ?? '-';
+                        $grade = $record->barangSetengahJadi?->grade?->nama_grade ?? '-';
+                        $jenis = $record->barangSetengahJadi?->jenisBarang?->nama_jenis_barang ?? '-';
+
+                        return "{$kategori} — {$ukuran} - {$jenis} - {$grade}";
+                    })
+                ,
+
                 TextColumn::make('kuantitas')
-                    ->numeric()
+                    ->label('Qty')
                     ->sortable(),
-                TextColumn::make('jumlah_sanding')
-                    ->numeric()
+
+                TextColumn::make('jumlah_sanding_face')
+                    ->label('Face'),
+
+                TextColumn::make('jumlah_sanding_back')
+                    ->label('Back'),
+
+                TextColumn::make('mesin.nama_mesin')
+                    ->label('Mesin')
+                    ->searchable()
                     ->sortable(),
+
                 TextColumn::make('no_palet')
-                    ->numeric()
+                    ->label('Palet')
                     ->sortable(),
                 TextColumn::make('status')
                     ->searchable(),
@@ -39,6 +54,35 @@ class HasilSandingsTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
+                //--- INI BUAT FILTER AJA
+                TextColumn::make('barangSetengahJadi.grade.kategoriBarang.nama_kategori')
+                    ->label('Kategori')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable(),
+
+                TextColumn::make('barangSetengahJadi.ukuran.dimensi')
+                    ->label('Ukuran')
+                    ->searchable(query: function ($query, $search) {
+                        $query->whereHas('barangSetengahJadi.ukuran', function ($q) use ($search) {
+                            $q->whereRaw("CONCAT(panjang, ' x ', lebar, ' x ', tebal) LIKE ?", ["%{$search}%"]);
+                        });
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true)
+                ,
+
+                TextColumn::make('barangSetengahJadi.grade.nama_grade')
+                    ->label('Grade')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable(),
+
+                TextColumn::make('barangSetengahJadi.jenisBarang.nama_jenis_barang')
+                    ->label('Jenis Barang')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable(),
             ])
             ->filters([
                 //

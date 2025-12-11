@@ -23,7 +23,8 @@ return new class extends Migration {
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->integer('kuantitas');
-            $table->integer('jumlah_sanding');
+            $table->integer('jumlah_sanding_face');
+            $table->integer('jumlah_sanding_back');
             $table->integer('no_palet');
 
 

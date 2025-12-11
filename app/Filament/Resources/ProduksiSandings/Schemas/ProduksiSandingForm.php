@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ProduksiSandings\Schemas;
 
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -23,6 +24,14 @@ class ProduksiSandingForm
                     ->required()
                     ->maxDate(now()->addDays(30))
                     ->default(now()->addDay()),
+                Select::make('shift')
+                    ->label('Shift')
+                    ->options([
+                        'PAGI' => 'Pagi',
+                        'MALAM' => 'Malam',
+                    ])
+                    ->required()
+                    ->native(false),
             ]);
     }
 }
