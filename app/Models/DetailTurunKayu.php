@@ -4,60 +4,34 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DetailTurunKayu extends Model
 {
-    protected $primaryKey = 'id';
-    //
-    //
+    // Nama tabel di database
+    protected $table = 'detail_turun_kayus';
+
+    // Daftar kolom yang diizinkan untuk diisi massal (Mass Assignment)
     protected $fillable = [
-        'id_turun_kayu',
-        'id_pegawai',
-        'id_kayu_masuk',
-        'status',
-        'foto',
-        'nama_supir'
-    ];
-    protected $casts = [
-        'id_turun_kayus' => 'integer',
-        'id_pegawai' => 'integer',
+        'id_turun_kayu', // Foreign Key ke Parent
+        'id_kayu_masuk', // Foreign Key ke Master Kayu
+        'status',        // Status pengerjaan
+        'nama_supir',    // Nama supir
+        'jumlah_kayu',   // Jumlah kayu (Numeric)
+        'foto',          // Path foto bukti
     ];
 
-    public function turunKayu()
+    /**
+     * Relasi ke Header Transaksi (Parent)
+     */
+    public function turunKayu(): BelongsTo
     {
         return $this->belongsTo(TurunKayu::class, 'id_turun_kayu');
     }
 
-    public function pegawai()
-    {
-        return $this->belongsTo(Pegawai::class, 'id_pegawai');
-    }
 
     public function kayuMasuk(): BelongsTo
     {
         return $this->belongsTo(KayuMasuk::class, 'id_kayu_masuk');
-    }
-
-
-    // Accessor untuk mendapatkan collection pegawai
-    public function getPegawaisAttribute()
-    {
-        if (empty($this->id_pegawai)) {
-            return collect();
-        }
-
-        return \App\Models\Pegawai::whereIn('id', $this->id_pegawai)->get();
-    }
-
-    // Accessor untuk string kode + nama pegawai
-    public function getPegawaisListAttribute(): string
-    {
-        if (empty($this->id_pegawai)) {
-            return '-';
-        }
-
-        return $this->pegawais
-            ->map(fn($p) => $p->full_name)
-            ->join(', ');
     }
 }

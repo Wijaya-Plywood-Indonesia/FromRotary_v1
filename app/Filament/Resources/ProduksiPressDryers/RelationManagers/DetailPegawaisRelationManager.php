@@ -143,27 +143,42 @@ class DetailPegawaisRelationManager extends RelationManager
 
                 TextColumn::make('ijin')
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 TextColumn::make('ket')
                     ->label('Keterangan')
                     ->limit(50) // Batasi teks agar tidak terlalu panjang
                     ->tooltip(fn($record) => $record->ket) // Tampilkan teks penuh saat di-hover
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 // Tempat filter jika Anda membutuhkannya
             ])
             ->headerActions([
-                // INI ADALAH TOMBOL UNTUK MEMBUAT DATA BARU
-                CreateAction::make(),
+                // Create Action — HILANG jika status sudah divalidasi
+                CreateAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                // Edit Action — HILANG jika status sudah divalidasi
+                EditAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
 
-                // ➕ Tambah / Edit Ijin & Keterangan
+                // Delete Action — HILANG jika status sudah divalidasi
+                DeleteAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
+
+                // Atur Ijin — HILANG jika status sudah divalidasi
                 Action::make('aturIjin')
                     ->label(fn($record) => $record->ijin ? 'Edit Ijin' : 'Tambah Ijin')
                     ->icon('heroicon-o-pencil-square')
@@ -176,11 +191,19 @@ class DetailPegawaisRelationManager extends RelationManager
                             'ijin' => $data['ijin'],
                             'ket' => $data['ket'],
                         ]);
-                    }),
+                    })
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->hidden(
+                            fn($livewire) =>
+                            $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                        ),
                 ]),
             ]);
     }

@@ -129,8 +129,8 @@ th, td {
             <thead>
                 <tr>
                     <th style="text-align: center">Rentang D (cm)</th>
-                    <th style="text-align: center">Batang</th>
-                    <th style="text-align: center">Kubikasi</th>
+                    <th style="text-align: center">Btg</th>
+                    <th style="text-align: center">m³</th>
                     <th style="text-align: center">Harga</th>
                     <th style="text-align: center">Poin</th>
                 </tr>
@@ -141,7 +141,7 @@ th, td {
                     <td style="text-align: center">{{ $detail["rentang"] }}</td>
                     <td style="text-align: right">{{ $detail["batang"] }}</td>
                     <td style="text-align: right">
-                        {{ number_format($detail["kubikasi"], 4, ",", ".") }}
+                        {{ number_format($detail["kubikasi"], 4, ",", ".") }} m³
                     </td>
                     <td style="text-align: right">
                         {{

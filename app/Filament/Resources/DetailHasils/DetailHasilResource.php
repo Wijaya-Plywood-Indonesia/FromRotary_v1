@@ -18,6 +18,7 @@ use UnitEnum;
 class DetailHasilResource extends Resource
 {
     protected static ?string $model = DetailHasil::class;
+    
     public static function shouldRegisterNavigation(): bool
     {
         return false;

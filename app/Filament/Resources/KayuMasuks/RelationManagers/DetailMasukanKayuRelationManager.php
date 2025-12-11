@@ -9,6 +9,7 @@ use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use App\Models\DetailTurunKayu;
 
 class DetailMasukanKayuRelationManager extends RelationManager
 {
@@ -18,6 +19,25 @@ class DetailMasukanKayuRelationManager extends RelationManager
     public function isReadOnly(): bool
     {
         return false;
+    }
+    
+        public static function canViewForRecord($ownerRecord, $pageClass): bool
+    {
+        // Ambil status dari detail_turun_kayus berdasarkan kayu masuk
+        $detailTurun = DetailTurunKayu::where('id_kayu_masuk', $ownerRecord->id)->first();
+
+        // Jika belum ada record → anggap belum selesai → tidak boleh isi
+        if (!$detailTurun) {
+            return false;
+        }
+
+        // Jika status "menunggu" → boleh isi data
+        if ($detailTurun->status === 'menunggu') {
+            return true;
+        }
+
+        // Jika status "selesai" → tidak boleh isi lagi
+        return true;
     }
 
     public function form(Schema $schema): Schema

@@ -29,4 +29,8 @@ class ProduksiKedi extends Model
     {
         return $this->hasMany(ValidasiKedi::class, 'id_produksi_kedi');
     }
+    public function validasiTerakhir()
+    {
+        return $this->hasOne(ValidasiKedi::class, 'id_produksi_kedi')->latestOfMany();
+    }
 }

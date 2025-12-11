@@ -25,6 +25,11 @@ class PenggunaanLahanRotariesTable
                     ->sortable(['lahan.kode_lahan']) // optional
                     ->searchable(['lahan.kode_lahan', 'lahan.nama_lahan']),
 
+                TextColumn::make('jenisKayu.nama_kayu')
+                    ->label('Jenis Kayu')
+                    ->searchable()
+                    ->placeholder('Belum Daftar Jenis Kayu'),
+
                 TextColumn::make('jumlah_batang')
                     ->numeric()
                     ->sortable(),

@@ -57,24 +57,7 @@ class DetailKayuMasukForm
                     ->searchable()
                     ->native(false),
 
-               
-
                 // ==========================
-                // JENIS KAYU → ambil jenis kayu terakhir
-                // ==========================
-                Select::make('id_jenis_kayu')
-                    ->label('Jenis Kayu')
-                    ->options(
-                        JenisKayu::query()
-                            ->get()
-                            ->mapWithKeys(fn($jenis) => [
-                                $jenis->id => "{$jenis->kode_kayu} - {$jenis->nama_kayu}",
-                            ])
-                    )
-                    ->default(fn() => DetailKayuMasuk::latest('id')->value('id_jenis_kayu') ?? 1)
-                    ->searchable()
-                    ->required(),
-                     // ==========================
                 // GRADE → ambil grade terakhir
                 // ==========================
                 Select::make('grade')
@@ -100,6 +83,22 @@ class DetailKayuMasukForm
                     ->afterStateUpdated(function ($state) {
                         cookie()->queue('filament_local_storage_detail_kayu_masuk.grade', $state, 60 * 24 * 30);
                     }),
+
+                // ==========================
+                // JENIS KAYU → ambil jenis kayu terakhir
+                // ==========================
+                Select::make('id_jenis_kayu')
+                    ->label('Jenis Kayu')
+                    ->options(
+                        JenisKayu::query()
+                            ->get()
+                            ->mapWithKeys(fn($jenis) => [
+                                $jenis->id => "{$jenis->kode_kayu} - {$jenis->nama_kayu}",
+                            ])
+                    )
+                    ->default(fn() => DetailKayuMasuk::latest('id')->value('id_jenis_kayu') ?? 1)
+                    ->searchable()
+                    ->required(),
 
                 // ==========================
                 // DIAMETER

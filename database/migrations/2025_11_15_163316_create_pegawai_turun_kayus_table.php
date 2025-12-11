@@ -22,8 +22,6 @@ return new class extends Migration {
                 ->restrictOnDelete();
             $table->time('jam_masuk');
             $table->time('jam_pulang');
-            $table->string('izin')->nullable();
-            $table->string('ket')->nullable();
             $table->timestamps();
         });
     }

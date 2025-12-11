@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->integer('no_palet');
+            $table->string('kode_kedi');
             $table->foreignId('id_jenis_kayu')
                 ->constrained('jenis_kayus')
                 ->cascadeOnUpdate()

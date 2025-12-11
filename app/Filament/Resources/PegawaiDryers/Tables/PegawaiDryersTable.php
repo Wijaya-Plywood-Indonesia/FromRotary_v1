@@ -39,7 +39,7 @@ class PegawaiDryersTable
                 TextColumn::make('ket')
                     ->label('Keterangan')
                     ->limit(30)
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 //

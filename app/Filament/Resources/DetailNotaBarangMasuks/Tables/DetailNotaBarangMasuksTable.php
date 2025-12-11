@@ -28,6 +28,8 @@ class DetailNotaBarangMasuksTable
                     ->sortable(),
                 TextColumn::make('satuan')
                     ->searchable(),
+                TextColumn::make('keterangan')
+                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -39,39 +41,46 @@ class DetailNotaBarangMasuksTable
             ])
             ->defaultSort('created_at', 'desc')
             ->headerActions([
-                CreateAction::make()->label('Tambah Barang'),
+                CreateAction::make()
+                    ->label('Tambah Barang')
+                    ->disabled(function (RelationManager $livewire) {
+                        $nota = $livewire->getOwnerRecord();
+
+                        // Disable jika SUDAH divalidasi
+                        return $nota?->divalidasi_oleh !== null;
+                    })
+                    ->tooltip('Nota sudah divalidasi, tidak bisa menambah barang'),
 
 
-              Action::make('validasi_nota')
-    ->label('Validasi Nota')
-    ->icon('heroicon-o-check')
-    ->color('success')
-    ->requiresConfirmation()
-    ->visible(function (RelationManager $livewire) {
-        // Tombol hanya muncul jika BELUM divalidasi
-        return empty($livewire->ownerRecord->divalidasi_oleh);
-    })
-    ->disabled(function (RelationManager $livewire) {
-        // Pembuat TIDAK boleh validasi
-        return $livewire->ownerRecord->dibuat_oleh == auth()->id();
-    })
-    ->action(function (RelationManager $livewire) {
+                Action::make('validasi_nota')
+                    ->label('Validasi Nota')
+                    ->icon('heroicon-o-check')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->visible(function (RelationManager $livewire) {
+                        $nota = $livewire->getOwnerRecord();
 
-        $nota = $livewire->ownerRecord;
+                        if (!$nota)
+                            return false;
 
-        $nota->update([
-            'divalidasi_oleh' => auth()->id(),
-        ]);
+                        return
+                            $nota->divalidasi_oleh === null &&
+                            $nota->dibuat_oleh !== auth()->id();
+                    })
+                    ->action(function (RelationManager $livewire) {
+                        $nota = $livewire->getOwnerRecord();
 
-        Notification::make()
-            ->title('Nota berhasil divalidasi!')
-            ->success()
-            ->send();
-    })
-    ->after(function ($livewire) {
-        // Refresh komponen supaya status berubah
-        $livewire->dispatch('$refresh');
-    }),
+                        $nota->update([
+                            'divalidasi_oleh' => auth()->id(),
+                        ]);
+
+                        Notification::make()
+                            ->title('Nota berhasil divalidasi!')
+                            ->success()
+                            ->send();
+                    })
+                    ->after(fn($livewire) => $livewire->dispatch('$refresh')),
+
                 Action::make('batalkan_validasi')
                     ->label('Batalkan Validasi')
                     ->icon('heroicon-o-x-circle')

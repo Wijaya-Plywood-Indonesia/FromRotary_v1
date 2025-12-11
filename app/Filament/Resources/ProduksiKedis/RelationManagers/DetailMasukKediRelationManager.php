@@ -15,24 +15,24 @@ class DetailMasukKediRelationManager extends RelationManager
     protected static ?string $title = 'Masuk Kedi';
     protected static string $relationship = 'detailMasukKedi';
 
-    public function form(Schema $schema): Schema
-    {
-        return DetailMasukKediForm::configure($schema);
-    }
     public function isReadOnly(): bool
     {
         return false;
     }
-    public function table(Table $table): Table
-    {
-        return DetailMasukKedisTable::configure($table)
-            ->headerActions([
-                CreateAction::make(),
-            ])
-        ;
-    }
+
     public static function canViewForRecord($ownerRecord, $pageClass): bool
     {
         return $ownerRecord->status === 'masuk';
     }
+
+
+    public function form(Schema $schema): Schema
+    {
+        return DetailMasukKediForm::configure($schema);
+    }
+    public function table(Table $table): Table
+    {
+        return DetailMasukKedisTable::configure($table);
+    }
+
 }

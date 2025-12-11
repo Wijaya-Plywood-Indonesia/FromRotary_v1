@@ -17,8 +17,10 @@ class NotaBarangKeluar extends Model
         'divalidasi_oleh',
     ];
 
-    protected $casts = [
+   protected $casts = [
         'tanggal' => 'date',
+        'dibuat_oleh' => 'integer',
+        'divalidasi_oleh' => 'integer',
     ];
 
     // Relasi ke user pembuat

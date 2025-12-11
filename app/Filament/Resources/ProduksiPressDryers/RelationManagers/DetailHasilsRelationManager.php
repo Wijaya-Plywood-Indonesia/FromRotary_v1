@@ -2,8 +2,6 @@
 
 namespace App\Filament\Resources\ProduksiPressDryers\RelationManagers;
 
-use App\Filament\Resources\DetailHasils\Schemas\DetailHasilForm;
-use App\Filament\Resources\DetailHasils\Tables\DetailHasilsTable;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -15,7 +13,6 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use App\Models\Ukuran;
 
 class DetailHasilsRelationManager extends RelationManager
 {
@@ -50,6 +47,10 @@ class DetailHasilsRelationManager extends RelationManager
                             ->unique();
                     })
                     ->searchable()
+                    ->afterStateUpdated(function ($state) {
+                        session(['last_ukuran' => $state]);
+                    })
+                    ->default(fn() => session('last_ukuran'))
                     ->required(),
 
                 // Relasi ke Jenis Kayu (id_jenis_kayu)
@@ -59,13 +60,17 @@ class DetailHasilsRelationManager extends RelationManager
                         $produksi = $this->getOwnerRecord();
 
                         return \App\Models\DetailMasuk::where('id_produksi_dryer', $produksi->id)
-    ->select('id_jenis_kayu')
-    ->distinct()
-    ->with('jenisKayu:id,nama_kayu')
-    ->get()
-    ->pluck('jenisKayu.nama_kayu', 'id_jenis_kayu');
+                            ->select('id_jenis_kayu')
+                            ->distinct()
+                            ->with('jenisKayu:id,nama_kayu')
+                            ->get()
+                            ->pluck('jenisKayu.nama_kayu', 'id_jenis_kayu');
                     })
                     ->searchable()
+                    ->afterStateUpdated(function ($state) {
+                        session(['last_jenis_kayu' => $state]);
+                    })
+                    ->default(fn() => session('last_jenis_kayu'))
                     ->required(),
 
                 TextInput::make('kw')
@@ -117,17 +122,35 @@ class DetailHasilsRelationManager extends RelationManager
                 // Tempat filter jika Anda membutuhkannya
             ])
             ->headerActions([
-                // INI ADALAH TOMBOL UNTUK MEMBUAT DATA BARU
-                CreateAction::make(),
+                // Create Action — HILANG jika status sudah divalidasi
+                CreateAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
             ])
             ->recordActions([
-                // Tombol di setiap baris (Edit, Delete)
-                EditAction::make(),
-                DeleteAction::make(),
+                // Edit Action — HILANG jika status sudah divalidasi
+                EditAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
+
+                // Delete Action — HILANG jika status sudah divalidasi
+                DeleteAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->hidden(
+                            fn($livewire) =>
+                            $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                        ),
                 ]),
             ]);
     }

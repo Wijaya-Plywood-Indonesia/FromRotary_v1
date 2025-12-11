@@ -13,6 +13,8 @@ class GantiPisauRotary extends Model
     protected $fillable = [
 
         'id_produksi',
+        'jenis_kendala',
+        'keterangan',
         'jam_mulai_ganti_pisau',
         'jam_selesai_ganti',
     ];

@@ -84,7 +84,7 @@ class HargaKayuForm
                     })
                 ,
                 TextInput::make('harga_beli')
-                    ->label('Harga Beli Per Batang')
+                    ->label('Harga Beli Per m³')
                     ->required()
                     //    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->numeric(),

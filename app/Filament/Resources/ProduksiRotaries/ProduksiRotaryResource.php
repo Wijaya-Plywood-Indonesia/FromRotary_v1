@@ -11,6 +11,8 @@ use App\Filament\Resources\ProduksiRotaries\Pages\ViewProduksiRotary;
 use App\Filament\Resources\ProduksiRotaries\Schemas\ProduksiRotaryForm;
 use App\Filament\Resources\ProduksiRotaries\Schemas\ProduksiRotaryInfolist;
 use App\Filament\Resources\ProduksiRotaries\Tables\ProduksiRotariesTable;
+
+use App\Filament\Resources\ProduksiRotaries\Widgets\ProduksiSummaryWidget;
 use App\Models\ProduksiRotary;
 use BackedEnum;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -24,11 +26,9 @@ use UnitEnum;
 class ProduksiRotaryResource extends Resource
 {
     protected static ?string $model = ProduksiRotary::class;
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
     protected static string|UnitEnum|null $navigationGroup = 'Rotary';
     protected static ?int $navigationSort = 1;
-    //ngurutin
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->latest('created_at');
@@ -63,6 +63,13 @@ class ProduksiRotaryResource extends Resource
 
         ];
     }
+      public static function getWidgets(): array
+    {
+        return [
+            ProduksiSummaryWidget::class,
+        ];
+    }
+
 
     public static function getPages(): array
     {

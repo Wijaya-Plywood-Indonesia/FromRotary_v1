@@ -2,196 +2,175 @@
 
 namespace App\Filament\Pages;
 
-use Filament\Pages\Page;
-use App\Models\ProduksiRotary;
-use BackedEnum;
-use UnitEnum;
 use App\Exports\LaporanProduksiExport;
+use Filament\Pages\Page;
+use Filament\Forms;
+use Filament\Schemas\Schema;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Carbon\Carbon;
+use Exception;
+use Illuminate\Support\Facades\Log;
+use Filament\Notifications\Notification;
 use Filament\Actions\Action;
-use Filament\Forms\Components\DatePicker;
+
+use App\Filament\Pages\LaporanProduksi\Queries\LoadProduksi;
+use App\Filament\Pages\LaporanProduksi\Transformers\ProduksiDataMap;
 use Maatwebsite\Excel\Facades\Excel;
+
+use BackedEnum;
+use UnitEnum;
 
 class LaporanProduksi extends Page implements HasForms
 {
     use InteractsWithForms;
-
     protected static BackedEnum|string|null $navigationIcon = 'heroicon-o-document-chart-bar';
     protected string $view = 'filament.pages.laporan-produksi';
     protected static UnitEnum|string|null $navigationGroup = 'Laporan';
     protected static ?string $title = 'Laporan Produksi Rotary';
 
-    public $dataProduksi = [];
-    public $tanggal = null;
+    // Form state container (statePath => 'data')
+    public array $data = [
+        'tanggal' => null,
+    ];
 
+    public array $dataProduksi = [];
     public bool $isLoading = false;
 
+    // Inisialisasi halaman
     public function mount(): void
     {
-        $this->tanggal = now()->format('Y-m-d');
-        $this->form->fill(['tanggal' => $this->tanggal]); // PAKAI form() dari HasForms
-        $this->loadAllData();
+        // set default tanggal di state (YYYY-MM-DD)
+        $this->data['tanggal'] = now()->format('Y-m-d');
+
+        // Isi awal form (opsional; InteractsWithForms akan menampilkan form berdasarkan statePath)
+        $this->form->fill($this->data);
+
+        $this->loadData();
     }
 
-    protected function getFormSchema(): array
-    {
-        return [
-            DatePicker::make('tanggal')
-                ->label('Pilih Tanggal')
-                ->default(now())
-                ->reactive()
-                ->afterStateUpdated(function ($state) {
-                    $this->tanggal = $state;
-                    $this->loadAllData();
-                }),
-        ];
-    }
-
+    // Header untuk download button
     protected function getHeaderActions(): array
     {
         return [
             Action::make('export')
-                ->label('Download Excel')
+                ->label("Donwload Excel")
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('success')
                 ->action('exportToExcel'),
         ];
     }
 
-    // Fungsi Pembulatan
-    protected function roundToNearestHundred(float $number): int
+    // DatePicker untuk memilih tanggal laporan
+    public function form(Schema $schema): Schema
     {
-        $thousands = floor($number / 1000);
-        $base = $thousands * 1000;
-        $remainder = $number - $base;
-
-        if ($remainder < 300) {
-            return $base;
-        } elseif ($remainder < 800) {
-            return $base + 500;
-        } else {
-            return $base + 1000;
-        }
+        return $schema
+            ->schema([
+                Forms\Components\DatePicker::make('tanggal')
+                    ->label('Tanggal')
+                    ->native(false)                    // modern, responsive
+                    ->format('Y-m-d')                     // format penyimpanan
+                    ->displayFormat('d/m/Y')             // tampil di UI
+                    ->live()
+                    ->closeOnDateSelection()
+                    ->afterStateUpdated(fn($state) => $this->onTanggalUpdated($state))
+                    ->required()
+                    ->maxDate(now())
+                    ->default(now())
+                    ->suffixIcon('heroicon-o-calendar')
+                    ->suffixIconColor('primary'), // tidak boleh pilih tanggal di masa depan
+            ])
+            ->statePath('data'); // penting: menyambungkan schema -> $this->data
     }
 
-    public function loadAllData()
+    // handler ketika tanggal berubah
+    public function onTanggalUpdated($state): void
     {
-        $this->isLoading = true;
-
-        $tanggal = $this->tanggal ?? now()->format('Y-m-d');
-
-        $produksiList = ProduksiRotary::with([
-            'mesin',
-            'detailPegawaiRotary.pegawai',
-            'detailPaletRotary',
-        ])
-            ->whereHas('detailPaletRotary')
-            ->whereDate('tgl_produksi', $tanggal)
-            ->orderBy('tgl_produksi', 'desc')
-            ->get();
-
-        $this->dataProduksi = [];
-
-        foreach ($produksiList as $produksi) {
-            $mesinNama = $produksi->mesin->nama_mesin;
-            $tanggalFormat = \Carbon\Carbon::parse($produksi->tgl_produksi)->format('d/m/Y');
-            $idUkuran = $produksi->detailPaletRotary->first()?->id_ukuran ?? 'TIDAK ADA UKURAN';
-
-            $targetHarian = $produksi->detailPaletRotary->sum('total_lembar') ?? 0;
-
-            $targetModel = \App\Models\Target::where('id_mesin', $produksi->id_mesin)
-                ->where('id_ukuran', $idUkuran)
-                ->first();
-
-            $target = $targetModel?->target ?? 0;
-            $jamKerja = $targetModel?->jam ?? 0;
-            $targetPerJam = $jamKerja > 0 ? $target / $jamKerja : 0;
-
-            $selisih = $targetHarian - $target;
-
-            $jumlahPekerja = $produksi->detailPegawaiRotary->count();
-
-            $potonganPerLembar = $targetModel?->potongan ?? 0;
-            $potonganPerLembar = ceil($potonganPerLembar);
-
-            $potonganTotal = 0;
-            $potonganPerOrang = 0;
-
-            if ($selisih < 0) {
-
-                $potonganTotal = abs($selisih) * $potonganPerLembar;
-                $potonganPerOrang = $jumlahPekerja > 0 ? $potonganTotal / $jumlahPekerja : 0;
+        try {
+            if ($state instanceof Carbon) {
+                $tanggal = $state->format('Y-m-d');
+            } elseif (is_string($state)) {
+                $tanggal = Carbon::parse($state)->format('Y-m-d');
+            } else {
+                $tanggal = now()->format('Y-m-d');
             }
+            $this->data['tanggal'] = $tanggal;
 
-            $pekerja = [];
-            foreach ($produksi->detailPegawaiRotary as $detail) {
-                $pekerja[] = [
-                    'id' => $detail->pegawai->kode_pegawai ?? '-',
-                    'nama' => $detail->pegawai->nama_pegawai ?? '-',
-                    'jam_masuk' => $detail->jam_masuk ? \Carbon\Carbon::parse($detail->jam_masuk)->format('H:i') : '-',
-                    'jam_pulang' => $detail->jam_pulang ? \Carbon\Carbon::parse($detail->jam_pulang)->format('H:i') : '-',
-                    'ijin' => $detail->ijin ?? '-',
-                    'pot_target' => $potonganPerOrang > 0
-                        ? number_format($this->roundToNearestHundred($potonganPerOrang), 0, '', '.')
-                        : '-',
-                    'selisih' => $selisih,
-                    'keterangan' => $detail->keterangan ?? '-',
-                ];
-            }
+            $this->loadData();
 
-            $this->dataProduksi[] = [
-                'tanggal' => $tanggalFormat,
-                'mesin' => $mesinNama,
-                'kode_ukuran' => $idUkuran,
-                'pekerja' => $pekerja,
-                'kendala' => $produksi->kendala ?? 'Tidak ada kendala.',
-                'total_target_harian' => $targetHarian,
-                'target' => $target,
-                'target_per_jam' => $targetPerJam,
-                'jam_kerja' => $jamKerja,
-                'selisih' => $selisih,
-                'summary' => [
-                    'jumlah_pekerja' => count($pekerja),
-                    'total_target_harian' => $target,
-                    'total_status_harian' => $targetHarian,
-                ]
-            ];
+        } catch (Exception $e) {
+            Notification::make()
+                ->danger()
+                ->title('Format Tanggal Tidak Valid')
+                ->body('Silakan pilih tanggal yang valid.')
+                ->send();
+
+            $this->data['tanggal'] = now()->format('Y-m-d');
+            $this->form->fill($this->data);
         }
 
-        $this->calculateOverallSummary();
+        // normalisasi format tanggal menjadi YYYY-MM-DD agar konsisten
 
-        $this->isLoading = false;
     }
 
-    protected function calculateOverallSummary()
+    // Load data produksi berdasarkan tanggal
+    public function loadData(): void
     {
-        $this->summary = [
-            'total_batang' => 0,
-            'total_lembar' => 0,
-            'total_m3' => 0,
-            'total_jam_kerja' => 0,
-            'total_target' => 0,
-            'total_status' => 0,
-            'total_pot_target' => 0,
-            'total_pekerja' => 0,
-            'total_hasil_produksi' => 0,
-        ];
+        try {
+            $this->isLoading = true;
 
-        foreach ($this->dataProduksi as $data) {
-            $this->summary['total_hasil_produksi'] += $data['total_target_harian'];
-            $this->summary['total_target'] += $data['target'];
-            $this->summary['total_pekerja'] += $data['summary']['jumlah_pekerja'];
+            $tanggal = $this->data['tanggal'] ?? now()->format('Y-m-d');
 
-            $pekerja = $data['pekerja'] ?? [];
-            $this->summary['total_pot_target'] += collect($pekerja)->sum(fn($p) => (float) str_replace('.', '', $p['pot_target'] ?? 0));
+            Log::info('Loading produksi data for date: ' . $tanggal);
+
+            // LoadProduksi::run harus mengembalikan koleksi Eloquent
+            $raw = LoadProduksi::run($tanggal);
+
+            Log::info('Found ' . $raw->count() . ' production records');
+
+            $this->dataProduksi = ProduksiDataMap::make($raw);
+
+            if (empty($this->dataProduksi)) {
+                Notification::make()
+                    ->warning()
+                    ->title('Tidak Ada Data')
+                    ->body('Tidak ditemukan data produksi untuk tanggal ' . Carbon::parse($tanggal)->format('d/m/Y'))
+                    ->send();
+            }
+        } catch (Exception $e) {
+            // Handle error dengan notification
+            Notification::make()
+                ->danger()
+                ->title('Error Memuat Data')
+                ->body('Terjadi kesalahan: ' . $e->getMessage())
+                ->send();
+
+            Log::error('Error loading produksi data: ' . $e->getMessage());
+
+            $this->dataProduksi = [];
+
+        } finally {
+            $this->isLoading = false;
         }
     }
 
+    // Function untuk refresh
+    public function refresh(): void
+    {
+        $this->loadData();
+
+        Notification::make()
+            ->success()
+            ->title('Data Diperbarui')
+            ->body('Data produksi telah dimuat ulang.')
+            ->send();
+    }
+
+    // Export To Excel Function
     public function exportToExcel()
     {
-        $tanggal = $this->tanggal ?? now()->format('Y-m-d');
-        $fileName = 'laporan-produksi-' . \Carbon\Carbon::parse($tanggal)->format('Y-m-d') . '.xlsx';
-        return Excel::download(new LaporanProduksiExport($this->dataProduksi), $fileName);
+        $tanggal = $this->data['tanggal'] ?? now()->format('Y-m-d');
+        $filename = 'Laporan-Produksi-' . Carbon::parse($tanggal)->format('Y-m-d') . '.xlsx';
+        return Excel::download(new LaporanProduksiExport($this->dataProduksi), $filename);
     }
 }

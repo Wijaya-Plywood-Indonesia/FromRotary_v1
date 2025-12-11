@@ -27,6 +27,25 @@ use Illuminate\Validation\Rule;
 class DetailturusanKayusRelationManager extends RelationManager
 {
     protected static string $relationship = 'DetailturusanKayus';
+    
+    public static function canViewForRecord($ownerRecord, $pageClass): bool
+    {
+        // Ambil status dari detail_turun_kayus berdasarkan kayu masuk
+        $detailTurun = \App\Models\DetailTurunKayu::where('id_kayu_masuk', $ownerRecord->id)->first();
+
+        // Jika belum ada record → anggap belum selesai → tidak boleh isi
+        if (!$detailTurun) {
+            return false;
+        }
+
+        // Jika status "menunggu" → boleh isi data
+        if ($detailTurun->status === 'menunggu') {
+            return true;
+        }
+
+        // Jika status "selesai" → tidak boleh isi lagi
+        return true;
+    }
 
     public function form(Schema $schema): Schema
     {
@@ -293,6 +312,30 @@ class DetailturusanKayusRelationManager extends RelationManager
                     ->label('D')
                     ->numeric()
                     ->sortable(),
+                    
+                       TextColumn::make('kubikasi')
+                    ->label('Kubikasi')
+                    ->getStateUsing(function ($record) {
+
+                        $diameter = (int) $record->diameter;
+                        $kuantitas = $record->kuantitas ?? 1;
+
+                        $kubikasi =
+                            $diameter * $diameter * $kuantitas * 0.785 / 1_000_000;
+
+                        return number_format($kubikasi, 6, ',', '.');
+                    })
+                    ->suffix(' m³')
+                    ->alignRight()
+                    ->toggleable(isToggledHiddenByDefault: true)
+
+                    // OPTIONAL: kalau mau bisa di-sort
+                    ->sortable(
+                        query: fn($q, $direction) =>
+                        $q->orderByRaw(
+                            '(diameter * diameter * kuantitas * 0.785 / 1000000) ' . $direction
+                        )
+                    ),
 
                 TextColumn::make('createdBy.name')
                     ->label('Dibuat Oleh')
@@ -331,7 +374,7 @@ class DetailturusanKayusRelationManager extends RelationManager
                             ->send();
 
                         // kirim event ke browser dengan id Livewire component saat ini
-                        // Inilah bagian kuncinya 👇
+                        // Inilah bagian kuncinya ðŸ‘‡
                         // Jangan tutup modal, tapi reset form dan fokus lagi
                     }),
 
@@ -364,7 +407,7 @@ class DetailturusanKayusRelationManager extends RelationManager
 
                         $kubikasiFormatted = number_format($totalKubikasi, 4, ',', '.');
 
-                        return "{$kode} {$nama} {$jenis_kayu} - {$totalBatang} batang ({$kubikasiFormatted} m³)";
+                        return "{$kode} {$nama} {$jenis_kayu} - {$totalBatang} batang ({$kubikasiFormatted} mÂ³)";
                     }),
             ])
             ->defaultGroup('lahan.kode_lahan')

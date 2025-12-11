@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->integer('no_palet');
-
+            $table->string('kode_kedi');
             $table->foreignId('id_ukuran')
                 ->nullable()
                 ->constrained('ukurans')
@@ -26,7 +26,6 @@ return new class extends Migration
                 ->constrained('jenis_kayus')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-
             $table->integer('kw');
             $table->integer('jumlah');
             $table->date('rencana_bongkar');

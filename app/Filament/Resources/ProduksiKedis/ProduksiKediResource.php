@@ -14,16 +14,20 @@ use App\Filament\Resources\ProduksiKedis\Schemas\ProduksiKediInfolist;
 use App\Filament\Resources\ProduksiKedis\Tables\ProduksiKedisTable;
 use App\Models\ProduksiKedi;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Route;
 
 class ProduksiKediResource extends Resource
 {
     protected static ?string $model = ProduksiKedi::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|UnitEnum|null $navigationGroup = 'Dryer';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
@@ -39,35 +43,9 @@ class ProduksiKediResource extends Resource
     {
         return ProduksiKedisTable::configure($table);
     }
-    // public static function getRelations(): array
-    // {
-    //     // Ambil instance record dari Filament Livewire
-    //     $livewire = filament()->getCurrentPanel()->getCurrentPage();
-
-    //     if (!$livewire || !method_exists($livewire, 'getRecord')) {
-    //         return [];
-    //     }
-
-    //     $record = $livewire->getRecord();
-
-    //     if (!$record) {
-    //         return [];
-    //     }
-
-    //     return match ($record->status) {
-    //         'masuk' => [
-    //             DetailMasukKediRelationManager::class,
-    //         ],
-    //         'bongkar' => [
-    //             DetailBongkarRelationManager::class,
-    //         ],
-    //         default => [],
-    //     };
-    // }
     public static function getRelations(): array
     {
         return [
-                //
             DetailMasukKediRelationManager::class,
             DetailBongkarRelationManager::class,
             YesRelationManager::class,

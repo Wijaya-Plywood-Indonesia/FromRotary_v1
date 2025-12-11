@@ -15,6 +15,7 @@ use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
+use Filament\Tables;
 
 class ProduksiPressDryersTable
 {
@@ -29,7 +30,7 @@ class ProduksiPressDryersTable
                 TextColumn::make('shift')
                     ->label('Shift')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'PAGI' => 'success',
                         'MALAM' => 'gray',
                     })
@@ -38,9 +39,25 @@ class ProduksiPressDryersTable
                 TextColumn::make('kendala')
                     ->label('Kendala')
                     ->limit(50)
-                    ->tooltip(fn (string $state): string => $state)
+                    ->tooltip(fn(string $state): string => $state)
                     ->toggleable(isToggledHiddenByDefault: true),
-                
+
+                Tables\Columns\BadgeColumn::make('validasiTerakhir.status')
+                    ->label('Validasi')
+                    ->colors([
+                        'success' => 'divalidasi',
+                        'warning' => 'ditangguhkan',
+                        'danger' => 'ditolak',
+                    ])
+                    ->icons([
+                        'heroicon-o-check-circle' => 'divalidasi',
+                        'heroicon-o-x-circle' => 'ditolak',
+                        'heroicon-o-exclamation-circle' => 'ditangguhkan',
+                    ])
+                    ->sortable()
+                    ->searchable(),
+
+
                 TextColumn::make('created_at')
                     ->label('Dibuat Pada')
                     ->dateTime('d/m/Y H:i')
@@ -54,7 +71,7 @@ class ProduksiPressDryersTable
                         'MALAM' => 'Malam',
                     ])
                     ->label('Filter Shift'),
-                
+
                 Filter::make('tanggal_produksi')
                     ->form([
                         \Filament\Forms\Components\DatePicker::make('from')
@@ -66,11 +83,11 @@ class ProduksiPressDryersTable
                         return $query
                             ->when(
                                 $data['from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('tanggal_produksi', '>=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal_produksi', '>=', $date),
                             )
                             ->when(
                                 $data['until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('tanggal_produksi', '<=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal_produksi', '<=', $date),
                             );
                     }),
             ])
@@ -111,13 +128,23 @@ class ProduksiPressDryersTable
 
                     ->modalHeading(fn($record) => $record->kendala ? 'Perbarui Kendala' : 'Tambah Kendala')
                     ->modalSubmitActionLabel('Simpan'),
-                EditAction::make(),
+                // Hilang jika sudah divalidasi
+                EditAction::make()
+                    ->visible(fn($record) => $record->validasiTerakhir?->status !== 'divalidasi'),
+
+                DeleteAction::make()
+                    ->visible(fn($record) => $record->validasiTerakhir?->status !== 'divalidasi'),
+
+                // View boleh tetap tampil
                 ViewAction::make(),
-                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->visible(
+                            fn($records) =>
+                            $records->every(fn($r) => $r->validasiTerakhir?->status !== 'divalidasi')
+                        ),
                 ]),
             ]);
     }

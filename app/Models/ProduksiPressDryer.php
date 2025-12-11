@@ -15,9 +15,9 @@ class ProduksiPressDryer extends Model
     ];
 
     protected $casts = [
-    'tanggal_produksi' => 'date', // atau 'datetime'
-    // casts lainnya...
-];
+        'tanggal_produksi' => 'date', // atau 'datetime'
+        // casts lainnya...
+    ];
 
 
     public function detailMasuks()
@@ -38,6 +38,11 @@ class ProduksiPressDryer extends Model
     public function validasiPressDryers()
     {
         return $this->hasMany(ValidasiPressDryer::class, 'id_produksi_dryer');
+    }
+
+    public function validasiTerakhir()
+    {
+        return $this->hasOne(ValidasiPressDryer::class, 'id_produksi_dryer')->latestOfMany();
     }
 
     public function detailPegawais()

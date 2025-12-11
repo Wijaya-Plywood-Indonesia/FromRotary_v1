@@ -130,7 +130,7 @@ class NotaKayusTable
                         // Bandingkan total batang dan kubikasi
                         $batangSama = $total1['total_batang'] == $total2['total_batang'];
                         $kubikasiSama = abs($total1['total_kubikasi'] - $total2['total_kubikasi']) < 0.0001; // toleransi desimal
-            
+                        
                         return $batangSama && $kubikasiSama;
                     })
                     ->action(function ($record) {
@@ -140,6 +140,8 @@ class NotaKayusTable
                     })
                     ->requiresConfirmation()
                     ->successNotificationTitle('Status berhasil diperbarui'),
+                
+                // ACTION CETAK NOTA (Existing)
                 Action::make('print')
                     ->label('Cetak Nota')
                     ->icon('heroicon-o-printer')
@@ -151,12 +153,27 @@ class NotaKayusTable
                         fn($record) =>
                         !$record->kayuMasuk?->detailTurusanKayus()->exists() // tetap pakai logika disable sebelumnya
                     ),
+
+                // ACTION CETAK TURUS (Baru)
+                Action::make('print_turus')
+                    ->label('Cetak Turus')
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->color('info') // Warna biru untuk membedakan dengan Nota
+                    // Asumsi route-nya bernama 'nota-kayu.turus', arahkan ke controller Turus yang baru dibuat
+                    ->url(fn($record) => route('nota-kayu.turus', $record)) 
+                    ->openUrlInNewTab()
+                    ->visible(fn($record) => $record->status !== 'Belum Diperiksa') // Muncul hanya jika sudah disetujui
+                    ->disabled(
+                        fn($record) =>
+                        !$record->kayuMasuk?->detailTurusanKayus()->exists()
+                    ),
+
                 ViewAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([
                 // BulkActionGroup::make([
-                //     DeleteBulkAction::make(),
+                //      DeleteBulkAction::make(),
                 // ]),
             ]);
     }

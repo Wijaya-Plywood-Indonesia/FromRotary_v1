@@ -88,6 +88,9 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('Rotary')
                     ->icon('heroicon-o-cog'),
 
+                NavigationGroup::make('Repair')
+                    ->icon('heroicon-o-pencil'),
+
                 NavigationGroup::make('Dryer')
                     ->icon('heroicon-o-fire'),
 

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('detail_pegawai_stik', function (Blueprint $table) {
             $table->id();
-            $table->string('tugas');
+            $table->string('tugas')->nullable();
             $table->time('masuk');
             $table->time('pulang');
             $table->string('ijin')->nullable();

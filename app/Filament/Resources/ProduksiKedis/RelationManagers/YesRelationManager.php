@@ -15,6 +15,12 @@ class YesRelationManager extends RelationManager
     protected static ?string $title = 'Validasi Hasil';
     protected static string $relationship = 'validasiKedi';
 
+    public static function canViewForRecord($ownerRecord, $pageClass): bool
+    {
+        return true;
+    }
+
+
     public function form(Schema $schema): Schema
     {
         return ValidasiKediForm::configure($schema);
@@ -25,11 +31,6 @@ class YesRelationManager extends RelationManager
     }
     public function table(Table $table): Table
     {
-        return ValidasiKedisTable::configure($table)
-            ->headerActions([
-                CreateAction::make(),
-            ])
-        ;
+        return ValidasiKedisTable::configure($table);
     }
-
 }

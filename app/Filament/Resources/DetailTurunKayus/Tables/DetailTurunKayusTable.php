@@ -20,15 +20,11 @@ class DetailTurunKayusTable
             ->query(
                 DetailTurunKayu::query()
                     ->with([
-                        'pegawai',
                         'kayuMasuk.penggunaanSupplier',
                         'kayuMasuk.penggunaanKendaraanSupplier'
                     ])
             )
-            ->columns([  // BENAR: columns(), BUKAN components()
-
-                // 1. PEKERJA
-
+            ->columns([
                 // 2. SUPPLIER
                 TextColumn::make('kayuMasuk.penggunaanSupplier.nama_supplier')
                     ->label('Supplier')
@@ -41,6 +37,11 @@ class DetailTurunKayusTable
 
                 TextColumn::make('nama_supir')
                     ->label('Nama Supir')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('jumlah_kayu')
+                    ->label('Jumlah Kayu')
                     ->searchable()
                     ->sortable(),
 
@@ -68,10 +69,7 @@ class DetailTurunKayusTable
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'selesai' => 'success',
-                        'proses' => 'warning',
                         'menunggu' => 'gray',
-                        'batal' => 'danger',
-                        default => 'gray',
                     })
                     ->sortable(),
 

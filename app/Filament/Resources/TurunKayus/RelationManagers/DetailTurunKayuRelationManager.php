@@ -4,17 +4,13 @@ namespace App\Filament\Resources\TurunKayus\RelationManagers;
 
 use App\Filament\Resources\DetailTurunKayus\Schemas\DetailTurunKayuForm;
 use App\Filament\Resources\DetailTurunKayus\Tables\DetailTurunKayusTable;
-use App\Models\TurunKayu;
+use App\Models\DetailTurunKayu;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use App\Models\DetailTurunKayu; // Pastikan Anda mengimpor Model yang benar
 
 class DetailTurunKayuRelationManager extends RelationManager
 {
-    // --- PERBAIKAN ---
-    // Nama relasi diubah menjadi huruf kecil 'detailTurunKayu'
-    // agar cocok dengan nama method relasi di Model TurunKayu Anda.
     protected static string $relationship = 'detailTurunKayu';
 
     public function form(Schema $schema): Schema
@@ -27,30 +23,36 @@ class DetailTurunKayuRelationManager extends RelationManager
         return DetailTurunKayusTable::configure($table);
     }
 
+    /**
+     * Membuat 1 DetailTurunKayu, lalu banyak PegawaiTurunKayu
+     */
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $pegawaiIds = $data['id_pegawai'] ?? [];
-        $kayuMasukId = $data['id_kayu_masuk'] ?? null;
-        $turunKayuId = $this->ownerRecord->id;
+        // Ambil lalu hapus pegawai dari data utama
+        $pegawaiIds = $data['id_pegawai'];
+        unset($data['id_pegawai']);
 
-        // Validasi wajib
-        if (empty($pegawaiIds) || !$kayuMasukId || !$turunKayuId) {
-            return [];
-        }
+        // Buat detail turunkayu
+        $detail = DetailTurunKayu::create([
+            'id_turun_kayu' => $this->ownerRecord->id,
+            'id_kayu_masuk' => $data['id_kayu_masuk'],
+            'status' => $data['status'],
+            'nama_supir' => $data['nama_supir'],
+            'jumlah_kayu' => $data['jumlah_kayu'],
+            'foto' => $data['foto'],
+        ]);
 
-        // Pastikan $pegawaiIds adalah array
-        $pegawaiIds = is_array($pegawaiIds) ? $pegawaiIds : [$pegawaiIds];
-
-        // Loop & insert 1 baris per pegawai
+        // Buat banyak pegawai pivot
         foreach ($pegawaiIds as $pegawaiId) {
-            DetailTurunKayu::create([
-                'id_turun_kayu' => $turunKayuId,
+            $detail->pegawaiTurunKayu()->create([
                 'id_pegawai' => $pegawaiId,
-                'id_kayu_masuk' => $kayuMasukId,
+                'role' => 'pegawai',
+                'jam_masuk' => now(),
+                'jam_pulang' => now(),
             ]);
         }
 
-        // Kembalikan array kosong → Filament tidak insert lagi
+        // Kosong, agar Filament tidak insert 2x
         return [];
     }
 }

@@ -10,6 +10,7 @@ class DetailBongkarKedi extends Model
 
     protected $fillable = [
         'no_palet',
+        'kode_kedi',
         'id_jenis_kayu',
         'id_ukuran',
         'kw',

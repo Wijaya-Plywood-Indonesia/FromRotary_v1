@@ -14,6 +14,8 @@ class ProduksiRotary extends Model
         'id_mesin',
         'tgl_produksi',
         'kendala',
+        'jam_kendala',
+        'jam_selesai'
     ];
 
     public function mesin()

@@ -3,9 +3,7 @@
 namespace App\Filament\Resources\DetailMasuks\Schemas;
 
 use Filament\Schemas\Schema;
-use App\Models\KayuMasuk;
 use App\Models\JenisKayu;
-use App\Models\ProduksiPressDryer;
 use App\Models\Ukuran;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -28,6 +26,10 @@ class DetailMasukForm
                         JenisKayu::orderBy('nama_kayu')->pluck('nama_kayu', 'id')
                     )
                     ->searchable()
+                    ->afterStateUpdated(function ($state) {
+                        session(['last_jenis_kayu' => $state]);
+                    })
+                    ->default(fn() => session('last_jenis_kayu'))
                     ->required(),
 
                 // Relasi ke Kayu Masuk (Optional)
@@ -38,6 +40,10 @@ class DetailMasukForm
                             ->pluck('dimensi', 'id') // ← memanggil accessor getDimensiAttribute()
                     )
                     ->searchable()
+                    ->afterStateUpdated(function ($state) {
+                        session(['last_ukuran' => $state]);
+                    })
+                    ->default(fn() => session('last_ukuran'))
                     ->required(), // Sesuai dengan migrasi
 
                 TextInput::make('kw')

@@ -69,6 +69,7 @@ class NotaBarangMasuksTable
                         return 'Nota masih memiliki detail. Hapus detailnya dulu.';
                     }),
             ])
+            ->defaultSort('created_at', 'desc')
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

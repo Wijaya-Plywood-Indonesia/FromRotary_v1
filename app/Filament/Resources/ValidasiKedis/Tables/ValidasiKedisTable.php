@@ -5,8 +5,10 @@ namespace App\Filament\Resources\ValidasiKedis\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
 
 class ValidasiKedisTable
 {
@@ -14,9 +16,6 @@ class ValidasiKedisTable
     {
         return $table
             ->columns([
-                TextColumn::make('id_produksi_kedi')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('role')
                     ->searchable(),
                 TextColumn::make('status')
@@ -32,6 +31,15 @@ class ValidasiKedisTable
             ])
             ->filters([
                 //
+            ])
+
+            ->headerActions([
+                // Create Action — HILANG jika status sudah divalidasi
+                CreateAction::make()
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
             ])
             ->recordActions([
                 EditAction::make(),
