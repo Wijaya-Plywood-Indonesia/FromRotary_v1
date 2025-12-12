@@ -4,6 +4,7 @@ namespace App\Filament\Pages\LaporanRepairs\Transformers;
 
 use Carbon\Carbon;
 use App\Models\Target;
+use Illuminate\Support\Facades\Log;
 
 class RepairDataMap
 {
@@ -12,65 +13,82 @@ class RepairDataMap
         $result = [];
 
         foreach ($collection as $produksi) {
-
             $tanggal = Carbon::parse($produksi->tanggal)->format('d/m/Y');
-            $modalData = [];
 
             foreach ($produksi->modalRepairs as $modal) {
-
                 $ukuran = $modal->ukuran->nama_ukuran ?? 'TIDAK ADA UKURAN';
                 $jenisKayu = $modal->jenisKayu->nama_kayu ?? 'TIDAK ADA JENIS';
-
-                // KW Default 1 jika kosong
                 $kw = $modal->kw ?? $modal->kualitas ?? 1;
 
-                // -----------------------------------------------------------
-                // 1. CARI TARGET SPESIFIK (Cara Ketat)
-                // -----------------------------------------------------------
-                // Mencari yang KW-nya persis sama dengan input (misal KW 1)
+                // =====================================================
+                // PERBAIKAN: Pencarian Target yang Lebih Akurat
+                // =====================================================
+
+                // 1. Cari target dengan matching exact KW
                 $targetModel = Target::where('id_mesin', $produksi->id_mesin)
                     ->where('id_ukuran', $modal->id_ukuran)
                     ->where('id_jenis_kayu', $modal->id_jenis_kayu)
-                    ->where('kode_ukuran', 'LIKE', '%' . $kw . 's')
+                    ->where('kode_ukuran', 'LIKE', 'REPAIR%' . $kw . 's')
                     ->first();
 
-                // -----------------------------------------------------------
-                // 2. CARI TARGET CADANGAN (Fallback) - INI SOLUSINYA
-                // -----------------------------------------------------------
-                // Jika cara ketat gagal (return null), kita cari target apa saja
-                // yang penting Mesin, Ukuran, dan Kayunya COCOK.
+                // 2. Fallback: Cari target dengan KW apapun (ambil yang pertama)
                 if (!$targetModel) {
                     $targetModel = Target::where('id_mesin', $produksi->id_mesin)
                         ->where('id_ukuran', $modal->id_ukuran)
                         ->where('id_jenis_kayu', $modal->id_jenis_kayu)
-                        ->where('kode_ukuran', 'LIKE', 'REPAIR%') // Pastikan kode depannya REPAIR
+                        ->where('kode_ukuran', 'LIKE', 'REPAIR%')
                         ->first();
                 }
 
-                // Ambil data dari targetModel yang ditemukan
-                // Karena pakai fallback, ini PASTI terisi (selama data target dibuat)
-                $kodeUkuranFound = $targetModel ? $targetModel->kode_ukuran : null;
-                $targetHarian = $targetModel ? $targetModel->target : ($modal->target ?? 0);
-                $jamProduksi = $targetModel ? $targetModel->jam : ($modal->jam_kerja ?? 0);
-                $potonganPerLembar = $targetModel ? $targetModel->potongan : 0;
+                // 3. Fallback terakhir: Cari berdasarkan mesin dan ukuran saja
+                if (!$targetModel) {
+                    $targetModel = Target::where('id_mesin', $produksi->id_mesin)
+                        ->where('id_ukuran', $modal->id_ukuran)
+                        ->where('kode_ukuran', 'LIKE', 'REPAIR%')
+                        ->first();
+                }
 
+                // Jika masih tidak ketemu, log warning
+                if (!$targetModel) {
+                    Log::warning("Target tidak ditemukan untuk:", [
+                        'mesin' => $produksi->id_mesin,
+                        'ukuran' => $modal->id_ukuran,
+                        'jenis_kayu' => $modal->id_jenis_kayu,
+                        'kw' => $kw
+                    ]);
+                }
+
+                // Ambil data target
+                $kodeUkuran = $targetModel?->kode_ukuran ?? "REPAIR-UNKNOWN-KW{$kw}";
+                $targetHarian = $targetModel?->target ?? ($modal->target ?? 0);
+                $jamProduksi = $targetModel?->jam ?? ($modal->jam_kerja ?? 10);
+                $potonganPerLembar = $targetModel?->potongan ?? 0;
+                $jumlahOrangTarget = $targetModel?->orang ?? 1;
+
+                // Hitung total hasil dari semua pekerja untuk modal ini
                 $totalHasil = $modal->rencanaRepairs
-                    ->flatMap
-                    ->hasilRepairs
+                    ->flatMap->hasilRepairs
                     ->sum('jumlah');
 
                 $selisih = $totalHasil - $targetHarian;
 
-                // --- HITUNG POTONGAN ---
+                // =====================================================
+                // HITUNG POTONGAN PER ORANG
+                // =====================================================
+                $jumlahPekerja = $produksi->rencanaPegawais
+                    ->filter(fn($rp) => $rp->pegawai)
+                    ->count();
+
                 $potonganPerOrang = 0;
-                $jumlahPekerja = $produksi->rencanaPegawais->filter(fn($rp) => $rp->pegawai)->count();
 
                 if ($targetHarian > 0 && $selisih < 0 && $potonganPerLembar > 0 && $jumlahPekerja > 0) {
                     $totalDenda = abs($selisih) * $potonganPerLembar;
                     $potonganPerOrangRaw = $totalDenda / $jumlahPekerja;
 
+                    // Pembulatan ke 500an terdekat
                     $ribuan = floor($potonganPerOrangRaw / 1000);
                     $ratusan = $potonganPerOrangRaw % 1000;
+
                     if ($ratusan < 300) {
                         $potonganPerOrang = $ribuan * 1000;
                     } elseif ($ratusan >= 300 && $ratusan < 800) {
@@ -80,21 +98,34 @@ class RepairDataMap
                     }
                 }
 
-                // --- MAPPING PEKERJA ---
+                // =====================================================
+                // MAPPING PEKERJA
+                // =====================================================
                 $pekerja = [];
                 $nomorMeja = '-';
 
                 foreach ($produksi->rencanaPegawais as $rp) {
-                    $pegawai = $rp->pegawai ?? null;
-                    if ($pegawai) {
-                        $jamMasukRaw = $rp->jam_masuk ?? null;
-                        $jamPulangRaw = $rp->jam_pulang ?? null;
-                        $jamMasuk = $jamMasukRaw ? Carbon::parse($jamMasukRaw)->format('H:i') : '-';
-                        $jamPulang = $jamPulangRaw ? Carbon::parse($jamPulangRaw)->format('H:i') : '-';
+                    $pegawai = $rp->pegawai;
 
-                        if (!empty($rp->nomor_meja)) {
+                    if ($pegawai) {
+                        // Ambil nomor meja (gunakan yang pertama ditemukan)
+                        if (!empty($rp->nomor_meja) && $nomorMeja === '-') {
                             $nomorMeja = $rp->nomor_meja;
                         }
+
+                        // Format jam
+                        $jamMasuk = $rp->jam_masuk
+                            ? Carbon::parse($rp->jam_masuk)->format('H:i')
+                            : '-';
+                        $jamPulang = $rp->jam_pulang
+                            ? Carbon::parse($rp->jam_pulang)->format('H:i')
+                            : '-';
+
+                        // Hitung hasil individu pekerja untuk modal ini
+                        $hasilIndividu = $rp->rencanaRepairs
+                            ->where('id_modal_repair', $modal->id)
+                            ->flatMap->hasilRepairs
+                            ->sum('jumlah');
 
                         $pekerja[] = [
                             'id' => $pegawai->kode_pegawai ?? '-',
@@ -105,31 +136,30 @@ class RepairDataMap
                             'keterangan' => $rp->keterangan ?? '-',
                             'nomor_meja' => $rp->nomor_meja ?? '-',
                             'pot_target' => $potonganPerOrang,
-                            'hasil' => $rp->rencanaRepairs
-                                ->where('id_modal_repair', $modal->id)
-                                ->flatMap
-                                ->hasilRepairs
-                                ->sum('jumlah'),
+                            'hasil' => $hasilIndividu,
                         ];
                     }
                 }
 
-                $modalData[] = [
+                // =====================================================
+                // SUSUN DATA UNTUK SETIAP KOMBINASI
+                // =====================================================
+                $result[] = [
                     'nomor_meja' => $nomorMeja,
                     'ukuran' => $ukuran,
                     'jenis_kayu' => $jenisKayu,
-                    // DATA INI YANG DITAMPILKAN DI HEADER BLADE
-                    'kode_ukuran' => $kodeUkuranFound,
+                    'kode_ukuran' => $kodeUkuran, // Kunci untuk grouping
+                    'kw' => $kw,
                     'pekerja' => $pekerja,
                     'hasil' => $totalHasil,
                     'target' => $targetHarian,
                     'jam_kerja' => $jamProduksi,
+                    'jumlah_orang_target' => $jumlahOrangTarget,
                     'selisih' => $selisih,
                     'tanggal' => $tanggal,
+                    'potongan_per_lembar' => $potonganPerLembar,
                 ];
             }
-
-            $result = array_merge($result, $modalData);
         }
 
         return $result;

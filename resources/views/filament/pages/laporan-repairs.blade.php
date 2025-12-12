@@ -14,30 +14,43 @@
             >
         </div>
     </div>
-    @endif @php $dataProduksi = $dataProduksi ?? []; $groupedByMeja =
-    collect($dataProduksi)->groupBy('nomor_meja')->sortKeys(); @endphp
+    @endif @php $dataProduksi = $dataProduksi ?? []; $groupedData =
+    collect($dataProduksi) ->groupBy(function($item) { return
+    $item['kode_ukuran'] . '|' . $item['nomor_meja']; }) ->map(function($group)
+    { $first = $group->first(); return [ 'kode_ukuran' => $first['kode_ukuran'],
+    'nomor_meja' => $first['nomor_meja'], 'ukuran' => $first['ukuran'],
+    'jenis_kayu' => $first['jenis_kayu'], 'kw' => $first['kw'], 'tanggal' =>
+    $first['tanggal'], 'jam_kerja' => $group->max('jam_kerja'), 'target' =>
+    $group->sum('target'), 'hasil' => $group->sum('hasil'), 'selisih' =>
+    $group->sum('hasil') - $group->sum('target'), 'pekerja' =>
+    $group->flatMap(fn($item) =>
+    $item['pekerja'])->unique('id')->values()->all(), 'items' => $group->all(),
+    ]; }) ->sortBy('kode_ukuran') ->values(); @endphp
 
     <div class="space-y-12 mt-4">
-        @forelse ($groupedByMeja as $nomorMeja => $produksiList) @php $first =
-        $produksiList->first(); $pekerja =
-        $produksiList->pluck('pekerja')->flatten(1); $totalPekerja =
-        $pekerja->count(); $kodeUkuranList = $produksiList->map(function($item)
-        { return !empty($item['kode_ukuran']) ? $item['kode_ukuran'] :
-        $item['ukuran']; })->unique()->filter()->implode(', '); $hasil =
-        $produksiList->sum('hasil'); $target = $produksiList->sum('target');
-        $selisih = $hasil - $target; $jamKerja =
-        $produksiList->max('jam_kerja'); $warna = $selisih >= 0 ?
-        'text-green-400' : 'text-red-400'; $tanda = $selisih >= 0 ? '+' : '';
-        @endphp
+        @forelse ($groupedData as $data) @php $totalPekerja =
+        count($data['pekerja']); $warna = $data['selisih'] >= 0 ?
+        'text-green-400' : 'text-red-400'; $tanda = $data['selisih'] >= 0 ? '+'
+        : ''; @endphp
 
         <div
             class="bg-white dark:bg-zinc-900 rounded-sm shadow-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden"
         >
             <div class="bg-zinc-800 p-4 text-white">
                 <h2 class="text-lg font-bold text-center">
-                    MEJA {{ strtoupper($nomorMeja) }} -
-                    {{ strtoupper($kodeUkuranList) }}
+                    MEJA {{ strtoupper($data["nomor_meja"]) }} -
+                    @if($data['kode_ukuran'] === 'REPAIR-NOT-FOUND')
+                    <span class="text-red-400"
+                        >{{ $data["ukuran"] }} (Target Tidak Ditemukan)</span
+                    >
+                    @else
+                    {{ strtoupper($data["kode_ukuran"]) }}
+                    @endif
                 </h2>
+                <p class="text-sm text-center text-zinc-300 mt-1">
+                    {{ $data["ukuran"] }} | {{ $data["jenis_kayu"] }} | KW
+                    {{ $data["kw"] }}
+                </p>
             </div>
 
             <div class="p-4">
@@ -49,13 +62,12 @@
                             <thead>
                                 <tr>
                                     <th
-                                        colspan="7"
+                                        colspan="8"
                                         class="p-4 text-xl font-bold text-center bg-zinc-700 text-white"
                                     >
                                         DATA PEKERJA
                                     </th>
                                 </tr>
-
                                 <tr
                                     class="bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-300 border-t border-zinc-300 dark:border-zinc-600"
                                 >
@@ -85,6 +97,11 @@
                                         Ijin
                                     </th>
                                     <th
+                                        class="p-2 text-right text-xs font-medium w-24"
+                                    >
+                                        Target
+                                    </th>
+                                    <th
                                         class="p-2 text-right text-xs font-medium w-36"
                                     >
                                         Potongan Target
@@ -98,7 +115,7 @@
                             </thead>
 
                             <tbody>
-                                @forelse ($pekerja as $i => $p)
+                                @forelse ($data['pekerja'] as $i => $p)
                                 <tr
                                     class="{{
                                         $i % 2 === 1
@@ -111,34 +128,38 @@
                                     >
                                         {{ $p["id"] ?? "-" }}
                                     </td>
-
                                     <td
                                         class="p-2 text-left text-xs border-r border-zinc-300 dark:border-zinc-700 font-medium"
                                     >
                                         {{ $p["nama"] ?? "-" }}
                                     </td>
-
                                     <td
                                         class="p-2 text-center text-xs border-r border-zinc-300 dark:border-zinc-700"
                                     >
                                         {{ $p["jam_masuk"] ?? "-" }}
                                     </td>
-
                                     <td
                                         class="p-2 text-center text-xs border-r border-zinc-300 dark:border-zinc-700"
                                     >
                                         {{ $p["jam_pulang"] ?? "-" }}
                                     </td>
-
                                     <td
                                         class="p-2 text-center text-xs border-r border-zinc-300 dark:border-zinc-700 text-yellow-600 dark:text-yellow-400"
                                     >
                                         {{ $p["ijin"] ?? "-" }}
                                     </td>
-
+                                    <td
+                                        class="p-2 text-right text-xs border-r border-zinc-300 dark:border-zinc-700 font-mono text-blue-600 dark:text-blue-400"
+                                    >
+                                        {{
+                                            number_format(
+                                                $p["target_individu"] ?? 0
+                                            )
+                                        }}
+                                    </td>
                                     <td
                                         class="p-2 text-right text-xs border-r border-zinc-300 dark:border-zinc-700 font-bold {{
-                                            $selisih < 0
+                                            $data['selisih'] < 0
                                                 ? 'text-red-600 dark:text-red-400'
                                                 : 'text-zinc-700'
                                         }}"
@@ -147,7 +168,6 @@
                                             number_format($p["pot_target"] ?? 0)
                                         }}
                                     </td>
-
                                     <td class="p-2 text-left text-xs">
                                         {{ $p["keterangan"] ?? "-" }}
                                     </td>
@@ -155,7 +175,7 @@
                                 @empty
                                 <tr>
                                     <td
-                                        colspan="7"
+                                        colspan="8"
                                         class="p-4 text-center text-zinc-500 dark:text-zinc-400 text-sm"
                                     >
                                         Tidak ada data pekerja untuk meja ini.
@@ -169,7 +189,7 @@
                             >
                                 <tr>
                                     <td
-                                        colspan="7"
+                                        colspan="8"
                                         class="p-3 text-center text-xs text-zinc-600 dark:text-zinc-400 space-x-3"
                                     >
                                         <span class="font-medium"
@@ -181,16 +201,16 @@
 
                                         <span class="font-medium">Target:</span>
                                         <strong class="font-mono">{{
-                                            number_format($target)
+                                            number_format($data["target"])
                                         }}</strong>
 
                                         <span class="text-zinc-400">|</span>
 
                                         <span class="font-medium"
-                                            >Jam Produksi :</span
+                                            >Jam Produksi:</span
                                         >
                                         <strong class="font-mono">{{
-                                            number_format($jamKerja)
+                                            number_format($data["jam_kerja"])
                                         }}</strong>
 
                                         <span class="text-zinc-400">|</span>
@@ -198,7 +218,9 @@
                                         <span class="font-medium">Hasil:</span>
                                         <strong
                                             class="font-mono {{ $warna }}"
-                                            >{{ number_format($hasil) }}</strong
+                                            >{{
+                                                number_format($data["hasil"])
+                                            }}</strong
                                         >
 
                                         <span class="text-zinc-400">|</span>
@@ -209,7 +231,9 @@
                                         <strong class="font-mono {{ $warna }}"
                                             >{{ $tanda
                                             }}{{
-                                                number_format(abs($selisih))
+                                                number_format(
+                                                    abs($data["selisih"])
+                                                )
                                             }}</strong
                                         >
 
@@ -217,7 +241,7 @@
 
                                         <span class="text-xs"
                                             >Tanggal:
-                                            {{ $first["tanggal"] }}</span
+                                            {{ $data["tanggal"] }}</span
                                         >
                                     </td>
                                 </tr>
@@ -230,7 +254,12 @@
 
         @empty
         <div class="text-center p-12 text-zinc-500 dark:text-zinc-400">
-            <p class="text-lg">Tidak ada data produksi untuk tanggal ini.</p>
+            <p class="text-lg">
+                Tidak ada data produksi repair untuk tanggal ini.
+            </p>
+            <p class="text-sm mt-2">
+                Silakan pilih tanggal lain atau periksa data di sistem.
+            </p>
         </div>
         @endforelse
     </div>
