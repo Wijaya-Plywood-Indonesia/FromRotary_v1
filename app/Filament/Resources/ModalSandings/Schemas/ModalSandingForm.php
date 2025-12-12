@@ -57,9 +57,9 @@ class ModalSandingForm
             */
             Select::make('id_barang_setengah_jadi')
                 ->label('Barang Setengah Jadi')
-                ->default(fn(callable $get) => self::lastValue($get, 'id_barang_setengah_jadi'))
-                ->options(function (callable $get) {
 
+                // OPTIONS saat create / filter
+                ->options(function (callable $get) {
                     $query = BarangSetengahJadiHp::query()
                         ->with(['ukuran', 'jenisBarang', 'grade.kategoriBarang']);
 
@@ -67,27 +67,45 @@ class ModalSandingForm
                         $query->where('id_grade', $get('grade_id'));
                     }
 
-                    if ($get('id_jenis_barang')) {
-                        $query->where('id_jenis_barang', $get('id_jenis_barang'));
+                    if ($get('jenis_barang_id')) {
+                        $query->where('id_jenis_barang', $get('jenis_barang_id'));
                     }
 
-                    if (!$get('grade_id') && !$get('id_jenis_barang')) {
+                    if (!$get('grade_id') && !$get('jenis_barang_id')) {
                         $query->limit(50);
                     }
 
                     return $query->orderBy('id', 'desc')
                         ->get()
                         ->mapWithKeys(function ($b) {
+
                             $kategori = $b->grade?->kategoriBarang?->nama_kategori ?? 'Kategori?';
                             $ukuran = $b->ukuran?->dimensi ?? 'Ukuran?';
-                            $grade = $b->grade?->nama_grade ?? 'Grade?';
                             $jenis = $b->jenisBarang?->nama_jenis_barang ?? 'Jenis?';
+                            $grade = $b->grade?->nama_grade ?? 'Grade?';
 
                             return [
-                                $b->id => "{$kategori} — {$ukuran} — {$grade} — {$jenis}",
+                                $b->id => "{$kategori} — {$ukuran} — {$grade} — {$jenis}"
                             ];
                         });
                 })
+
+                // LABEL saat EDIT (ini yang kamu butuhkan!)
+                ->getOptionLabelUsing(function ($value) {
+                    $b = BarangSetengahJadiHp::with(['ukuran', 'jenisBarang', 'grade.kategoriBarang'])
+                        ->find($value);
+
+                    if (!$b)
+                        return $value; // fallback ID
+        
+                    $kategori = $b->grade?->kategoriBarang?->nama_kategori ?? 'Kategori?';
+                    $ukuran = $b->ukuran?->dimensi ?? 'Ukuran?';
+                    $jenis = $b->jenisBarang?->nama_jenis_barang ?? 'Jenis?';
+                    $grade = $b->grade?->nama_grade ?? 'Grade?';
+
+                    return "{$kategori} — {$ukuran} — {$grade} — {$jenis}";
+                })
+
                 ->searchable()
                 ->placeholder('Pilih Barang'),
 

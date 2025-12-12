@@ -8,9 +8,12 @@ use App\Filament\Resources\ProduksiSandings\Pages\ListProduksiSandings;
 use App\Filament\Resources\ProduksiSandings\Pages\ViewProduksiSanding;
 use App\Filament\Resources\ProduksiSandings\RelationManagers\HasilSandingRelationManager;
 use App\Filament\Resources\ProduksiSandings\RelationManagers\ModalSandingRelationManager;
+use App\Filament\Resources\ProduksiSandings\RelationManagers\PegawaiSandingRelationManager;
+use App\Filament\Resources\ProduksiSandings\RelationManagers\ValidasiSandingRelationManager;
 use App\Filament\Resources\ProduksiSandings\Schemas\ProduksiSandingForm;
 use App\Filament\Resources\ProduksiSandings\Schemas\ProduksiSandingInfolist;
 use App\Filament\Resources\ProduksiSandings\Tables\ProduksiSandingsTable;
+use App\Filament\Resources\ValidasiHasilRotaries\Tables\ValidasiHasilRotariesTable;
 use App\Models\ProduksiSanding;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -47,6 +50,8 @@ class ProduksiSandingResource extends Resource
 
             ModalSandingRelationManager::class,
             HasilSandingRelationManager::class,
+            PegawaiSandingRelationManager::class,
+            ValidasiSandingRelationManager::class,
 
         ];
     }

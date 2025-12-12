@@ -2,7 +2,10 @@
 
 namespace App\Filament\Resources\HasilSandings\Tables;
 
+use App\Models\ModalSanding;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -35,11 +38,6 @@ class HasilSandingsTable
 
                 TextColumn::make('jumlah_sanding_back')
                     ->label('Back'),
-
-                TextColumn::make('mesin.nama_mesin')
-                    ->label('Mesin')
-                    ->searchable()
-                    ->sortable(),
 
                 TextColumn::make('no_palet')
                     ->label('Palet')
@@ -84,11 +82,16 @@ class HasilSandingsTable
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
             ])
+
             ->filters([
                 //
             ])
+            ->headerActions([
+                CreateAction::make(),
+            ])
             ->recordActions([
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

@@ -42,22 +42,20 @@ class HasilSandingForm
                 // BARANG SETENGAH JADI (DIPENGARUHI FILTER)
                 Select::make('id_barang_setengah_jadi')
                     ->label('Barang Setengah Jadi')
-                    ->options(function (callable $get) {
 
+                    // OPTIONS saat create / filter
+                    ->options(function (callable $get) {
                         $query = BarangSetengahJadiHp::query()
                             ->with(['ukuran', 'jenisBarang', 'grade.kategoriBarang']);
 
-                        // FILTER BY GRADE
                         if ($get('grade_id')) {
                             $query->where('id_grade', $get('grade_id'));
                         }
 
-                        // FILTER BY JENIS BARANG
                         if ($get('jenis_barang_id')) {
                             $query->where('id_jenis_barang', $get('jenis_barang_id'));
                         }
 
-                        // Batasi jika tidak ada filter
                         if (!$get('grade_id') && !$get('jenis_barang_id')) {
                             $query->limit(50);
                         }
@@ -76,14 +74,39 @@ class HasilSandingForm
                                 ];
                             });
                     })
+
+                    // LABEL saat EDIT (ini yang kamu butuhkan!)
+                    ->getOptionLabelUsing(function ($value) {
+                        $b = BarangSetengahJadiHp::with(['ukuran', 'jenisBarang', 'grade.kategoriBarang'])
+                            ->find($value);
+
+                        if (!$b)
+                            return $value; // fallback ID
+            
+                        $kategori = $b->grade?->kategoriBarang?->nama_kategori ?? 'Kategori?';
+                        $ukuran = $b->ukuran?->dimensi ?? 'Ukuran?';
+                        $jenis = $b->jenisBarang?->nama_jenis_barang ?? 'Jenis?';
+                        $grade = $b->grade?->nama_grade ?? 'Grade?';
+
+                        return "{$kategori} — {$ukuran} — {$grade} — {$jenis}";
+                    })
+
                     ->searchable()
                     ->placeholder('Pilih Barang'),
                 TextInput::make('kuantitas')
                     ->numeric()
                     ->required(),
 
-                TextInput::make('jumlah_sanding')
+                TextInput::make('jumlah_sanding_face')
+                    ->label('Jumlah Sanding Face (Pass)')
                     ->numeric()
+                    ->minValue(1)
+
+                    ->required(),
+                TextInput::make('jumlah_sanding_back')
+                    ->label('Jumlah Sanding Back (Pass)')
+                    ->numeric()
+                    ->minValue(1)
                     ->required(),
 
                 TextInput::make('no_palet')

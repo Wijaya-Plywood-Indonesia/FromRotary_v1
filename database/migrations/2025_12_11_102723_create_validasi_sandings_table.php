@@ -10,15 +10,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('validasi_repairs', function (Blueprint $table) {
+        Schema::create('validasi_sandings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_repair')
-                ->constrained('repairs')
-                ->cascadeOnDelete();
-
-            $table->string('role', 50);
-            $table->string('status', 50);
-
+            $table->foreignId('id_produksi_sanding')
+                ->constrained('produksi_sandings')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->string('role');
+            $table->string('status');
             $table->timestamps();
         });
     }
@@ -28,6 +27,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('validasi_repairs');
+        Schema::dropIfExists('validasi_sandings');
     }
 };

@@ -15,6 +15,12 @@ return new class extends Migration {
             $table->date('tanggal');
             $table->string('shift')->nullable();
             $table->string('kendala')->nullable();
+            $table->foreignId('id_mesin')
+                ->constrained('mesins')
+                ->nullable()
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+
             $table->timestamps();
         });
     }
