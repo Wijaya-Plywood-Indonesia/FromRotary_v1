@@ -15,17 +15,20 @@
         </div>
     </div>
     @endif @php $dataProduksi = $dataProduksi ?? []; $groupedData =
-    collect($dataProduksi) ->groupBy(function($item) { return
-    $item['kode_ukuran'] . '|' . $item['nomor_meja']; }) ->map(function($group)
-    { $first = $group->first(); return [ 'kode_ukuran' => $first['kode_ukuran'],
-    'nomor_meja' => $first['nomor_meja'], 'ukuran' => $first['ukuran'],
-    'jenis_kayu' => $first['jenis_kayu'], 'kw' => $first['kw'], 'tanggal' =>
-    $first['tanggal'], 'jam_kerja' => $group->max('jam_kerja'), 'target' =>
-    $group->sum('target'), 'hasil' => $group->sum('hasil'), 'selisih' =>
-    $group->sum('hasil') - $group->sum('target'), 'pekerja' =>
-    $group->flatMap(fn($item) =>
-    $item['pekerja'])->unique('id')->values()->all(), 'items' => $group->all(),
-    ]; }) ->sortBy('kode_ukuran') ->values(); @endphp
+    collect($dataProduksi) ->groupBy(function($item) { $kode =
+    $item['kode_ukuran'] ?? 'UNKNOWN'; $meja = $item['nomor_meja'] ?? '0';
+    return $kode . '|' . $meja; }) ->map(function($group) { $first =
+    $group->first(); if (!$first || !is_array($first)) { return null; } return [
+    'kode_ukuran' => $first['kode_ukuran'] ?? '-', 'nomor_meja' =>
+    $first['nomor_meja'] ?? '-', 'ukuran' => $first['ukuran'] ?? '-',
+    'jenis_kayu' => $first['jenis_kayu'] ?? '-', 'kw' => $first['kw'] ?? '-',
+    'tanggal' => $first['tanggal'] ?? '-', 'jam_kerja' =>
+    $group->max('jam_kerja') ?? 0, 'target' => $group->sum('target'), 'hasil' =>
+    $group->sum('hasil'), 'selisih' => $group->sum('hasil') -
+    $group->sum('target'), 'pekerja' => $group->flatMap(fn($item) =>
+    $item['pekerja'] ?? [])->unique('id')->values()->all(), 'items' =>
+    $group->all(), ]; }) ->filter() ->sortBy([ ['nomor_meja', 'asc'],
+    ['kode_ukuran', 'asc'], ]) ->values(); @endphp
 
     <div class="space-y-12 mt-4">
         @forelse ($groupedData as $data) @php $totalPekerja =
@@ -62,7 +65,7 @@
                             <thead>
                                 <tr>
                                     <th
-                                        colspan="8"
+                                        colspan="7"
                                         class="p-4 text-xl font-bold text-center bg-zinc-700 text-white"
                                     >
                                         DATA PEKERJA
@@ -95,11 +98,6 @@
                                         class="p-2 text-center text-xs font-medium w-16"
                                     >
                                         Ijin
-                                    </th>
-                                    <th
-                                        class="p-2 text-right text-xs font-medium w-24"
-                                    >
-                                        Target
                                     </th>
                                     <th
                                         class="p-2 text-right text-xs font-medium w-36"
@@ -149,15 +147,6 @@
                                         {{ $p["ijin"] ?? "-" }}
                                     </td>
                                     <td
-                                        class="p-2 text-right text-xs border-r border-zinc-300 dark:border-zinc-700 font-mono text-blue-600 dark:text-blue-400"
-                                    >
-                                        {{
-                                            number_format(
-                                                $p["target_individu"] ?? 0
-                                            )
-                                        }}
-                                    </td>
-                                    <td
                                         class="p-2 text-right text-xs border-r border-zinc-300 dark:border-zinc-700 font-bold {{
                                             $data['selisih'] < 0
                                                 ? 'text-red-600 dark:text-red-400'
@@ -175,7 +164,7 @@
                                 @empty
                                 <tr>
                                     <td
-                                        colspan="8"
+                                        colspan="7"
                                         class="p-4 text-center text-zinc-500 dark:text-zinc-400 text-sm"
                                     >
                                         Tidak ada data pekerja untuk meja ini.
@@ -189,7 +178,7 @@
                             >
                                 <tr>
                                     <td
-                                        colspan="8"
+                                        colspan="7"
                                         class="p-3 text-center text-xs text-zinc-600 dark:text-zinc-400 space-x-3"
                                     >
                                         <span class="font-medium"
