@@ -23,34 +23,42 @@ class DetailKomposisiForm
                 |--------------------------------------------------------------------------
                 */
                 Select::make('id_komposisi')
-                    ->label('Komposisi Utama')
-                    ->required()
-                    ->searchable()
-                    ->preload()
-                    ->options(function () {
-                        return Komposisi::query()
-                            ->with([
-                                'barangSetengahJadiHp.ukuran',
-                                'barangSetengahJadiHp.jenisBarang',
-                                'barangSetengahJadiHp.grade'
-                            ])
-                            ->limit(100)
-                            ->get()
-                            ->mapWithKeys(function ($k) {
-                                $bsj = $k->barangSetengahJadiHp;
-                                return [
-                                    $k->id => sprintf(
-                                        '%s | %s | %s',
-                                        $bsj?->ukuran?->nama_ukuran ?? 'Ukuran?',
-                                        $bsj?->jenisBarang?->nama_jenis_barang ?? 'Jenis?',
-                                        $bsj?->grade?->nama_grade ?? 'Grade?'
-                                    )
-                                ];
-                            });
-                    })
-                    ->afterStateUpdated(fn ($state) => session(['detail_last_komposisi' => $state]))
-                    ->default(fn () => session('detail_last_komposisi'))
-                    ->columnSpanFull(),
+    ->label('Komposisi Utama')
+    ->required()
+    ->searchable()
+    ->preload()
+    ->options(function () {
+        return Komposisi::query()
+            ->with([
+                'barangSetengahJadiHp.ukuran',
+                'barangSetengahJadiHp.jenisBarang',
+                'barangSetengahJadiHp.grade.kategoriBarang'
+            ])
+            ->limit(100)
+            ->get()
+            ->mapWithKeys(function ($k) {
+                $bsj = $k->barangSetengahJadiHp;
+
+                $kategori = $bsj?->grade?->kategoriBarang?->nama_kategori ?? 'Kategori?';
+                $ukuran   = $bsj?->ukuran?->nama_ukuran ?? 'Ukuran?';
+                $jenis    = $bsj?->jenisBarang?->nama_jenis_barang ?? 'Jenis?';
+                $grade    = $bsj?->grade?->nama_grade ?? 'Grade?';
+
+                return [
+                    $k->id => sprintf(
+                        '%s | %s | %s | %s',
+                        $kategori,
+                        $ukuran,
+                        $jenis,
+                        $grade
+                    )
+                ];
+            });
+    })
+    ->afterStateUpdated(fn ($state) => session(['detail_last_komposisi' => $state]))
+    ->default(fn () => session('detail_last_komposisi'))
+    ->columnSpanFull(),
+
 
                 /*
                 |--------------------------------------------------------------------------

@@ -15,4 +15,9 @@ class Komposisi extends Model
     {
         return $this->belongsTo(BarangSetengahJadiHp::class, 'id_barang_setengah_jadi_hp');
     }
+
+    public function detailKomposisis()
+    {
+        return $this->hasMany(DetailKomposisi::class, 'id_komposisi');
+    }
 }

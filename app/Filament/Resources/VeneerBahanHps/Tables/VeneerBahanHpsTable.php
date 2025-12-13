@@ -2,13 +2,14 @@
 
 namespace App\Filament\Resources\VeneerBahanHps\Tables;
 
+use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Actions\CreateAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Tables\Table;
-use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteAction;
-use Filament\Tables\Columns\TextColumn;
 
 class VeneerBahanHpsTable
 {
@@ -16,61 +17,107 @@ class VeneerBahanHpsTable
     {
         return $table
             ->columns([
-                TextColumn::make('no_palet')
-                    ->label('No. Palet')
+
+                /*
+                |------------------------------------------------------------
+                | LAPISAN
+                |------------------------------------------------------------
+                */
+                TextColumn::make('detailKomposisi.lapisan')
+                    ->label('Lapisan')
+                    ->sortable()
+                    ->alignCenter(),
+
+                /*
+                |------------------------------------------------------------
+                | JENIS BARANG (KETERANGAN + JENIS KAYU)
+                |------------------------------------------------------------
+                */
+                TextColumn::make('jenis_bahan')
+                    ->label('Jenis Barang')
+                    ->getStateUsing(fn ($record) =>
+                        trim(
+                            ($record->detailKomposisi?->keterangan ?? '-') .
+                            ' | ' .
+                            ($record->barangSetengahJadiHp?->jenisBarang?->nama_jenis_barang ?? '-')
+                        )
+                    )
+                    ->wrap()
                     ->searchable(),
 
-                TextColumn::make('jenisKayu.nama_kayu')
-                    ->label('Jenis Kayu')
-                    ->searchable()
-                    ->placeholder('N/A'),
-
-                TextColumn::make('Ukuran.nama_ukuran')
+                /*
+                |------------------------------------------------------------
+                | UKURAN
+                |------------------------------------------------------------
+                */
+                TextColumn::make('barangSetengahJadiHp.ukuran.nama_ukuran')
                     ->label('Ukuran')
-                    ->searchable(false)
-                    ->placeholder('Ukuran'),
+                    ->wrap(),
 
-                TextColumn::make('kw')
-                    ->label('Kualitas (KW)')
-                    ->searchable(),
+                /*
+                |------------------------------------------------------------
+                | GRADE
+                |------------------------------------------------------------
+                */
+                BadgeColumn::make('barangSetengahJadiHp.grade.nama_grade')
+                    ->label('Grade')
+                    ->alignCenter(),
 
+                /*
+                |------------------------------------------------------------
+                | JUMLAH LEMBAR
+                |------------------------------------------------------------
+                */
                 TextColumn::make('isi')
-                    ->label('Jumlah Lembar'),
+                    ->label('Jumlah Lembar')
+                    ->numeric()
+                    ->alignCenter(),
             ])
-            ->filters([
-                // Tempat filter jika Anda membutuhkannya
-            ])
+
+            /*
+            |------------------------------------------------------------
+            | HEADER ACTION
+            |------------------------------------------------------------
+            */
             ->headerActions([
-                // Create Action — HILANG jika status sudah divalidasi
                 CreateAction::make()
-                    ->hidden(
-                        fn($livewire) =>
+                    ->label('Tambah Veneer')
+                    ->hidden(fn ($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
             ])
-            ->recordActions([
-                // Edit Action — HILANG jika status sudah divalidasi
+
+            /*
+            |------------------------------------------------------------
+            | RECORD ACTION
+            |------------------------------------------------------------
+            */
+            ->actions([
                 EditAction::make()
-                    ->hidden(
-                        fn($livewire) =>
+                    ->hidden(fn ($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
 
-                // Delete Action — HILANG jika status sudah divalidasi
                 DeleteAction::make()
-                    ->hidden(
-                        fn($livewire) =>
+                    ->hidden(fn ($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
             ])
-            ->toolbarActions([
+
+            /*
+            |------------------------------------------------------------
+            | BULK ACTION
+            |------------------------------------------------------------
+            */
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->hidden(
-                            fn($livewire) =>
+                        ->hidden(fn ($livewire) =>
                             $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                         ),
                 ]),
-            ]);
+            ])
+
+            ->defaultSort('detailKomposisi.lapisan', 'asc');
     }
 }

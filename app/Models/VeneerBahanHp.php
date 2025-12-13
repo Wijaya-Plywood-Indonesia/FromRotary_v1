@@ -10,10 +10,9 @@ class VeneerBahanHp extends Model
 
     protected $fillable = [
         'id_produksi_hp',
+        'id_barang_setengah_jadi_hp',
+        'id_detail_komposisi',
         'no_palet',
-        'id_jenis_kayu',
-        'id_ukuran',
-        'kw',
         'isi',
     ];
 
@@ -22,13 +21,13 @@ class VeneerBahanHp extends Model
         return $this->belongsTo(ProduksiHp::class, 'id_produksi_hp');
     }
 
-    public function ukuran()
+    public function barangSetengahJadiHp()
     {
-        return $this->belongsTo(Ukuran::class, 'id_ukuran');
+        return $this->belongsTo(BarangSetengahJadiHp::class, 'id_barang_setengah_jadi_hp');
     }
 
-    public function jenisKayu()
+    public function detailKomposisi()
     {
-        return $this->belongsTo(JenisKayu::class, 'id_jenis_kayu','id');
+        return $this->belongsTo(DetailKomposisi::class, 'id_detail_komposisi');
     }
 }
