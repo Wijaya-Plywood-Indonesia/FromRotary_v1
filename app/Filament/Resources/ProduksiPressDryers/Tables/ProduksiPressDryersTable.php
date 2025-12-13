@@ -64,6 +64,8 @@ class ProduksiPressDryersTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('tanggal_produksi', 'desc')
+
             ->filters([
                 SelectFilter::make('shift')
                     ->options([

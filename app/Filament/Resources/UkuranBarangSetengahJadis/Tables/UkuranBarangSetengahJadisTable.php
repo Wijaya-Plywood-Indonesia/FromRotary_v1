@@ -18,7 +18,7 @@ class UkuranBarangSetengahJadisTable
             ->columns([
 
                 TextColumn::make('grade.kategoriBarang.nama_kategori')
-                    ->label('Jenis Barang')
+                    ->label('Kategori Barang')
                     ->sortable()
                     ->searchable(),
 

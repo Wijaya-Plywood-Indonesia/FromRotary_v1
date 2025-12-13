@@ -1,23 +1,19 @@
 <?php
 
-namespace App\Filament\Resources\RencanaKerjaHps\Schemas;
+namespace App\Filament\Resources\Komposisis\Schemas;
 
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
+use app\Models\BarangSetengahJadiHp;
+use app\Models\grade;
+use app\Models\JenisBarang;
 
-use App\Models\BarangSetengahJadiHp;
-use App\Models\Grade;
-use App\Models\JenisBarang;
-
-class RencanaKerjaHpForm
+class KomposisiForm
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
-            ->columns(2)
             ->components([
-
                 /*
                 |--------------------------------------------------------------------------
                 | FILTER GRADE (DENGAN KATEGORI)
@@ -101,17 +97,6 @@ class RencanaKerjaHpForm
                             });
                     })
                     ->columnSpanFull(),
-
-                /*
-                |--------------------------------------------------------------------------
-                | JUMLAH PRODUKSI
-                |--------------------------------------------------------------------------
-                */
-                TextInput::make('jumlah')
-                    ->label('Jumlah')
-                    ->numeric()
-                    ->minValue(1)
-                    ->required(),
             ]);
     }
 }

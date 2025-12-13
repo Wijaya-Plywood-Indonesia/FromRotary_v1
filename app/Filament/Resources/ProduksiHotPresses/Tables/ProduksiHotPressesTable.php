@@ -53,6 +53,8 @@ class ProduksiHotPressesTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+
+            ->defaultSort('tanggal_produksi', 'desc')
             ->filters([
                 Filter::make('tanggal_produksi')
                     ->form([

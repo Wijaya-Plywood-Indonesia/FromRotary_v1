@@ -16,27 +16,40 @@ class PlatformBahanHpsTable
     {
         return $table
             ->columns([
-                    TextColumn::make('no_palet')
-                        ->label('No. Palet')
-                        ->searchable(),
+                
+                // KOLOM BARU: Lapisan ke- (Memerlukan relasi detailKomposisi)
+                TextColumn::make('detailKomposisi.lapisan')
+                    ->label('Lapisan ke-')
+                    ->sortable()
+                    ->placeholder('N/A'),
+                    
+                // Kolom untuk Jenis Barang/Kayu (Melalui BarangSetengahJadiHp)
+                TextColumn::make('barangSetengahJadiHp.jenisBarang.nama_jenis_barang')
+                    ->label('Jenis Barang/Kayu')
+                    ->searchable()
+                    ->placeholder('N/A'),
 
-                    TextColumn::make('jenisKayu.nama_kayu')
-                        ->label('Jenis Kayu')
-                        ->searchable()
-                        ->placeholder('N/A'),
+                // Kolom untuk Ukuran (Melalui BarangSetengahJadiHp)
+                TextColumn::make('barangSetengahJadiHp.ukuran.nama_ukuran')
+                    ->label('Ukuran')
+                    ->searchable(false)
+                    ->placeholder('Ukuran'),
 
-                    TextColumn::make('Ukuran.nama_ukuran')
-                        ->label('Ukuran')
-                        ->searchable(false)
-                        ->placeholder('Ukuran'),
+                // Kolom untuk Kualitas/Grade (Melalui BarangSetengahJadiHp)
+                TextColumn::make('barangSetengahJadiHp.grade.nama_grade')
+                    ->label('Kualitas (Grade)')
+                    ->searchable()
+                    ->placeholder('N/A'),
 
-                    TextColumn::make('kw')
-                        ->label('Kualitas (KW)')
-                        ->searchable(),
+                // Kolom untuk Jumlah Lembar (Langsung dari PlatformBahanHp)
+                TextColumn::make('isi')
+                    ->label('Jumlah Lembar'),
 
-                    TextColumn::make('isi')
-                        ->label('Jumlah Lembar'),
-
+                // Note: Kolom 'no_palet' telah dipindahkan ke awal, tetapi jika Anda menggunakannya, 
+                // pastikan relasi KW (kualitas lama) dan Jenis Kayu (lama) diganti.
+                // TextColumn::make('no_palet') telah dihapus dari sini karena fokus ke Lapisan/Tebal.
+                // Jika masih butuh No. Palet, pindahkan ke atas.
+                // Jika kolom 'kw' masih dibutuhkan, gunakan relasi baru jika data ada di BarangSetengahJadiHp.
             ])
             ->filters([
                 // Tempat filter jika Anda membutuhkannya

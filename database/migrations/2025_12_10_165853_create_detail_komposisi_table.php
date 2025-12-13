@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('veneer_bahan_hp', function (Blueprint $table) {
+        Schema::create('detail_komposisi', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_produksi_hp')
-                ->constrained('produksi_hp')
+            $table->foreignId('id_komposisi')
+                ->nullable()
+                ->constrained('komposisi')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->foreignId('id_barang_setengah_jadi_hp')
@@ -22,13 +23,9 @@ return new class extends Migration
                 ->constrained('barang_setengah_jadi_hp')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->foreignId('id_detail_komposisi')
-                ->nullable()
-                ->constrained('detail_komposisi')
-                ->cascadeOnUpdate()
-                ->restrictOnDelete();
-            $table->integer('no_palet')->nullable();
-            $table->integer('isi');
+            $table->string('lapisan');
+
+            $table->string('keterangan')->nullable();
             $table->timestamps();
         });
     }
@@ -38,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('veneer_bahan_hp');
+        Schema::dropIfExists('detail_komposisi');
     }
 };

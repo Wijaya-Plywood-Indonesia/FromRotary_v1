@@ -17,18 +17,17 @@ return new class extends Migration
                 ->constrained('produksi_hp')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->integer('no_palet');
-            $table->foreignId('id_jenis_kayu')
+            $table->foreignId('id_barang_setengah_jadi_hp')
                 ->nullable()
-                ->constrained('jenis_kayus')
+                ->constrained('barang_setengah_jadi_hp')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->foreignId('id_ukuran')
+            $table->foreignId('id_detail_komposisi')
                 ->nullable()
-                ->constrained('ukurans')
+                ->constrained('detail_komposisi')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->integer('kw');
+            $table->integer('no_palet')->nullable();
             $table->integer('isi');
             $table->timestamps();
         });
