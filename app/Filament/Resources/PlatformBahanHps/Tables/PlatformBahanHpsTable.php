@@ -10,6 +10,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Tables\Grouping\Group; // <-- PENTING: Import Group
+use Filament\Forms\Components\TextInput;
 
 class PlatformBahanHpsTable
 {
@@ -78,7 +79,7 @@ class PlatformBahanHpsTable
 
                 // Kolom untuk Kualitas/Grade (Melalui BarangSetengahJadiHp)
                 TextColumn::make('barangSetengahJadiHp.grade.nama_grade')
-                    ->label('Kualitas (Grade)')
+                    ->label('Kw')
                     ->searchable()
                     ->placeholder('N/A'),
 
@@ -111,10 +112,17 @@ class PlatformBahanHpsTable
             ->actions([
                 // Edit Action — HILANG jika status sudah divalidasi
                 EditAction::make()
-                    ->hidden(
-                        fn($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+        ->label('Edit Jumlah')
+        ->form([
+            TextInput::make('isi')
+                ->label('Jumlah Lembar')
+                ->numeric()
+                ->required()
+                ->minValue(1),
+        ])
+        ->hidden(fn ($livewire) =>
+            $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+        ),
 
                 // Delete Action — HILANG jika status sudah divalidasi
                 // DeleteAction::make()

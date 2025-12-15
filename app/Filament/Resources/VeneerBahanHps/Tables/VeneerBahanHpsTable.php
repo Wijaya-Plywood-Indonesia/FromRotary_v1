@@ -11,6 +11,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Grouping\Group; // <-- PENTING: Import Group
+use Filament\Forms\Components\TextInput;
 
 class VeneerBahanHpsTable
 {
@@ -85,7 +86,7 @@ class VeneerBahanHpsTable
                 |------------------------------------------------------------
                 */
                 BadgeColumn::make('barangSetengahJadiHp.grade.nama_grade')
-                    ->label('Grade')
+                    ->label('Kw')
                     ->alignCenter()
                     ->colors([
                         'warning',
@@ -126,9 +127,17 @@ class VeneerBahanHpsTable
             */
             ->actions([
                 EditAction::make()
-                    ->hidden(fn ($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+        ->label('Edit Jumlah')
+        ->form([
+            TextInput::make('isi')
+                ->label('Jumlah Lembar')
+                ->numeric()
+                ->required()
+                ->minValue(1),
+        ])
+        ->hidden(fn ($livewire) =>
+            $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+        ),
 
                 // DeleteAction::make()
                 //     ->hidden(fn ($livewire) =>

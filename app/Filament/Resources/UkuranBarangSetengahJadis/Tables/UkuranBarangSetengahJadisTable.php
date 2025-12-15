@@ -9,6 +9,7 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use App\Models\Grade;
 
 class UkuranBarangSetengahJadisTable
 {
@@ -74,7 +75,19 @@ class UkuranBarangSetengahJadisTable
                 // Filter by Grade
                 SelectFilter::make('id_grade')
                     ->label('Grade')
-                    ->relationship('grade', 'nama_grade'),
+                    ->options(
+                        Grade::with('kategoriBarang')
+                            ->get()
+                            ->mapWithKeys(function ($grade) {
+                                return [
+                                    $grade->id => ($grade->kategoriBarang?->nama_kategori ?? '-') .
+                                        ' | ' .
+                                        $grade->nama_grade,
+                                ];
+                            })
+                    )
+                    ->searchable()
+                    ->preload(),
 
             ])
 
