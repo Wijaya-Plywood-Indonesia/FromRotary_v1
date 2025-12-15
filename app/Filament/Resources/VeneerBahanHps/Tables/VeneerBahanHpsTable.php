@@ -10,38 +10,63 @@ use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Grouping\Group; // <-- PENTING: Import Group
 
 class VeneerBahanHpsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            /**
+             * =============================
+             * 🔥 GROUP BY LAPISAN (Menggunakan GetTitleFromRecordUsing)
+             * =============================
+             */
+            ->groups([
+                Group::make('detailKomposisi.lapisan')
+                    ->label('Lapisan ke')
+                    // Menggunakan getTitleFromRecordUsing() untuk memformat header grup
+                    ->getTitleFromRecordUsing(function ($record) {
+                        // $record adalah model VeneerBahanHp
+                        $lapisan = $record->detailKomposisi?->lapisan ?? '-';
+                        $keterangan = $record->detailKomposisi?->keterangan ?? '';
+
+                        // Format tampilan menjadi 'Lapisan - X (Keterangan)'
+                        return " {$lapisan} ";
+                        // (" . strtoupper($keterangan) . ")
+                    })
+                    ->collapsible(), // Tambahkan collapsible agar bisa dilipat/dibuka
+            ])
+
             ->columns([
 
                 /*
                 |------------------------------------------------------------
-                | LAPISAN
+                | LAPISAN (Disembunyikan, hanya untuk Group Header)
                 |------------------------------------------------------------
                 */
                 TextColumn::make('detailKomposisi.lapisan')
                     ->label('Lapisan')
                     ->sortable()
-                    ->alignCenter(),
+                    ->alignCenter()
+                    // Kolom ini disembunyikan karena sudah ada di header grup
+                    ->toggleable(isToggledHiddenByDefault: true), 
 
                 /*
                 |------------------------------------------------------------
-                | JENIS BARANG (KETERANGAN + JENIS KAYU)
+                | JENIS BAHAN (FACE / CORE + JENIS KAYU)
                 |------------------------------------------------------------
                 */
                 TextColumn::make('jenis_bahan')
-                    ->label('Jenis Barang')
+                    ->label('Jenis Bahan')
                     ->getStateUsing(fn ($record) =>
-                        trim(
+                        strtoupper(
                             ($record->detailKomposisi?->keterangan ?? '-') .
                             ' | ' .
                             ($record->barangSetengahJadiHp?->jenisBarang?->nama_jenis_barang ?? '-')
                         )
                     )
+                    ->weight('bold')
                     ->wrap()
                     ->searchable(),
 
@@ -61,7 +86,10 @@ class VeneerBahanHpsTable
                 */
                 BadgeColumn::make('barangSetengahJadiHp.grade.nama_grade')
                     ->label('Grade')
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->colors([
+                        'warning',
+                    ]),
 
                 /*
                 |------------------------------------------------------------
@@ -71,8 +99,12 @@ class VeneerBahanHpsTable
                 TextColumn::make('isi')
                     ->label('Jumlah Lembar')
                     ->numeric()
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->weight('bold'),
             ])
+            
+            // Atur agar tabel secara default ter-grouping saat dimuat
+            ->defaultGroup('detailKomposisi.lapisan')
 
             /*
             |------------------------------------------------------------
