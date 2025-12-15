@@ -112,11 +112,11 @@ class VeneerBahanHpsTable
             |------------------------------------------------------------
             */
             ->headerActions([
-                CreateAction::make()
-                    ->label('Tambah Veneer')
-                    ->hidden(fn ($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+                // CreateAction::make()
+                //     ->label('Tambah Veneer')
+                //     ->hidden(fn ($livewire) =>
+                //         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                //     ),
             ])
 
             /*
@@ -130,10 +130,10 @@ class VeneerBahanHpsTable
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
 
-                DeleteAction::make()
-                    ->hidden(fn ($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+                // DeleteAction::make()
+                //     ->hidden(fn ($livewire) =>
+                //         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                //     ),
             ])
 
             /*
