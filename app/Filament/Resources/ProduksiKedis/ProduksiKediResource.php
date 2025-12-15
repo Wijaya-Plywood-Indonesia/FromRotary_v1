@@ -8,10 +8,12 @@ use App\Filament\Resources\ProduksiKedis\Pages\ListProduksiKedis;
 use App\Filament\Resources\ProduksiKedis\Pages\ViewProduksiKedi;
 use App\Filament\Resources\ProduksiKedis\RelationManagers\DetailBongkarRelationManager;
 use App\Filament\Resources\ProduksiKedis\RelationManagers\DetailMasukKediRelationManager;
+use App\Filament\Resources\ProduksiKedis\RelationManagers\PegawaiKediRelationManager;
 use App\Filament\Resources\ProduksiKedis\RelationManagers\YesRelationManager;
 use App\Filament\Resources\ProduksiKedis\Schemas\ProduksiKediForm;
 use App\Filament\Resources\ProduksiKedis\Schemas\ProduksiKediInfolist;
 use App\Filament\Resources\ProduksiKedis\Tables\ProduksiKedisTable;
+use App\Models\DetailPegawaiKedi;
 use App\Models\ProduksiKedi;
 use BackedEnum;
 use UnitEnum;
@@ -48,6 +50,7 @@ class ProduksiKediResource extends Resource
         return [
             DetailMasukKediRelationManager::class,
             DetailBongkarRelationManager::class,
+            PegawaiKediRelationManager::class,
             YesRelationManager::class,
         ];
     }
