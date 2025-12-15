@@ -24,9 +24,15 @@
         $produksiList->first(); $pekerja = $first['pekerja'] ?? []; $kodeUkuran
         = $first['ukuran'] ?? 'TIDAK ADA UKURAN'; $totalPekerja =
         count($pekerja); $hasil = $first['hasil'] ?? 0; $target =
-        $first['target'] ?? 0; $selisih = $first['selisih'] ?? 0; $warna =
-        $selisih >= 0 ? 'text-green-400' : 'text-red-400'; $tanda = $selisih >=
-        0 ? '+' : ''; $jamKerja = $first['jam_kerja'] ?? 0; $kendala = $first['kendala'] ?? '-';@endphp
+        $first['target'] ?? 0; $targetNormal = $first['target_normal'] ?? 0;
+        $targetPerJam = $first['target_per_jam'] ?? 0; $targetPerMenit =
+        $first['target_per_menit'] ?? 0; $selisih = $first['selisih'] ?? 0;
+        $warna = $selisih >= 0 ? 'text-green-400' : 'text-red-400'; $tanda =
+        $selisih >= 0 ? '+' : ''; $jamKerja = $first['jam_kerja'] ?? 0;
+        $jamKerjaEfektif = $first['jam_kerja_efektif'] ?? 0; $totalKendalaMenit
+        = $first['total_kendala_menit'] ?? 0; $totalDowntimeFormatted =
+        $first['total_downtime_formatted'] ?? '-'; $kendala = $first['kendala']
+        ?? '-'; $daftarKendala = $first['daftar_kendala'] ?? []; @endphp
 
         <!-- CARD MESIN -->
         <div
@@ -164,8 +170,9 @@
                             </tbody>
 
                             <tfoot
-                                class="bg-zinc-100 dark:bg-zinc-800 border-t-2 border-zinc-300 dark:border-zinc-600 space-y-2"
+                                class="bg-zinc-100 dark:bg-zinc-800 border-t-2 border-zinc-300 dark:border-zinc-600"
                             >
+                                <!-- BARIS 1: DATA UTAMA -->
                                 <tr>
                                     <td
                                         colspan="7"
@@ -180,17 +187,20 @@
 
                                         <span class="font-medium">Target:</span>
                                         <strong class="font-mono">{{
-                                            number_format($target)
+                                            number_format($targetNormal)
                                         }}</strong>
 
                                         <span class="text-zinc-400">|</span>
 
                                         <span class="font-medium"
-                                            >Jam Produksi :</span
+                                            >Jam Produksi:</span
                                         >
-                                        <strong class="font-mono">{{
-                                            number_format($jamKerja)
-                                        }}</strong>
+                                        <strong class="font-mono"
+                                            >{{
+                                                number_format($jamKerja, 1)
+                                            }}
+                                            jam</strong
+                                        >
 
                                         <span class="text-zinc-400">|</span>
 
@@ -218,18 +228,89 @@
                                             >Tanggal:
                                             {{ $first["tanggal"] }}</span
                                         >
-                                        
-                                        <span class="text-zinc-300">|</span>
-                                        
-                                        <div class="flex items-start space-x-1 max-w-xs whitespace-normal break-words"
-                                             title="{{ $kendala }}">
-                                            <span class="font-medium text-zinc-600 dark:text-zinc-400">Kendala:</span>
-                                            <span class="italic text-zinc-600 dark:text-zinc-400 text-start">
-                                                {{ $kendala }}
+
+                                        <span class="text-zinc-400">|</span>
+
+                                        <span class="font-medium"
+                                            >Total Downtime:</span
+                                        >
+                                        <strong
+                                            class="font-mono {{
+                                                $totalKendalaMenit > 0
+                                                    ? 'text-red-600 dark:text-red-400'
+                                                    : ''
+                                            }}"
+                                        >
+                                            {{ $totalDowntimeFormatted }}
+                                        </strong>
+                                    </td>
+                                </tr>
+
+                                <!-- BARIS 2: KENDALA (hanya jika ada) -->
+                                @if(count($daftarKendala) > 0)
+                                <tr>
+                                    <td
+                                        colspan="7"
+                                        class="p-3 text-xs border-t border-zinc-300 dark:border-zinc-600"
+                                    >
+                                        <div
+                                            class="flex items-start justify-center gap-2"
+                                        >
+                                            <span
+                                                class="font-medium text-zinc-600 dark:text-zinc-400 whitespace-nowrap"
+                                            >
+                                                Kendala:
                                             </span>
+                                            <div class="flex-1 max-w-3xl">
+                                                <div class="space-y-1">
+                                                    @foreach($daftarKendala as
+                                                    $k)
+                                                    <div
+                                                        class="text-zinc-700 dark:text-zinc-300"
+                                                    >
+                                                        <span
+                                                            class="font-semibold text-red-600 dark:text-red-400"
+                                                        >
+                                                            {{ $k["kendala"] }}
+                                                        </span>
+                                                        <span
+                                                            class="text-zinc-500 dark:text-zinc-400"
+                                                        >
+                                                            —
+                                                            {{
+                                                                $k[
+                                                                    "durasi_menit"
+                                                                ]
+                                                            }}
+                                                            menit ({{
+                                                                $k["jam_mulai"]
+                                                            }}
+                                                            -
+                                                            {{
+                                                                $k[
+                                                                    "jam_selesai"
+                                                                ]
+                                                            }})
+                                                        </span>
+                                                        @if($k['keterangan'] !==
+                                                        '-')
+                                                        <span
+                                                            class="text-zinc-600 dark:text-zinc-400 italic"
+                                                        >
+                                                            —
+                                                            {{
+                                                                $k["keterangan"]
+                                                            }}
+                                                        </span>
+                                                        @endif
+                                                    </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
+                                @endif
                             </tfoot>
                         </table>
                     </div>
