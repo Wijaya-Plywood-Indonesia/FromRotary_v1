@@ -102,11 +102,11 @@ class PlatformBahanHpsTable
             
             ->headerActions([
                 // Create Action — HILANG jika status sudah divalidasi
-                CreateAction::make()
-                    ->hidden(
-                        fn($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+                // CreateAction::make()
+                //     ->hidden(
+                //         fn($livewire) =>
+                //         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                //     ),
             ])
             ->actions([
                 // Edit Action — HILANG jika status sudah divalidasi
@@ -117,11 +117,11 @@ class PlatformBahanHpsTable
                     ),
 
                 // Delete Action — HILANG jika status sudah divalidasi
-                DeleteAction::make()
-                    ->hidden(
-                        fn($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+                // DeleteAction::make()
+                //     ->hidden(
+                //         fn($livewire) =>
+                //         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                //     ),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
