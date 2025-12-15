@@ -34,13 +34,13 @@ class DetailKomposisisTable
                         }
 
                         $kategori = $bsj->grade?->kategoriBarang?->nama_kategori ?? '-';
-                        $ukuran   = $bsj->ukuran?->nama_ukuran ?? '-';
-                        $jenis    = $bsj->jenisBarang?->nama_jenis_barang ?? '-';
-                        $grade    = $bsj->grade?->nama_grade ?? '-';
+                        $ukuran  = $bsj->ukuran?->nama_ukuran ?? '-';
+                        $jenis = $bsj->jenisBarang?->nama_jenis_barang ?? '-';
+                        $grade = $bsj->grade?->nama_grade ?? '-';
 
                         return "{$kategori} | {$ukuran} | {$jenis} | {$grade}";
                     })
-                    ->collapsible(), // 👈 bisa collapse / expand
+                    ->collapsible(true), // <-- PERUBAHAN DI SINI: Menyebabkan grup tertutup secara default
             ])
 
             /**
@@ -61,8 +61,8 @@ class DetailKomposisisTable
                         }
 
                         $ukuran = $bsj->ukuran?->nama_ukuran ?? '-';
-                        $grade  = $bsj->grade?->nama_grade ?? '-';
-                        $jenis  = $bsj->jenisBarang?->nama_jenis_barang ?? '-';
+                        $grade = $bsj->grade?->nama_grade ?? '-';
+                        $jenis = $bsj->jenisBarang?->nama_jenis_barang ?? '-';
 
                         return "{$jenis} | {$ukuran} | {$grade}";
                     })
@@ -78,8 +78,8 @@ class DetailKomposisisTable
                     ->badge()
                     ->color(fn ($state) => match ($state) {
                         'faceback' => 'success',
-                        'core'     => 'warning',
-                        default    => 'gray',
+                        'core'  => 'warning',
+                        default => 'gray',
                     }),
             ])
 
@@ -104,9 +104,9 @@ class DetailKomposisisTable
                             }
 
                             $kategori = $bsj->grade?->kategoriBarang?->nama_kategori ?? '-';
-                            $ukuran   = $bsj->ukuran?->nama_ukuran ?? '-';
-                            $jenis    = $bsj->jenisBarang?->nama_jenis_barang ?? '-';
-                            $grade    = $bsj->grade?->nama_grade ?? '-';
+                            $ukuran = $bsj->ukuran?->nama_ukuran ?? '-';
+                            $jenis = $bsj->jenisBarang?->nama_jenis_barang ?? '-';
+                            $grade = $bsj->grade?->nama_grade ?? '-';
 
                             return [
                                 $k->id => "{$kategori} | {$ukuran} | {$jenis} | {$grade}"
@@ -137,6 +137,6 @@ class DetailKomposisisTable
                 ]),
             ])
 
-            ->defaultGroup('id_komposisi'); // 👈 langsung ter-group
+            ->defaultGroup('id_komposisi'); 
     }
 }
