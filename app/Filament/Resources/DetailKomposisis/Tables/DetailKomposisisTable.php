@@ -8,46 +8,51 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Grouping\Group;
 
 // Models
 use App\Models\Komposisi;
-use App\Models\BarangSetengahJadiHp;
 
 class DetailKomposisisTable
 {
     public static function configure(Table $table): Table
     {
         return $table
-            ->columns([
-
-                // ======================
-                // 🔥 Kolom Komposisi
-                // ======================
-                TextColumn::make('komposisi_detail')
+            /**
+             * ======================
+             * 🔥 GROUPING KOMPOSISI
+             * ======================
+             */
+            ->groups([
+                Group::make('id_komposisi')
                     ->label('Komposisi')
-                    ->getStateUsing(function ($record) {
-                        if (!$record->komposisi || !$record->komposisi->barangSetengahJadiHp) {
-                            return '—';
-                        }
+                    ->getTitleFromRecordUsing(function ($record) {
+                        $bsj = $record->komposisi?->barangSetengahJadiHp;
 
-                        $bsj = $record->komposisi->barangSetengahJadiHp;
+                        if (!$bsj) {
+                            return 'Komposisi Tidak Diketahui';
+                        }
 
                         $kategori = $bsj->grade?->kategoriBarang?->nama_kategori ?? '-';
                         $ukuran   = $bsj->ukuran?->nama_ukuran ?? '-';
-                        $grade    = $bsj->grade?->nama_grade ?? '-';
                         $jenis    = $bsj->jenisBarang?->nama_jenis_barang ?? '-';
+                        $grade    = $bsj->grade?->nama_grade ?? '-';
 
                         return "{$kategori} | {$ukuran} | {$jenis} | {$grade}";
                     })
-                    ->searchable()
-                    ->sortable(),
+                    ->collapsible(), // 👈 bisa collapse / expand
+            ])
 
-                // ======================
-                // Barang Setengah Jadi
-                // ======================
+            /**
+             * ======================
+             * 📋 COLUMNS (DETAIL)
+             * ======================
+             */
+            ->columns([
+
+                // Barang Veneer (child row)
                 TextColumn::make('barang_setengah_jadi_hp_detail')
-                    ->label('Barang Setengah Jadi')
+                    ->label('Bahan (Veneer)')
                     ->getStateUsing(function ($record) {
                         $bsj = $record->barangSetengahJadiHp;
 
@@ -55,87 +60,83 @@ class DetailKomposisisTable
                             return '—';
                         }
 
-                        $kategori = $bsj->grade?->kategoriBarang?->nama_kategori ?? '-';
-                        $ukuran   = $bsj->ukuran?->nama_ukuran ?? '-';
-                        $grade    = $bsj->grade?->nama_grade ?? '-';
-                        $jenis    = $bsj->jenisBarang?->nama_jenis_barang ?? '-';
+                        $ukuran = $bsj->ukuran?->nama_ukuran ?? '-';
+                        $grade  = $bsj->grade?->nama_grade ?? '-';
+                        $jenis  = $bsj->jenisBarang?->nama_jenis_barang ?? '-';
 
-                        return "{$kategori} | {$ukuran} | {$grade} | {$jenis}";
+                        return "{$jenis} | {$ukuran} | {$grade}";
                     })
-                    ->sortable()
                     ->searchable(),
 
-                // ======================
-                // Lapisan
-                // ======================
                 TextColumn::make('lapisan')
                     ->label('Lapisan')
-                    ->sortable()
-                    ->numeric(),
+                    ->numeric()
+                    ->sortable(),
 
-                // ======================
-                // Keterangan
-                // ======================
                 TextColumn::make('keterangan')
                     ->label('Keterangan')
-                    ->wrap()
-                    ->searchable(),
+                    ->badge()
+                    ->color(fn ($state) => match ($state) {
+                        'faceback' => 'success',
+                        'core'     => 'warning',
+                        default    => 'gray',
+                    }),
             ])
 
-            // ======================
-            // FILTER
-            // ======================
+            /**
+             * ======================
+             * 🔎 FILTER
+             * ======================
+             */
             ->filters([
                 SelectFilter::make('id_komposisi')
-                    ->label('Filter Komposisi')
-                    ->options(function () {
-                        return Komposisi::with(['barangSetengahJadiHp.ukuran', 'barangSetengahJadiHp.grade', 'barangSetengahJadiHp.jenisBarang'])
-                            ->get()
-                            ->mapWithKeys(function ($k) {
-                                $bsj = $k->barangSetengahJadiHp;
+                    ->label('Komposisi')
+                    ->options(
+                        Komposisi::with([
+                            'barangSetengahJadiHp.ukuran',
+                            'barangSetengahJadiHp.grade.kategoriBarang',
+                            'barangSetengahJadiHp.jenisBarang'
+                        ])->get()->mapWithKeys(function ($k) {
+                            $bsj = $k->barangSetengahJadiHp;
 
-                                $kategori = $bsj->grade?->kategoriBarang?->nama_kategori ?? '-';
-                                $ukuran   = $bsj->ukuran?->nama_ukuran ?? '-';
-                                $grade    = $bsj->grade?->nama_grade ?? '-';
-                                $jenis    = $bsj->jenisBarang?->nama_jenis_barang ?? '-';
+                            if (!$bsj) {
+                                return [];
+                            }
 
-                                return [
-                                    $k->id => "{$kategori} | {$ukuran} | {$grade} | {$jenis}"
-                                ];
-                            });
-                    })
-                    ->searchable()
-                    ->preload(),
+                            $kategori = $bsj->grade?->kategoriBarang?->nama_kategori ?? '-';
+                            $ukuran   = $bsj->ukuran?->nama_ukuran ?? '-';
+                            $jenis    = $bsj->jenisBarang?->nama_jenis_barang ?? '-';
+                            $grade    = $bsj->grade?->nama_grade ?? '-';
 
-                SelectFilter::make('id_barang_setengah_jadi_hp')
-                    ->label('Filter Barang Jadi')
-                    ->relationship('barangSetengahJadiHp', 'id')
-                    ->getOptionLabelFromRecordUsing(function ($record) {
-                        $kategori = $record->grade?->kategoriBarang?->nama_kategori ?? '-';
-                        $ukuran   = $record->ukuran?->nama_ukuran ?? '-';
-                        $grade    = $record->grade?->nama_grade ?? '-';
-                        $jenis    = $record->jenisBarang?->nama_jenis_barang ?? '-';
-
-                        return "{$kategori} | {$ukuran} | {$grade} | {$jenis}";
-                    })
+                            return [
+                                $k->id => "{$kategori} | {$ukuran} | {$jenis} | {$grade}"
+                            ];
+                        })
+                    )
                     ->searchable()
                     ->preload(),
             ])
 
-            // ======================
-            // ACTIONS
-            // ======================
+            /**
+             * ======================
+             * ✏️ ACTIONS
+             * ======================
+             */
             ->actions([
                 EditAction::make(),
             ])
 
-            // ======================
-            // BULK
-            // ======================
+            /**
+             * ======================
+             * 🧹 BULK
+             * ======================
+             */
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+
+            ->defaultGroup('id_komposisi'); // 👈 langsung ter-group
     }
 }

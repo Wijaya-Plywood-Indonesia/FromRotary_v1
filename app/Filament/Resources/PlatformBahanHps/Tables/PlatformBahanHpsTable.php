@@ -9,25 +9,66 @@ use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
+use Filament\Tables\Grouping\Group; // <-- PENTING: Import Group
 
 class PlatformBahanHpsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            /**
+             * =============================
+             * 🔥 GROUP BY LAPISAN
+             * =============================
+             */
+            ->groups([
+                Group::make('detailKomposisi.lapisan')
+                    ->label('Lapisan')
+                    // Menggunakan getTitleFromRecordUsing() untuk memformat header grup
+                    ->getTitleFromRecordUsing(function ($record) {
+                        // Mengambil data lapisan dan keterangan dari relasi
+                        $lapisan = $record->detailKomposisi?->lapisan ?? 'N/A';
+                        $keterangan = $record->detailKomposisi?->keterangan ?? '';
+
+                        // Format tampilan: "Lapisan - X (Keterangan)"
+                        return " {$lapisan} ";
+                        // (" . strtoupper($keterangan) . ")
+                    })
+                    ->collapsible(), // Tambahkan agar grup bisa dilipat
+            ])
+            
             ->columns([
                 
-                // KOLOM BARU: Lapisan ke- (Memerlukan relasi detailKomposisi)
+                /*
+                |------------------------------------------------------------
+                | LAPISAN (Disembunyikan, hanya untuk Group Header)
+                |------------------------------------------------------------
+                */
                 TextColumn::make('detailKomposisi.lapisan')
                     ->label('Lapisan ke-')
                     ->sortable()
-                    ->placeholder('N/A'),
+                    ->placeholder('N/A')
+                    // Kolom ini disembunyikan karena sudah diwakili oleh Group Header
+                    ->toggleable(isToggledHiddenByDefault: true), 
                     
-                // Kolom untuk Jenis Barang/Kayu (Melalui BarangSetengahJadiHp)
-                TextColumn::make('barangSetengahJadiHp.jenisBarang.nama_jenis_barang')
-                    ->label('Jenis Barang/Kayu')
-                    ->searchable()
-                    ->placeholder('N/A'),
+                /*
+                |------------------------------------------------------------
+                | JENIS BAHAN (Keterangan + Jenis Kayu Digabung)
+                |------------------------------------------------------------
+                */
+                TextColumn::make('jenis_bahan_detail')
+                    ->label('Jenis Bahan/Kayu')
+                    // Gabungkan Keterangan (FACE/CORE) dan Jenis Kayu
+                    ->getStateUsing(fn ($record) => 
+                        strtoupper(
+                            ($record->detailKomposisi?->keterangan ?? '-') .
+                            ' | ' .
+                            ($record->barangSetengahJadiHp?->jenisBarang?->nama_jenis_barang ?? '-')
+                        )
+                    )
+                    ->weight('bold')
+                    ->wrap()
+                    ->searchable(),
 
                 // Kolom untuk Ukuran (Melalui BarangSetengahJadiHp)
                 TextColumn::make('barangSetengahJadiHp.ukuran.nama_ukuran')
@@ -43,17 +84,22 @@ class PlatformBahanHpsTable
 
                 // Kolom untuk Jumlah Lembar (Langsung dari PlatformBahanHp)
                 TextColumn::make('isi')
-                    ->label('Jumlah Lembar'),
+                    ->label('Jumlah Lembar')
+                    ->numeric()
+                    ->alignCenter(),
 
-                // Note: Kolom 'no_palet' telah dipindahkan ke awal, tetapi jika Anda menggunakannya, 
-                // pastikan relasi KW (kualitas lama) dan Jenis Kayu (lama) diganti.
-                // TextColumn::make('no_palet') telah dihapus dari sini karena fokus ke Lapisan/Tebal.
-                // Jika masih butuh No. Palet, pindahkan ke atas.
-                // Jika kolom 'kw' masih dibutuhkan, gunakan relasi baru jika data ada di BarangSetengahJadiHp.
+                // Note: Kolom no_palet (Jika Anda membutuhkannya)
+                // TextColumn::make('no_palet') 
+                //     ->label('No. Palet'), 
             ])
+            
+            // Atur agar tabel secara default ter-grouping saat dimuat
+            ->defaultGroup('detailKomposisi.lapisan')
+
             ->filters([
                 // Tempat filter jika Anda membutuhkannya
             ])
+            
             ->headerActions([
                 // Create Action — HILANG jika status sudah divalidasi
                 CreateAction::make()
@@ -62,7 +108,7 @@ class PlatformBahanHpsTable
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
             ])
-            ->recordActions([
+            ->actions([
                 // Edit Action — HILANG jika status sudah divalidasi
                 EditAction::make()
                     ->hidden(
@@ -77,7 +123,7 @@ class PlatformBahanHpsTable
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->hidden(
@@ -85,6 +131,9 @@ class PlatformBahanHpsTable
                             $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                         ),
                 ]),
-            ]);
+            ])
+            
+            // Default sort dipertahankan agar sesuai dengan urutan lapisan
+            ->defaultSort('detailKomposisi.lapisan', 'asc');
     }
 }
