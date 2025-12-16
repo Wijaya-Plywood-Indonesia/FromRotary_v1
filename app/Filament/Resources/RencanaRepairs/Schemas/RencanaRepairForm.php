@@ -51,14 +51,8 @@ class RencanaRepairForm
 
             Select::make('id_rencana_pegawai')
                 ->label('Penempatan Meja & Pegawai')
-                ->options(function () use ($produksiId, $record) {
-                    $usedPegawaiIds = RencanaRepair::where('id_produksi_repair', $produksiId)
-                        ->when($record, fn($q) => $q->where('id', '!=', $record->id))
-                        ->pluck('id_rencana_pegawai')
-                        ->toArray();
-
+                ->options(function () use ($produksiId) {
                     return RencanaPegawai::where('id_produksi_repair', $produksiId)
-                        ->whereNotIn('id', $usedPegawaiIds)
                         ->with('pegawai')
                         ->orderBy('nomor_meja')
                         ->get()
@@ -74,7 +68,8 @@ class RencanaRepairForm
                 ->searchable()
                 ->preload()
                 ->required()
-                ->placeholder('Pilih meja dan pegawai...'),
+                ->placeholder('Pilih meja & pegawai...'),
+
 
             TextInput::make('kw')
                 ->label('KW')

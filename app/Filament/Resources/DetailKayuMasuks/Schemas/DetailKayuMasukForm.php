@@ -104,28 +104,9 @@ class DetailKayuMasukForm
                 // ==========================
                 TextInput::make('diameter')
                     ->label('Diameter (cm)')
-                    ->placeholder('13 cm - 50 cm')
+                    ->placeholder('Masukkan Diameter dalam cm')
                     ->required()
-                    ->numeric()
-                    ->rule('between:13,50')
-                    ->validationMessages([
-                        'between' => 'Wijaya hanya menerima kayu dengan diameter antara 13 cm hingga 50 cm.',
-                    ])
-                    ->afterStateUpdated(function ($state) {
-                        if ($state < 13) {
-                            Notification::make()
-                                ->title('Ukuran Kayu Terlalu Kecil')
-                                ->body('Wijaya Tidak Menerima Kayu Berukuran Kurang Dari 13 cm.')
-                                ->warning()
-                                ->send();
-                        } elseif ($state > 50) {
-                            Notification::make()
-                                ->title('Ukuran Kayu Terlalu Besar')
-                                ->body('Wijaya Tidak Menerima Kayu Berukuran Lebih Dari 50 cm.')
-                                ->warning()
-                                ->send();
-                        }
-                    }),
+                    ->numeric(),
 
                 TextInput::make('jumlah_batang')
                     ->label('Jumlah Batang')

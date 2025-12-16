@@ -119,6 +119,8 @@ class DetailTurusanKayuForm
                         cookie()->queue('filament_local_storage_detail_kayu_masuk.grade', $state, 60 * 24 * 30); // 30 hari
                     }),
                 TextInput::make('diameter')
+                    ->label('Diameter (cm)')
+                    ->placeholder('Masukkan Diameter dalam cm')
                     ->required()
                     ->numeric(),
 

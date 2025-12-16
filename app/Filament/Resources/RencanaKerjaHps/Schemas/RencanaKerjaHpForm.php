@@ -5,14 +5,10 @@ namespace App\Filament\Resources\RencanaKerjaHps\Schemas;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Log;
 
-use App\Models\JenisBarang;
-use App\Models\Grade;
-use App\Models\Ukuran;
 use App\Models\BarangSetengahJadiHp;
-use Filament\Forms\Components\Hidden;
+use App\Models\Grade;
+use App\Models\JenisBarang;
 
 class RencanaKerjaHpForm
 {
@@ -21,6 +17,34 @@ class RencanaKerjaHpForm
         return $schema
             ->columns(2)
             ->components([
+
+                /*
+                |--------------------------------------------------------------------------
+                | FILTER GRADE (DENGAN KATEGORI)
+                |--------------------------------------------------------------------------
+                */
+                Select::make('grade_id')
+                    ->label('Grade')
+                    ->options(
+                        Grade::with('kategoriBarang')
+                            ->orderBy('id_kategori_barang')
+                            ->orderBy('nama_grade')
+                            ->get()
+                            ->mapWithKeys(fn($g) => [
+                                $g->id => ($g->kategoriBarang?->nama_kategori ?? 'Tanpa Kategori')
+                                    . ' | ' . $g->nama_grade
+                            ])
+                    )
+                    ->reactive()
+                    ->searchable()
+                    ->placeholder('Semua Grade')
+                    ->dehydrated(false),
+
+                /*
+                |--------------------------------------------------------------------------
+                | FILTER JENIS BARANG
+                |--------------------------------------------------------------------------
+                */
                 Select::make('jenis_barang_id')
                     ->label('Jenis Barang')
                     ->options(
@@ -28,115 +52,75 @@ class RencanaKerjaHpForm
                             ->pluck('nama_jenis_barang', 'id')
                     )
                     ->reactive()
-                    ->afterStateUpdated(function (callable $set) {
-                        Log::info('[FORM] jenis_barang_id diubah — reset semua field dependent.');
-
-                        $set('id_grade', null);
-                        $set('id_ukuran', null);
-                        $set('id_barang_setengah_jadi_hp', null);
-                        $set('barang_setengah_jadi_text', null);
-                    })
-                    ->required(),
-
-                Select::make('id_grade')
-                    ->label('Grade')
-                    ->reactive()
-                    ->options(
-                        fn(callable $get) =>
-                        $get('jenis_barang_id')
-                        ? Grade::whereHas('barangSetengahJadiHp', function (Builder $q) use ($get) {
-                            $q->where('id_jenis_barang', $get('jenis_barang_id'));
-                        })
-                            ->orderBy('nama_grade')
-                            ->pluck('nama_grade', 'id')
-                        : []
-                    )
-                    ->afterStateUpdated(function (callable $set) {
-                        Log::info('[FORM] id_grade diubah — reset ukuran & barang_setengah_jadi.');
-
-                        $set('id_ukuran', null);
-                        $set('id_barang_setengah_jadi_hp', null);
-                        $set('barang_setengah_jadi_text', null);
-                    })
-                    ->required(),
-
-                Select::make('id_ukuran')
-                    ->label('Ukuran')
-                    ->reactive()
                     ->searchable()
-                    ->options(
-                        fn(callable $get) =>
-                        (!$get('jenis_barang_id') || !$get('id_grade'))
-                        ? []
-                        : Ukuran::whereHas('barangSetengahJadiHp', function (Builder $q) use ($get) {
-                            $q->where('id_jenis_barang', $get('jenis_barang_id'))
-                                ->where('id_grade', $get('id_grade'));
-                        })
-                            ->pluck('nama_ukuran', 'id')
-                    )
-                    ->afterStateUpdated(function (callable $get, callable $set) {
+                    ->placeholder('Semua Jenis Barang')
+                    ->dehydrated(false),
 
-                        Log::info('[FORM] afterStateUpdated(id_ukuran) DIPANGGIL', [
-                            'jenis_barang_id' => $get('jenis_barang_id'),
-                            'id_grade' => $get('id_grade'),
-                            'id_ukuran' => $get('id_ukuran'),
-                        ]);
+                /*
+                |--------------------------------------------------------------------------
+                | BARANG SETENGAH JADI (HASIL FILTER)
+                |--------------------------------------------------------------------------
+                */
+                Select::make('id_barang_setengah_jadi_hp')
+    ->label('Barang Setengah Jadi')
+    ->required()
+    ->searchable()
+    ->options(function (callable $get) {
 
-                        if (!$get('jenis_barang_id') || !$get('id_grade') || !$get('id_ukuran')) {
-                            Log::warning('[FORM] Kombinasi belum lengkap — reset id_barang_setengah_jadi_hp.');
+        $query = BarangSetengahJadiHp::query()
+            ->with([
+                'ukuran',
+                'jenisBarang',
+                'grade.kategoriBarang',
+            ])
+            // ✅ AMAN: pakai relasi, bukan nama tabel
+            ->joinRelationship('jenisBarang')
+            ->joinRelationship('ukuran');
 
-                            $set('id_barang_setengah_jadi_hp', null);
-                            $set('barang_setengah_jadi_text', null);
-                            return;
-                        }
+        // FILTER GRADE
+        if ($get('grade_id')) {
+            $query->where('barang_setengah_jadi_hp.id_grade', $get('grade_id'));
+        }
 
-                        $barang = BarangSetengahJadiHp::where('id_jenis_barang', $get('jenis_barang_id'))
-                            ->where('id_grade', $get('id_grade'))
-                            ->where('id_ukuran', $get('id_ukuran'))
-                            ->with(['jenisBarang', 'grade', 'ukuran'])
-                            ->first();
+        // FILTER JENIS BARANG (opsional)
+        if ($get('jenis_barang_id')) {
+            $query->where('barang_setengah_jadi_hp.id_jenis_barang', $get('jenis_barang_id'));
+        }
 
-                        Log::info('[FORM] Hasil Query barang_setengah_jadi_hp', [
-                            'query_result' => $barang,
-                        ]);
+        // 🔥 URUTAN SESUAI KEINGINAN
+        $query
+            ->orderBy('jenis_barang.nama_jenis_barang', 'asc') // Meranti → Sengon
+            ->orderBy('ukurans.tebal', 'asc')                  // 3 → 4 → 5
+            ->orderBy('barang_setengah_jadi_hp.id', 'asc');
 
-                        if ($barang) {
-                            Log::info('[FORM] Barang ditemukan, set id_barang_setengah_jadi_hp', [
-                                'id_barang_setengah_jadi_hp' => $barang->id,
-                            ]);
+        return $query
+            ->limit(100)
+            ->get()
+            ->mapWithKeys(function ($b) {
 
-                            $set('id_barang_setengah_jadi_hp', $barang->id);
-                            $set(
-                                'barang_setengah_jadi_text',
-                                $barang->jenisBarang->nama_jenis_barang . ' | ' .
-                                $barang->grade->nama_grade . ' | ' .
-                                $barang->ukuran->nama_ukuran
-                            );
-                        } else {
-                            Log::error('[FORM] KOMBINASI TIDAK DITEMUKAN!');
+                $kategori = $b->grade?->kategoriBarang?->nama_kategori ?? '-';
+                $ukuran   = $b->ukuran?->nama_ukuran ?? '-';
+                $grade    = $b->grade?->nama_grade ?? '-';
+                $jenis    = $b->jenisBarang?->nama_jenis_barang ?? '-';
 
-                            $set('id_barang_setengah_jadi_hp', null);
-                            $set('barang_setengah_jadi_text', '⚠ KOMBINASI TIDAK TERDAFTAR');
-                        }
-                    })
-                    ->required(),
+                return [
+                    $b->id => "{$kategori} | {$ukuran} | {$grade} | {$jenis}"
+                ];
+            });
+    })
+    ->columnSpanFull(),
 
+
+                /*
+                |--------------------------------------------------------------------------
+                | JUMLAH PRODUKSI
+                |--------------------------------------------------------------------------
+                */
                 TextInput::make('jumlah')
                     ->label('Jumlah')
                     ->numeric()
+                    ->minValue(1)
                     ->required(),
-
-                TextInput::make('barang_setengah_jadi_text')
-                    ->label('Barang Setengah Jadi')
-                    ->disabled()
-                    ->dehydrated(false)
-                    ->columnSpanFull(),
-
-
-                // FIX UTAMA
-                Hidden::make('id_barang_setengah_jadi_hp')
-                    ->required()
-                    ->dehydrated(true),
             ]);
     }
 }

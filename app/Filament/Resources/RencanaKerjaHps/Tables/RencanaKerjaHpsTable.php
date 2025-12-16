@@ -17,44 +17,59 @@ class RencanaKerjaHpsTable
         return $table
             ->columns([
 
+                TextColumn::make('grade_display')
+                    ->label('Grade')
+                    ->getStateUsing(fn ($record) =>
+                        ($record->barangSetengahJadiHp?->grade?->kategoriBarang?->nama_kategori ?? 'Tanpa Kategori')
+                        . ' | ' .
+                        ($record->barangSetengahJadiHp?->grade?->nama_grade ?? '-')
+                    )
+                    ->sortable(),
+
                 TextColumn::make('barangSetengahJadiHp.jenisBarang.nama_jenis_barang')
                     ->label('Jenis Barang')
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('barangSetengahJadiHp.grade.nama_grade')
+                TextColumn::make('grade_display')
                     ->label('Grade')
+                    ->getStateUsing(fn ($record) =>
+                        ($record->barangSetengahJadiHp?->grade?->kategoriBarang?->nama_kategori ?? 'Tanpa Kategori')
+                        . ' | ' .
+                        ($record->barangSetengahJadiHp?->grade?->nama_grade ?? '-')
+                    )
                     ->sortable(),
 
                 TextColumn::make('barangSetengahJadiHp.ukuran.nama_ukuran')
-                    ->label('Ukuran'),
+                    ->label('Ukuran')
+                    ->sortable(),
 
-
+                /*
+                |----------------------------------------------------------
+                | JUMLAH
+                |----------------------------------------------------------
+                */
                 TextColumn::make('jumlah')
                     ->label('Jumlah')
                     ->alignCenter(),
-
-            ])
-            ->filters([
-                //
             ])
             ->headerActions([
                 CreateAction::make()
                     ->hidden(
-                        fn($livewire) =>
+                        fn ($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
             ])
             ->recordActions([
                 EditAction::make()
                     ->hidden(
-                        fn($livewire) =>
+                        fn ($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
 
                 DeleteAction::make()
                     ->hidden(
-                        fn($livewire) =>
+                        fn ($livewire) =>
                         $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                     ),
             ])
@@ -62,7 +77,7 @@ class RencanaKerjaHpsTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->hidden(
-                            fn($livewire) =>
+                            fn ($livewire) =>
                             $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
                         ),
                 ]),

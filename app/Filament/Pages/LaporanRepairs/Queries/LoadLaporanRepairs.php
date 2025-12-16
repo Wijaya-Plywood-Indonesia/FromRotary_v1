@@ -9,14 +9,15 @@ class LoadLaporanRepairs
     public static function run(string $tgl)
     {
         return ProduksiRepair::with([
+            // Relasi modal repair
             'modalRepairs.ukuran',
             'modalRepairs.jenisKayu',
+            'modalRepairs.rencanaRepairs.hasilRepairs',
 
-            // Ambil semua pekerja hari itu
+            // Relasi pekerja
             'rencanaPegawais.pegawai',
-
-            // Ambil semua hasil per pekerja
             'rencanaPegawais.rencanaRepairs.hasilRepairs',
+
         ])
             ->whereDate('tanggal', $tgl)
             ->get();
