@@ -14,7 +14,9 @@ class ModalSandingObserver
     {
         //
         // Cek apakah sudah ada hasil sanding untuk produksi ini
-        $exists = HasilSanding::where('id_produksi_sanding', $modalSanding->id_produksi_sanding)->exists();
+        $exists = HasilSanding::where('id_produksi_sanding', $modalSanding->id_produksi_sanding)
+            ->where('no_palet', $modalSanding->no_palet)
+            ->exists();
 
         if ($exists) {
             // Jika sudah ada, hentikan agar tidak duplikasi

@@ -121,6 +121,7 @@ class DetailTurusanKayuForm
                 TextInput::make('diameter')
                     ->required()
                     ->numeric(),
+
                 TextInput::make('kuantitas')
                     ->required()
                     ->numeric(),
