@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('detail_mesin', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_mesin_dryer')->nullable();
-            $table->integer('jam_kerja_mesin')->default(12);
+            $table->integer('jam_kerja_mesin');
             // Foreign Key ke tabel induk
             $table->foreignId('id_produksi_dryer')
                 ->constrained('produksi_press_dryers')
