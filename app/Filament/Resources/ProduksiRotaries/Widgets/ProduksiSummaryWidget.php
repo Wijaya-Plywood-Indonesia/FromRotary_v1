@@ -69,7 +69,78 @@ class ProduksiSummaryWidget extends Widget
             ->groupBy('lahans.kode_lahan', 'lahans.nama_lahan')
             ->orderBy('lahans.kode_lahan')
             ->get();
-
+        // ======================
+// TOTAL PER LAHAN - JENIS KAYU - KW
+// ======================
+        $perLahanJenisKayuKw = DetailHasilPaletRotary::query()
+            ->where('detail_hasil_palet_rotaries.id_produksi', $produksiId)
+            ->join(
+                'penggunaan_lahan_rotaries',
+                'penggunaan_lahan_rotaries.id',
+                '=',
+                'detail_hasil_palet_rotaries.id_penggunaan_lahan'
+            )
+            ->join(
+                'lahans',
+                'lahans.id',
+                '=',
+                'penggunaan_lahan_rotaries.id_lahan'
+            )
+            ->join(
+                'jenis_kayus',
+                'jenis_kayus.id',
+                '=',
+                'penggunaan_lahan_rotaries.id_jenis_kayu'
+            )
+            ->selectRaw('
+        lahans.id                AS lahan_id,
+        lahans.kode_lahan,
+        lahans.nama_lahan,
+        jenis_kayus.id           AS jenis_kayu_id,
+        jenis_kayus.nama_kayu  AS jenis_kayu,
+        detail_hasil_palet_rotaries.kw,
+        SUM(CAST(detail_hasil_palet_rotaries.total_lembar AS UNSIGNED)) AS total
+    ')
+            ->groupBy(
+                'lahans.id',
+                'lahans.kode_lahan',
+                'lahans.nama_lahan',
+                'jenis_kayus.id',
+                'jenis_kayus.nama_kayu',
+                'detail_hasil_palet_rotaries.kw'
+            )
+            ->orderBy('lahans.kode_lahan')
+            ->orderBy('jenis_kayus.nama_kayu')
+            ->orderBy('detail_hasil_palet_rotaries.kw')
+            ->get();
+        $perJenisKayuKw = DetailHasilPaletRotary::query()
+            ->where('detail_hasil_palet_rotaries.id_produksi', $produksiId)
+            ->join(
+                'penggunaan_lahan_rotaries',
+                'penggunaan_lahan_rotaries.id',
+                '=',
+                'detail_hasil_palet_rotaries.id_penggunaan_lahan'
+            )
+            ->join(
+                'jenis_kayus',
+                'jenis_kayus.id',
+                '=',
+                'penggunaan_lahan_rotaries.id_jenis_kayu'
+            )
+            ->selectRaw('
+        jenis_kayus.id         AS jenis_kayu_id,
+        jenis_kayus.nama_kayu AS jenis_kayu,
+        detail_hasil_palet_rotaries.kw,
+        SUM(CAST(detail_hasil_palet_rotaries.total_lembar AS UNSIGNED)) AS total
+    ')
+            ->groupBy(
+                'jenis_kayus.id',
+                'jenis_kayus.nama_kayu',
+                'detail_hasil_palet_rotaries.kw'
+            )
+            ->orderBy('jenis_kayus.nama_kayu')
+            ->orderBy('detail_hasil_palet_rotaries.kw')
+            ->get();
         // ======================
         // SET HASIL KE VIEW
         // ======================
@@ -77,6 +148,8 @@ class ProduksiSummaryWidget extends Widget
             'totalAll' => $totalAll,
             'perKw' => $perKw,
             'perLahan' => $perLahan,
+            'perLahanJenisKayuKw' => $perLahanJenisKayuKw,
+            'perJenisKayuKw' => $perJenisKayuKw,
         ];
     }
 }
