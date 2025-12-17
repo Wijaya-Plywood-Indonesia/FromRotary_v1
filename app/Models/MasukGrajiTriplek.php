@@ -14,4 +14,14 @@ class MasukGrajiTriplek extends Model
         'no_palet',
         'isi',
     ];
+
+    public function produksiGrajiTriplek()
+    {
+        return $this->belongsTo(ProduksiGrajitriplek::class, 'id_produksi_graji_triplek');
+    }
+
+    public function barangSetengahJadiHp()
+    {
+        return $this->belongsTo(BarangSetengahJadiHp::class,'id_barang_setengah_jadi_hp');
+    }
 }

@@ -11,11 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('produksi_graji_triplek', function (Blueprint $table) {
+        Schema::create('validasi_graji_triplek', function (Blueprint $table) {
             $table->id();
-            $table->date('tanggal_produksi');
-            $table->enum('status', ['graji manual', 'graji otomatis']);
-            $table->text('kendala')->nullable();
+            $table->foreignId('id_produksi_graji_triplek')
+                ->constrained('produksi_graji_triplek')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->string('role');
+            $table->string('status');
             $table->timestamps();
         });
     }
@@ -25,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('produksi_graji_triplek');
+        Schema::dropIfExists('validasi_graji_triplek');
     }
 };

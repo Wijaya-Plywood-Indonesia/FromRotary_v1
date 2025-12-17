@@ -18,4 +18,14 @@ class PegawaiGrajiTriplek extends Model
         'ket',
         
     ];
+
+    public function produksiGrajiTriplek()
+    {
+        return $this->belongsTo(ProduksiGrajitriplek::class, 'id_produksi_graji_triplek');
+    }
+
+    public function pegawaiGrajiTriplek()
+    {
+        return $this->belongsTo(Pegawai::class, 'id_pegawai');
+    }
 }

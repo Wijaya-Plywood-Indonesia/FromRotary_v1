@@ -41,11 +41,16 @@ class Pegawai extends Model
     public function detailPegawaiHp()
     {
         return $this->hasMany(DetailPegawaiHp::class, 'id_pegawai');
-    }
+    }   
 
     public function rencanaPegawais()
     {
         return $this->hasMany(RencanaPegawai::class, 'id_pegawai');
+    }
+
+    public function detailPegawaiGrajiTriplek()
+    {
+        return $this->hasMany(PegawaiGrajiTriplek::class, 'id_pegawai');
     }
 
     public function lainLain()
