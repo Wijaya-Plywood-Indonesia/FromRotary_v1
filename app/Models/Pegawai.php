@@ -48,4 +48,9 @@ class Pegawai extends Model
         return $this->hasMany(RencanaPegawai::class, 'id_pegawai');
     }
 
+    public function lainLain()
+    {
+        return $this->hasMany(LainLain::class, 'id_pegawai');
+    }
+
 }
