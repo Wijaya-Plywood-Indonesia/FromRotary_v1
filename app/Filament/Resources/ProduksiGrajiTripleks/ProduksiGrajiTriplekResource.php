@@ -7,6 +7,7 @@ use App\Filament\Resources\ProduksiGrajiTripleks\Pages\EditProduksiGrajiTriplek;
 use App\Filament\Resources\ProduksiGrajiTripleks\Pages\ListProduksiGrajiTripleks;
 use App\Filament\Resources\ProduksiGrajiTripleks\Pages\ViewProduksiGrajiTriplek;
 use App\Filament\Resources\ProduksiGrajiTripleks\Schemas\ProduksiGrajiTriplekForm;
+use App\Filament\Resources\ProduksiGrajiTripleks\Schemas\ProduksiGrajiTriplekInfoList;
 use App\Filament\Resources\ProduksiGrajiTripleks\Tables\ProduksiGrajiTripleksTable;
 use App\Models\ProduksiGrajitriplek;
 use BackedEnum;
@@ -36,6 +37,11 @@ class ProduksiGrajiTriplekResource extends Resource
     public static function table(Table $table): Table
     {
         return ProduksiGrajiTripleksTable::configure($table);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return ProduksiGrajiTriplekInfoList::configure($schema);
     }
 
     public static function getRelations(): array

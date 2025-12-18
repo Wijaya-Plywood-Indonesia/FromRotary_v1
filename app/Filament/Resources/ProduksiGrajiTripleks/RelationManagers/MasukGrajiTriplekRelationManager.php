@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 
 class MasukGrajiTriplekRelationManager extends RelationManager
 {
+    protected static ?string $title = 'Modal';
     protected static string $relationship = 'MasukGrajiTriplek';
 
     public function isReadOnly(): bool
