@@ -28,7 +28,8 @@ class ProduksiPressDryerForm
                     'MALAM' => 'Malam',
                 ])
                 ->required()
-                ->native(false),
+                ->native(false)
+                ->live(),
             ]);
     }
 }
