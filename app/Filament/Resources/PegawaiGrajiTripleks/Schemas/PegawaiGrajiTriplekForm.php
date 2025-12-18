@@ -47,7 +47,7 @@ class PegawaiGrajiTriplekForm
 
             TextInput::make('tugas')
                 ->label('Tugas')
-                ->default('Pegawai Bongkar')
+                ->default('Pegawai Graji Triplek')
                 ->readOnly(),
 
             // --- ID PEGAWAI (Relation: pegawai) ---

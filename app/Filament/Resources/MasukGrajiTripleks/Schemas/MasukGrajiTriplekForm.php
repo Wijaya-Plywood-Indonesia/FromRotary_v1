@@ -91,7 +91,10 @@ class MasukGrajiTriplekForm
                     })
                     ->columnSpanFull(),
 
-
+                TextInput::make('no_palet')
+                    ->label('Nomor Palet')
+                    ->numeric()
+                    ->required(),
 
 
                 TextInput::make('isi')
@@ -99,10 +102,7 @@ class MasukGrajiTriplekForm
                     ->numeric()
                     ->required(),
 
-                TextInput::make('no_palet')
-                    ->label('Nomor Palet')
-                    ->numeric()
-                    ->required(),
+                
             ]);
     }
 }
