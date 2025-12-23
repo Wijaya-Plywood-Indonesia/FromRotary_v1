@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Log;
 
 use App\Filament\Pages\LaporanRepairs\Queries\LoadLaporanRepairs;
 use App\Filament\Pages\LaporanRepairs\Transformers\RepairDataMap;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\LaporanRepairExport;
 
 class LaporanRepairs extends Page
 {
@@ -75,6 +77,13 @@ class LaporanRepairs extends Page
                 ->icon('heroicon-o-arrow-path')
                 ->color('gray')
                 ->action(fn() => $this->refresh()),
+
+            Action::make('exportExcel')
+                ->label('Download Excel')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('success')
+                ->action(fn() => $this->exportExcel())
+                ->visible(fn() => !empty($this->laporan)),
         ];
     }
 
@@ -186,6 +195,34 @@ class LaporanRepairs extends Page
             ->body('Data berhasil dimuat ulang untuk tanggal ' . Carbon::parse($this->data['tanggal'])->format('d/m/Y'))
             ->send();
     }
+
+    /*
+        Export Data ke Excel
+    */
+    public function exportExcel()
+    {
+        try {
+            $tanggal = Carbon::parse($this->data['tanggal'])->format('d-m-Y');
+
+            return Excel::download(
+                new LaporanRepairExport($this->laporan),
+                "laporan-repair-{$tanggal}.xlsx"
+            );
+
+        } catch (Exception $e) {
+            Log::error('Export Excel gagal', [
+                'message' => $e->getMessage(),
+            ]);
+
+            Notification::make()
+                ->danger()
+                ->title('Gagal Export Excel')
+                ->body($e->getMessage())
+                ->send();
+        }
+    }
+
+
 
     /**
      * Kirim data ke view
