@@ -19,7 +19,7 @@ class PegawaiNyusupsTable
     {
         return $table
             ->columns([
-                TextColumn::make('pegawaiNyusup.nama_pegawai')
+                TextColumn::make('pegawai.nama_pegawai')
                     ->label('Pegawai')
                     ->searchable(),
 
