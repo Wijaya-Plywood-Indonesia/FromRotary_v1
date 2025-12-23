@@ -23,6 +23,9 @@ class HasilRepairRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
-        return HasilRepairsTable::configure($table);
+        $idProduksiRepair = $this->getOwnerRecord()->id;
+        $tanggalProduksi = $this->getOwnerRecord()->tanggal;
+
+        return HasilRepairsTable::configure($table, $idProduksiRepair, $tanggalProduksi);
     }
 }

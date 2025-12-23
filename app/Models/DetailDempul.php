@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class DetailDempul extends Model
+{
+    protected $table = 'detail_dempuls';
+
+    protected $fillable = [
+        'id_produksi_dempul',
+        'id_rencana_pegawai_dempul',
+        'id_barang_setengah_jadi',
+        'modal',
+        'hasil',
+        'nomor_palet',
+    ];
+
+    public function produksiDempul(): BelongsTo
+    {
+        return $this->belongsTo(ProduksiDempul::class, 'id_produksi_dempul');
+    }
+
+    public function rencanaPegawaiDempul(): BelongsTo
+    {
+        return $this->belongsTo(RencanaPegawaiDempul::class, 'id_rencana_pegawai_dempul');
+    }
+
+    public function barangSetengahJadi(): BelongsTo
+    {
+        return $this->belongsTo(BarangSetengahJadiHp::class, 'id_barang_setengah_jadi');
+    }
+}
