@@ -13,6 +13,19 @@ return new class extends Migration
     {
         Schema::create('pegawai_nyusup', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('id_produksi_nyusup')
+                ->constrained('produksi_nyusup')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->foreignId('id_pegawai')
+                ->constrained('pegawais')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->text('tugas');
+            $table->time('masuk');
+            $table->time('pulang');
+            $table->string('ijin')->nullable();
+            $table->string('ket')->nullable();
             $table->timestamps();
         });
     }

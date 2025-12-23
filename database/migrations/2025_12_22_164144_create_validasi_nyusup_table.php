@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('validasi_nyusup', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('id_produksi_nyusup')
+                ->constrained('produksi_nyusup')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->string('role');
+            $table->string('status');
             $table->timestamps();
         });
     }

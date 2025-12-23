@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('produksi_nyusup', function (Blueprint $table) {
             $table->id();
+            $table->date('tanggal_produksi');
+            $table->text('kendala')->nullable();
             $table->timestamps();
         });
     }

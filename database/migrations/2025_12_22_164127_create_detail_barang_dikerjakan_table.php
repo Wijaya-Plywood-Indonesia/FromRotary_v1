@@ -13,8 +13,26 @@ return new class extends Migration
     {
         Schema::create('detail_barang_dikerjakan', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('id_produksi_nyusup')
+                ->constrained('produksi_nyusup')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->foreignId('id_pegawai_nyusup')
+                ->constrained('pegawai_nyusup')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->foreignId('id_barang_setengah_jadi_hp')
+                ->nullable()
+                ->constrained('barang_setengah_jadi_hp')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->integer('no_palet');
+            $table->integer('modal');
+            $table->integer('hasil');
             $table->timestamps();
         });
+
+        
     }
 
     /**
