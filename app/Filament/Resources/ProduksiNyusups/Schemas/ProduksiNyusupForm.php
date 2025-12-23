@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Filament\Resources\ProduksiNyusups\Schemas;
+
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\DatePicker;
+
+class ProduksiNyusupForm
+{
+    public static function configure(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                DatePicker::make('tanggal_produksi')
+                    ->label('Tanggal Produksi')
+                    ->default(fn() => now()->addDay()) // 👈 default besok
+                    ->displayFormat('d F Y') // 👈 tampil seperti: 01 Januari 2025
+                    ->required(),
+            ]);
+    }
+}
