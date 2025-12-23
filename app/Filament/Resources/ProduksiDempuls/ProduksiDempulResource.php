@@ -6,6 +6,7 @@ use App\Filament\Resources\ProduksiDempuls\Pages\CreateProduksiDempul;
 use App\Filament\Resources\ProduksiDempuls\Pages\EditProduksiDempul;
 use App\Filament\Resources\ProduksiDempuls\Pages\ListProduksiDempuls;
 use App\Filament\Resources\ProduksiDempuls\Pages\ViewProduksiDempul;
+use App\Filament\Resources\ProduksiDempuls\RelationManagers\ValidasiDempulRelationManager;
 use App\Filament\Resources\ProduksiDempuls\Schemas\ProduksiDempulForm;
 use App\Filament\Resources\ProduksiDempuls\Schemas\ProduksiDempulInfolist;
 use App\Filament\Resources\ProduksiDempuls\Tables\ProduksiDempulsTable;
@@ -17,6 +18,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
 use App\Filament\Resources\ProduksiDempuls\RelationManagers\RencanaPegawaiDempulRelationManager;
+use App\Filament\Resources\ProduksiDempuls\RelationManagers\DetailDempulRelationManager;
 
 class ProduksiDempulResource extends Resource
 {
@@ -43,6 +45,8 @@ class ProduksiDempulResource extends Resource
     {
         return [
             RencanaPegawaiDempulRelationManager::class,
+            DetailDempulRelationManager::class,
+            ValidasiDempulRelationManager::class,
         ];
     }
 
