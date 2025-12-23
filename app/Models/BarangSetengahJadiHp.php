@@ -33,4 +33,9 @@ class BarangSetengahJadiHp extends Model
     {
         return $this->hasMany(ModalSanding::class, 'id_barang_setengah_jadi');
     }
+
+    public function detailDempuls()
+    {
+        return $this->hasMany(DetailDempul::class, 'id_barang_setengah_jadi_hp');
+    }
 }
