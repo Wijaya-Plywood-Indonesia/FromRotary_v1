@@ -25,10 +25,23 @@ class DetailPegawaiHpsTable
                     ->searchable()
                     ->placeholder('-'),
 
-                TextColumn::make('pegawaiHp.nama_pegawai')
+                TextColumn::make('pegawaiHp')
                     ->label('Pegawai')
-                    ->sortable()
-                    ->searchable(),
+                    ->formatStateUsing(
+                        fn($record) => $record->pegawaiHp
+                            ? $record->pegawaiHp->kode_pegawai . ' - ' . $record->pegawaiHp->nama_pegawai
+                            : '—'
+                    )
+                    ->badge()
+                    ->searchable(
+                        query: fn($query, $search) => $query->whereHas(
+                            'pegawaiHp',
+                            fn($q) => $q
+                                ->where('nama_pegawai', 'like', "%{$search}%")
+                                ->orWhere('kode_pegawai', 'like', "%{$search}%")
+                        )
+                    ),
+
 
                 TextColumn::make('tugas')
                     ->label('Tugas')
@@ -106,5 +119,4 @@ class DetailPegawaiHpsTable
                 ]),
             ]);
     }
-
 }
