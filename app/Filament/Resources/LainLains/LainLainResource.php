@@ -23,6 +23,11 @@ class LainLainResource extends Resource
     protected static ?string $modelLabel = 'Lain lain';
     protected static ?string $pluralModelLabel = 'Lain lain';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return LainLainForm::configure($schema);

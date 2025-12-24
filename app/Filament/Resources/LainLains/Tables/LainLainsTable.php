@@ -7,6 +7,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\CreateAction;
 
 class LainLainsTable
 {
@@ -19,14 +20,11 @@ class LainLainsTable
                     ->getStateUsing(
                         fn($record) =>
                         $record->pegawai
-                            ? "{$record->pegawai->kode_pegawai} - {$record->pegawai->nama_pegawai}"
-                            : '-'
+                        ? "{$record->pegawai->kode_pegawai} - {$record->pegawai->nama_pegawai}"
+                        : '-'
                     )
                     ->sortable()
                     ->searchable(),
-
-
-
                 TextColumn::make('masuk')
                     ->label('Masuk')
                     ->dateTime('d M Y H:i'),
@@ -51,6 +49,9 @@ class LainLainsTable
             ])
             ->filters([
                 //
+            ])
+            ->headerActions([
+                CreateAction::make(),
             ])
             ->recordActions([
                 EditAction::make(),

@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -13,10 +12,16 @@ return new class extends Migration
     {
         Schema::create('lain_lain', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('id_detail_lain_lain')
+                ->constrained('detail_lain_lains')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+
             $table->foreignId('id_pegawai')
                 ->constrained('pegawais')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
+
             $table->time('masuk');
             $table->time('pulang');
             $table->string('ijin')->nullable();

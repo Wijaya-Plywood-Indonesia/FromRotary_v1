@@ -11,4 +11,9 @@ class DetailLainLain extends Model
     protected $fillable = [
         'tanggal',
     ];
+
+    public function lainLains()
+    {
+        return $this->hasMany(LainLain::class, 'id_detail_lain_lain');
+    }
 }
