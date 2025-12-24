@@ -77,6 +77,7 @@ class DetailPegawaiHpForm
                 ->label('Pegawai')
                 ->options(
                     Pegawai::query()
+                        ->orderBy('nama_pegawai')
                         ->get()
                         ->mapWithKeys(fn($pegawai) => [
                             $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
@@ -84,6 +85,7 @@ class DetailPegawaiHpForm
                 )
                 ->searchable()
                 ->required(),
+
 
             // // --- IJIN (TextInput) ---
             // TextInput::make('ijin')
