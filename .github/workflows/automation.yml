@@ -123,6 +123,7 @@ jobs:
             --exclude 'tests/' \
             --exclude '.env' \
             --exclude 'storage/' \
+            --exclude 'build_deploy/' \
             ./ "$BUILD_DIR/" || [ $? -eq 24 ]
 
           (cd "$BUILD_DIR" && zip -r ../deploy.zip . -q)

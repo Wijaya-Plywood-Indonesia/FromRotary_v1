@@ -50,10 +50,6 @@
                     {{ strtoupper($data["kode_ukuran"]) }}
                     @endif
                 </h2>
-                <p class="text-sm text-center text-zinc-300 mt-1">
-                    {{ $data["ukuran"] }} | {{ $data["jenis_kayu"] }} | KW
-                    {{ $data["kw"] }}
-                </p>
             </div>
 
             <div class="p-4">

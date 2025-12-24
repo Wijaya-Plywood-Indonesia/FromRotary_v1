@@ -25,6 +25,7 @@ class ValidasiPressDryerResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
 
+
     public static function form(Schema $schema): Schema
     {
         return ValidasiPressDryerForm::configure($schema);

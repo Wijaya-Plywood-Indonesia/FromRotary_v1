@@ -15,6 +15,7 @@ class LoadProduksi
             'mesin:id,nama_mesin',
             'detailPegawaiRotary.pegawai:id,kode_pegawai,nama_pegawai',
             'detailPaletRotary:id,id_produksi,id_ukuran,total_lembar',
+            'detailGantiPisauRotary',
         ])
             ->whereBetween('tgl_produksi', [$start, $end])
             ->get();

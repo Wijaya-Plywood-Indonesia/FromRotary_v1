@@ -8,160 +8,143 @@ use Illuminate\Support\Facades\Log;
 
 class RepairDataMap
 {
-    public static function make($collection)
+    public static function make($collection): array
     {
         $result = [];
 
         foreach ($collection as $produksi) {
+
             $tanggal = Carbon::parse($produksi->tanggal)->format('d/m/Y');
 
             foreach ($produksi->modalRepairs as $modal) {
-                $ukuran = $modal->ukuran->nama_ukuran ?? 'TIDAK ADA UKURAN';
-                $jenisKayu = $modal->jenisKayu->nama_kayu ?? 'TIDAK ADA JENIS';
+
+                $ukuranModel = $modal->ukuran;
+                $jenisKayuModel = $modal->jenisKayu;
                 $kw = $modal->kw ?? $modal->kualitas ?? 1;
 
-                // =====================================================
-                // PERBAIKAN: Pencarian Target yang Lebih Akurat
-                // =====================================================
+                // =============================
+                // BUILD KODE UKURAN (SAMA DENGAN DB)
+                // =============================
+                if ($ukuranModel && $jenisKayuModel) {
+                    $kodeUkuran =
+                        'REPAIR' .
+                        $ukuranModel->panjang .
+                        $ukuranModel->lebar .
+                        str_replace('.', ',', $ukuranModel->tebal) .
+                        $kw .
+                        strtolower($jenisKayuModel->kode_kayu);
+                } else {
+                    $kodeUkuran = 'REPAIR-NOT-FOUND';
+                }
 
-                // 1. Cari target dengan matching exact KW
-                $targetModel = Target::where('id_mesin', $produksi->id_mesin)
-                    ->where('id_ukuran', $modal->id_ukuran)
-                    ->where('id_jenis_kayu', $modal->id_jenis_kayu)
-                    ->where('kode_ukuran', 'LIKE', 'REPAIR%' . $kw . 's')
+                // =============================
+                // AMBIL TARGET (PRIORITAS)
+                // =============================
+                $targetLv1 = Target::where('kode_ukuran', $kodeUkuran)
+                    ->where('id_mesin', $produksi->id_mesin)
                     ->first();
 
-                // 2. Fallback: Cari target dengan KW apapun (ambil yang pertama)
-                if (!$targetModel) {
-                    $targetModel = Target::where('id_mesin', $produksi->id_mesin)
-                        ->where('id_ukuran', $modal->id_ukuran)
-                        ->where('id_jenis_kayu', $modal->id_jenis_kayu)
-                        ->where('kode_ukuran', 'LIKE', 'REPAIR%')
-                        ->first();
-                }
+                $targetLv2 = Target::where('kode_ukuran', $kodeUkuran)->first();
 
-                // 3. Fallback terakhir: Cari berdasarkan mesin dan ukuran saja
-                if (!$targetModel) {
-                    $targetModel = Target::where('id_mesin', $produksi->id_mesin)
-                        ->where('id_ukuran', $modal->id_ukuran)
-                        ->where('kode_ukuran', 'LIKE', 'REPAIR%')
-                        ->first();
-                }
+                $targetLv3 = Target::where([
+                    'id_mesin' => $produksi->id_mesin,
+                    'id_ukuran' => $modal->id_ukuran,
+                    'id_jenis_kayu' => $modal->id_jenis_kayu,
+                ])->first();
 
-                // Jika masih tidak ketemu, log warning
+                $targetModel = $targetLv1 ?? $targetLv2 ?? $targetLv3;
+
                 if (!$targetModel) {
-                    Log::warning("Target tidak ditemukan untuk:", [
-                        'mesin' => $produksi->id_mesin,
-                        'ukuran' => $modal->id_ukuran,
-                        'jenis_kayu' => $modal->id_jenis_kayu,
-                        'kw' => $kw
+                    Log::warning('Target repair tidak ditemukan', [
+                        'kode_ukuran' => $kodeUkuran,
+                        'id_mesin' => $produksi->id_mesin,
+                        'id_ukuran' => $modal->id_ukuran,
+                        'id_jenis_kayu' => $modal->id_jenis_kayu,
                     ]);
                 }
 
-                // Ambil data target
-                $kodeUkuran = $targetModel?->kode_ukuran ?? "REPAIR-UNKNOWN-KW{$kw}";
-                $targetHarian = $targetModel?->target ?? ($modal->target ?? 0);
-                $jamProduksi = $targetModel?->jam ?? ($modal->jam_kerja ?? 10);
-                $potonganPerLembar = $targetModel?->potongan ?? 0;
-                $jumlahOrangTarget = $targetModel?->orang ?? 1;
+                $targetHarian = (int) ($targetModel->target ?? 0);
+                $jamProduksi = (int) ($targetModel->jam ?? 0);
+                $potonganPerLembar = (int) ($targetModel->potongan ?? 0);
+                $jumlahOrangTarget = (int) ($targetModel->orang ?? 1);
 
-                // Hitung total hasil dari semua pekerja untuk modal ini
-                $totalHasil = $modal->rencanaRepairs
-                    ->flatMap->hasilRepairs
-                    ->sum('jumlah');
-
-                $selisih = $totalHasil - $targetHarian;
-
-                // =====================================================
-                // HITUNG POTONGAN PER ORANG
-                // =====================================================
-                $jumlahPekerja = $produksi->rencanaPegawais
-                    ->filter(fn($rp) => $rp->pegawai)
-                    ->count();
-
-                $potonganPerOrang = 0;
-
-                if ($targetHarian > 0 && $selisih < 0 && $potonganPerLembar > 0 && $jumlahPekerja > 0) {
-                    $totalDenda = abs($selisih) * $potonganPerLembar;
-                    $potonganPerOrangRaw = $totalDenda / $jumlahPekerja;
-
-                    // Pembulatan ke 500an terdekat
-                    $ribuan = floor($potonganPerOrangRaw / 1000);
-                    $ratusan = $potonganPerOrangRaw % 1000;
-
-                    if ($ratusan < 300) {
-                        $potonganPerOrang = $ribuan * 1000;
-                    } elseif ($ratusan >= 300 && $ratusan < 800) {
-                        $potonganPerOrang = ($ribuan * 1000) + 500;
-                    } else {
-                        $potonganPerOrang = ($ribuan + 1) * 1000;
-                    }
-                }
-
-                // =====================================================
-                // MAPPING PEKERJA
-                // =====================================================
-                $pekerja = [];
-                $nomorMeja = '-';
-
+                // =============================
+                // LOOP PEKERJA → KELOMPOK PER MEJA
+                // =============================
                 foreach ($produksi->rencanaPegawais as $rp) {
-                    $pegawai = $rp->pegawai;
 
-                    if ($pegawai) {
-                        // Ambil nomor meja (gunakan yang pertama ditemukan)
-                        if (!empty($rp->nomor_meja) && $nomorMeja === '-') {
-                            $nomorMeja = $rp->nomor_meja;
-                        }
+                    if (!$rp->pegawai)
+                        continue;
 
-                        // Format jam
-                        $jamMasuk = $rp->jam_masuk
-                            ? Carbon::parse($rp->jam_masuk)->format('H:i')
-                            : '-';
-                        $jamPulang = $rp->jam_pulang
-                            ? Carbon::parse($rp->jam_pulang)->format('H:i')
-                            : '-';
+                    $nomorMeja = $rp->nomor_meja ?? '-';
+                    $key = $nomorMeja . '|' . $kodeUkuran;
 
-                        // Hitung hasil individu pekerja untuk modal ini
-                        $hasilIndividu = $rp->rencanaRepairs
-                            ->where('id_modal_repair', $modal->id)
-                            ->flatMap->hasilRepairs
-                            ->sum('jumlah');
-
-                        $pekerja[] = [
-                            'id' => $pegawai->kode_pegawai ?? '-',
-                            'nama' => $pegawai->nama_pegawai ?? '-',
-                            'jam_masuk' => $jamMasuk,
-                            'jam_pulang' => $jamPulang,
-                            'ijin' => $rp->ijin ?? '-',
-                            'keterangan' => $rp->keterangan ?? '-',
-                            'nomor_meja' => $rp->nomor_meja ?? '-',
-                            'pot_target' => $potonganPerOrang,
-                            'hasil' => $hasilIndividu,
+                    if (!isset($result[$key])) {
+                        $result[$key] = [
+                            'nomor_meja' => $nomorMeja,
+                            'kode_ukuran' => $kodeUkuran,
+                            'ukuran' => $ukuranModel->nama_ukuran ?? '-',
+                            'jenis_kayu' => $jenisKayuModel->nama_kayu ?? '-',
+                            'kw' => $kw,
+                            'pekerja' => [],
+                            'hasil' => 0,
+                            'target' => $targetHarian,
+                            'jam_kerja' => $jamProduksi,
+                            'jumlah_orang_target' => $jumlahOrangTarget,
+                            'selisih' => 0,
+                            'tanggal' => $tanggal,
+                            'potongan_per_lembar' => $potonganPerLembar,
                         ];
                     }
-                }
 
-                // =====================================================
-                // SUSUN DATA UNTUK SETIAP KOMBINASI
-                // =====================================================
-                $result[] = [
-                    'nomor_meja' => $nomorMeja,
-                    'ukuran' => $ukuran,
-                    'jenis_kayu' => $jenisKayu,
-                    'kode_ukuran' => $kodeUkuran, // Kunci untuk grouping
-                    'kw' => $kw,
-                    'pekerja' => $pekerja,
-                    'hasil' => $totalHasil,
-                    'target' => $targetHarian,
-                    'jam_kerja' => $jamProduksi,
-                    'jumlah_orang_target' => $jumlahOrangTarget,
-                    'selisih' => $selisih,
-                    'tanggal' => $tanggal,
-                    'potongan_per_lembar' => $potonganPerLembar,
-                ];
+                    // =============================
+                    // HASIL INDIVIDU
+                    // =============================
+                    $hasilIndividu = $rp->rencanaRepairs
+                        ->where('id_modal_repair', $modal->id)
+                        ->flatMap->hasilRepairs
+                        ->sum('jumlah');
+
+                    $result[$key]['hasil'] += $hasilIndividu;
+
+                    $result[$key]['pekerja'][] = [
+                        'id' => $rp->pegawai->kode_pegawai ?? '-',
+                        'nama' => $rp->pegawai->nama_pegawai ?? '-',
+                        'jam_masuk' => $rp->jam_masuk
+                            ? Carbon::parse($rp->jam_masuk)->format('H:i')
+                            : '-',
+                        'jam_pulang' => $rp->jam_pulang
+                            ? Carbon::parse($rp->jam_pulang)->format('H:i')
+                            : '-',
+                        'ijin' => $rp->ijin ?? '-',
+                        'keterangan' => $rp->keterangan ?? '-',
+                        'nomor_meja' => $nomorMeja,
+                        'hasil' => $hasilIndividu,
+                    ];
+                }
             }
         }
 
-        return $result;
+        // =============================
+        // HITUNG SELISIH
+        // =============================
+        foreach ($result as &$row) {
+            $row['selisih'] = $row['hasil'] - $row['target'];
+        }
+
+        return array_values($result);
+    }
+
+    private static function roundToNearest500(float $value): int
+    {
+        $base = floor($value / 1000) * 1000;
+        $rest = $value - $base;
+
+        if ($rest < 300)
+            return $base;
+        if ($rest < 800)
+            return $base + 500;
+
+        return $base + 1000;
     }
 }

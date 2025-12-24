@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Resources\ValidasiPressDryers\Schemas;
+namespace App\Filament\Resources\ValidasiDempuls\Schemas;
 
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Facades\Filament;
 
-class ValidasiPressDryerForm
+class ValidasiDempulForm
 {
     public static function configure(Schema $schema): Schema
     {
