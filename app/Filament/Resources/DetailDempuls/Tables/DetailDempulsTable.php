@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\DetailDempuls\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\CreateAction;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Grouping\Group;
+use Filament\Actions\CreateAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Illuminate\Database\Eloquent\Builder;
 
 class DetailDempulsTable
@@ -17,90 +17,80 @@ class DetailDempulsTable
     {
         return $table
             /**
-             * ===========================================
-             * 🚀 OPTIMASI QUERY (PENTING UNTUK GROUPING)
-             * ===========================================
-             * Kita harus men-load relasi 'pegawai' di sini agar
-             * saat rendering judul Group tidak terjadi N+1 Query.
+             * =====================================
+             * OPTIMASI QUERY (WAJIB)
+             * =====================================
              */
-            ->modifyQueryUsing(function (Builder $query) {
-                return $query->with([
-                    'rencanaPegawaiDempul.pegawai',
-                    // Load juga data untuk kolom agar ringan
+            ->modifyQueryUsing(fn (Builder $query) =>
+                $query->with([
+                    'pegawais',
                     'barangSetengahJadi.ukuran',
                     'barangSetengahJadi.jenisBarang',
                     'barangSetengahJadi.grade.kategoriBarang',
-                ]);
-            })
+                ])
+            )
 
             /**
-             * ======================
-             * 🔥 GROUPING
-             * ======================
+             * =====================================
+             * DEFAULT GROUP BY PEGAWAI
+             * =====================================
              */
             ->groups([
-                Group::make('id_rencana_pegawai_dempul')
-                    ->label('Pegawai / Rencana')
+                Group::make('id') // ⚠️ HARUS KOLOM ASLI
+                    ->label('Pegawai')
                     ->getTitleFromRecordUsing(function ($record) {
-                        // Ambil relasi ke atas (Rencana -> Pegawai)
-                        $rencana = $record->rencanaPegawaiDempul;
-                        $pegawai = $rencana?->pegawai;
-
-                        if (!$pegawai) {
-                            return 'Pegawai Tidak Diketahui';
+                        if ($record->pegawais->isEmpty()) {
+                            return 'Pegawai: -';
                         }
 
-                        // Format Judul Group: [KODE] Nama Pegawai | Tanggal (Opsional)
-                        return sprintf(
-                            '[%s] %s',
-                            $pegawai->kode_pegawai,
-                            $pegawai->nama_pegawai
-                        );
+                        return 'Pegawai: ' .
+                            $record->pegawais
+                                ->pluck('nama_pegawai')
+                                ->implode(' & ');
                     })
-                    ->collapsible(), // Bisa dilipat
+                    ->collapsible(),
             ])
 
+            // ⬇️ INI YANG MEMBUAT DEFAULT LANGSUNG KELOMPOK
+            ->defaultGroup('id')
+
             /**
-             * ======================
-             * 📋 COLUMNS
-             * ======================
+             * =====================================
+             * COLUMNS
+             * =====================================
              */
             ->columns([
-                TextColumn::make('id_barang_setengah_jadi_hp')
-                    ->label('Bahan (Veneer)')
+                TextColumn::make('barang')
+                    ->label('Barang')
                     ->getStateUsing(function ($record) {
-                        $bsj = $record->barangSetengahJadi;
-                        if (!$bsj)
-                            return '—';
+                        $b = $record->barangSetengahJadi;
+                        if (!$b) return '-';
 
-                        $kategori = $bsj->grade?->kategoriBarang?->nama_kategori ?? '-';
-                        $ukuran = $bsj->ukuran?->nama_ukuran ?? '-';
-                        $grade = $bsj->grade?->nama_grade ?? '-';
-                        $jenis = $bsj->jenisBarang?->nama_jenis_barang ?? '-';
-
-                        return "{$kategori} | {$ukuran} | {$grade} | {$jenis}";
+                        return
+                            ($b->grade?->kategoriBarang?->nama_kategori ?? '-') . ' | ' .
+                            ($b->ukuran?->nama_ukuran ?? '-') . ' | ' .
+                            ($b->grade?->nama_grade ?? '-') . ' | ' .
+                            ($b->jenisBarang?->nama_jenis_barang ?? '-');
                     })
-                    ->searchable(), // (Logic search perlu query builder khusus seperti sebelumnya jika ingin akurat)
+                    ->wrap(),
 
                 TextColumn::make('modal')
-                    ->label('Modal')
-                    ->numeric()
-                    ->sortable(),
+                    ->numeric(),
+
                 TextColumn::make('hasil')
-                    ->label('Hasil')
                     ->numeric()
-                    ->sortable()
-                    // LOGIKA WARNA
-                    ->color(fn($record) => $record->hasil < $record->modal ? 'danger' : 'success'),
+                    ->color(fn ($record) =>
+                        $record->hasil < $record->modal ? 'danger' : 'success'
+                    ),
+
                 TextColumn::make('nomor_palet')
-                    ->numeric()
-                    ->sortable(),
+                    ->numeric(),
             ])
 
             /**
-             * ======================
-             * ✏️ ACTIONS
-             * ======================
+             * =====================================
+             * ACTIONS
+             * =====================================
              */
             ->headerActions([
                 CreateAction::make(),
@@ -112,14 +102,6 @@ class DetailDempulsTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ])
-
-            /**
-             * ======================
-             * ⚙️ DEFAULT GROUPING
-             * ======================
-             * Ini yang membuat tabel otomatis terkelompok saat dibuka
-             */
-            ->defaultGroup('id_rencana_pegawai_dempul');
+            ]);
     }
 }

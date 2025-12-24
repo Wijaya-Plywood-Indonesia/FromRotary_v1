@@ -58,4 +58,15 @@ class Pegawai extends Model
         return $this->hasMany(LainLain::class, 'id_pegawai');
     }
 
+    public function detailDempuls()
+{
+    return $this->belongsToMany(
+        DetailDempul::class,
+        'detail_dempul_pegawai',
+        'id_pegawai',
+        'id_detail_dempul'
+    );
+}
+
+
 }

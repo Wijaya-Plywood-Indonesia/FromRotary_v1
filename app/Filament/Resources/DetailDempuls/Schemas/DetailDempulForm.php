@@ -3,143 +3,121 @@
 namespace App\Filament\Resources\DetailDempuls\Schemas;
 
 use App\Models\BarangSetengahJadiHp;
+use App\Models\Pegawai;
+use App\Models\Grade;
+use App\Models\JenisBarang;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
-use App\Models\RencanaPegawaiDempul;
-use App\Models\Grade;
-use App\Models\JenisBarang;
 
 class DetailDempulForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                Select::make('id_rencana_pegawai_dempul')
-                    ->label('Pegawai Dempul')
-                    ->required()
-                    ->searchable()
-                    ->preload()
-                    ->options(function () {
-                        return RencanaPegawaiDempul::query()
-                            // Kita load relasi 'pegawai' agar tidak berat (N+1 problem)
-                            ->with(['pegawai'])
-                            ->latest() // Opsional: urutkan dari yang terbaru
-                            ->limit(100)
-                            ->get()
-                            ->mapWithKeys(function ($item) {
-                                // Ambil data dari relasi pegawai
-                                $kode = $item->pegawai?->kode_pegawai ?? '???';
-                                $nama = $item->pegawai?->nama_pegawai ?? 'Tanpa Nama';
-                                return [
-                                    $item->id => sprintf('%s - %s', $kode, $nama)
-                                ];
-                            });
+        return $schema->components([
+
+            // =========================
+            // 👷 PEGAWAI (MAX 2)
+            // =========================
+            Select::make('pegawais')
+                ->label('Pegawai Dempul')
+                ->relationship('pegawais', 'nama_pegawai')
+                ->multiple()
+                ->required()
+                ->maxItems(2)
+                ->preload()
+                ->searchable()
+                ->columnSpanFull(),
+
+            // =========================
+            // BARANG
+            // =========================
+            Select::make('grade_id')
+                ->label('Filter Grade')
+                ->options(
+                    Grade::whereHas('kategoriBarang', function ($q) {
+                        $q->whereIn('nama_kategori', ['PLYWOOD', 'PLATFORM']);
                     })
-                    // Fitur menyimpan pilihan terakhir di session (sesuai kode asli Anda)
-                    ->afterStateUpdated(fn($state) => session(['detail_last_rencana_pegawai' => $state]))
-                    ->default(fn() => session('detail_last_rencana_pegawai'))
-                    ->columnSpanFull(),
-                Select::make('grade_id')
-                    ->label('Grade')
-                    ->options(
-                        Grade::with('kategoriBarang')
-                            ->orderBy('id_kategori_barang')
-                            ->orderBy('nama_grade')
-                            ->get()
-                            ->mapWithKeys(fn($g) => [
-                                $g->id => ($g->kategoriBarang?->nama_kategori ?? 'Tanpa Kategori')
-                                    . ' | ' . $g->nama_grade
-                            ])
-                    )
-                    ->reactive()
-                    ->searchable()
-                    ->placeholder('Semua Grade')
-                    ->dehydrated(false),
+                        ->orderBy('nama_grade')
+                        ->get()
+                        ->mapWithKeys(fn($g) => [
+                            $g->id => ($g->kategoriBarang?->nama_kategori ?? 'Tanpa Kategori')
+                                . ' | ' . $g->nama_grade
+                        ])
+                )
+                ->reactive()
+                ->searchable()
+                ->placeholder('Semua Grade')
+                ->dehydrated(false),
 
-                /*
-                |--------------------------------------------------------------------------
-                | FILTER JENIS BARANG
-                |--------------------------------------------------------------------------
-                */
-                Select::make('jenis_barang_id')
-                    ->label('Jenis Barang')
-                    ->options(
-                        JenisBarang::orderBy('nama_jenis_barang')
-                            ->pluck('nama_jenis_barang', 'id')
-                    )
-                    ->reactive()
-                    ->searchable()
-                    ->placeholder('Semua Jenis Barang')
-                    ->dehydrated(false),
+            Select::make('jenis_barang_id_filter')
+                ->label('Filter Jenis Barang')
+                ->options(
+                    JenisBarang::orderBy('nama_jenis_barang')
+                        ->pluck('nama_jenis_barang', 'id')
+                )
+                ->reactive()
+                ->searchable()
+                ->placeholder('Semua Jenis Barang')
+                ->dehydrated(false),
 
-                /*
-                |--------------------------------------------------------------------------
-                | BARANG SETENGAH JADI (HASIL FILTER)
-                |--------------------------------------------------------------------------
-                */
-                Select::make('id_barang_setengah_jadi_hp')
-                    ->label('Barang Setengah Jadi')
-                    ->required()
-                    ->searchable()
-                    ->options(function (callable $get) {
+            Select::make('id_barang_setengah_jadi_hp')
+                ->label('Barang Setengah Jadi (Plywood)')
+                ->required()
+                ->searchable()
+                ->options(function (callable $get) {
 
-                        $query = BarangSetengahJadiHp::query()
-                            ->with([
-                                'ukuran',
-                                'jenisBarang',
-                                'grade.kategoriBarang',
-                            ])
-                            // ✅ AMAN: pakai relasi, bukan nama tabel
-                            ->joinRelationship('jenisBarang')
-                            ->joinRelationship('ukuran');
+                    $query = BarangSetengahJadiHp::query()
+                        ->with([
+                            'ukuran',
+                            'jenisBarang',
+                            'grade.kategoriBarang',
+                        ])
+                        // 🔒 WAJIB PLYWOOD
+                        ->whereHas('grade.kategoriBarang', function ($q) {
+                            $q->whereIn('nama_kategori', ['PLYWOOD', 'PLATFORM']);
+                        })
+                        ->joinRelationship('jenisBarang')
+                        ->joinRelationship('ukuran');
 
-                        // FILTER GRADE
-                        if ($get('grade_id')) {
-                            $query->where('barang_setengah_jadi_hp.id_grade', $get('grade_id'));
-                        }
+                    // ✅ FILTER GRADE
+                    if ($get('grade_id')) {
+                        $query->where('barang_setengah_jadi_hp.id_grade', $get('grade_id'));
+                    }
 
-                        // FILTER JENIS BARANG (opsional)
-                        if ($get('jenis_barang_id')) {
-                            $query->where('barang_setengah_jadi_hp.id_jenis_barang', $get('jenis_barang_id'));
-                        }
+                    // ✅ FILTER JENIS BARANG (INI YANG KURANG!)
+                    if ($get('jenis_barang_id_filter')) {
+                        $query->where(
+                            'barang_setengah_jadi_hp.id_jenis_barang',
+                            $get('jenis_barang_id_filter')
+                        );
+                    }
 
-                        // 🔥 URUTAN SESUAI KEINGINAN
-                        $query
-                            ->orderBy('jenis_barang.nama_jenis_barang', 'asc') // Meranti → Sengon
-                            ->orderBy('ukurans.tebal', 'asc')                  // 3 → 4 → 5
-                            ->orderBy('barang_setengah_jadi_hp.id', 'asc');
+                    $query
+                        ->orderBy('ukurans.tebal', 'asc')
+                        ->orderBy('barang_setengah_jadi_hp.id', 'asc');
 
-                        return $query
-                            ->limit(100)
-                            ->get()
-                            ->mapWithKeys(function ($b) {
+                    return $query->get()->mapWithKeys(function ($b) {
+                        return [
+                            $b->id => ($b->grade?->kategoriBarang?->nama_kategori ?? '-') . ' | ' .
+                                ($b->ukuran?->nama_ukuran ?? '-') . ' | ' .
+                                ($b->grade?->nama_grade ?? '-') . ' | ' .
+                                ($b->jenisBarang?->nama_jenis_barang ?? '-')
+                        ];
+                    });
+                })
+                ->columnSpanFull(),
 
-                                $kategori = $b->grade?->kategoriBarang?->nama_kategori ?? '-';
-                                $ukuran = $b->ukuran?->nama_ukuran ?? '-';
-                                $grade = $b->grade?->nama_grade ?? '-';
-                                $jenis = $b->jenisBarang?->nama_jenis_barang ?? '-';
+            TextInput::make('modal')
+                ->numeric()
+                ->required(),
 
-                                return [
-                                    $b->id => "{$kategori} | {$ukuran} | {$grade} | {$jenis}"
-                                ];
-                            });
-                    })
-                    ->columnSpanFull(),
-                TextInput::make('modal')
-                    ->label('Modal dempul')
-                    ->placeholder('Masukkan jumlah dempul')
-                    ->required()
-                    ->numeric(),
-                TextInput::make('hasil')
-                    ->label('Hasil dempul')
-                    ->placeholder('Masukkan hasil dempul')
-                    ->required()
-                    ->numeric(),
-                TextInput::make('nomor_palet')
-                    ->label('Nomor Palet')
-                    ->numeric(),
-            ]);
+            TextInput::make('hasil')
+                ->numeric()
+                ->required(),
+
+            TextInput::make('nomor_palet')
+                ->numeric(),
+        ]);
     }
 }
