@@ -12,7 +12,7 @@ class DetailDempul extends Model
     protected $fillable = [
         'id_produksi_dempul',
         'id_rencana_pegawai_dempul',
-        'id_barang_setengah_jadi',
+        'id_barang_setengah_jadi_hp',
         'modal',
         'hasil',
         'nomor_palet',
@@ -30,6 +30,6 @@ class DetailDempul extends Model
 
     public function barangSetengahJadi(): BelongsTo
     {
-        return $this->belongsTo(BarangSetengahJadiHp::class, 'id_barang_setengah_jadi');
+        return $this->belongsTo(BarangSetengahJadiHp::class, 'id_barang_setengah_jadi_hp');
     }
 }

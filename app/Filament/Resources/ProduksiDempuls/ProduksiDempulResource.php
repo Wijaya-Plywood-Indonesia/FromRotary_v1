@@ -19,6 +19,7 @@ use Filament\Tables\Table;
 
 use App\Filament\Resources\ProduksiDempuls\RelationManagers\RencanaPegawaiDempulRelationManager;
 use App\Filament\Resources\ProduksiDempuls\RelationManagers\DetailDempulRelationManager;
+use App\Filament\Resources\ProduksiDempuls\RelationManagers\BahanDempulRelationManager;
 
 class ProduksiDempulResource extends Resource
 {
@@ -46,6 +47,7 @@ class ProduksiDempulResource extends Resource
         return [
             RencanaPegawaiDempulRelationManager::class,
             DetailDempulRelationManager::class,
+            BahanDempulRelationManager::class,
             ValidasiDempulRelationManager::class,
         ];
     }

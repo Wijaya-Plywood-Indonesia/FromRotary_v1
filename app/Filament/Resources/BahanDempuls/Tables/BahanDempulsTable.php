@@ -1,0 +1,74 @@
+<?php
+
+namespace App\Filament\Resources\BahanDempuls\Tables;
+
+use App\Filament\Resources\BahanDempuls\Schemas\BahanDempulForm;
+use App\Models\BahanDempul;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Tables\Table;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Columns\TextColumn;
+
+class BahanDempulsTable
+{
+    public static function configure(Table $table): Table
+    {
+        $bahanOptions = BahanDempulForm::getBahanOptions();
+        return $table
+            ->columns([
+                TextColumn::make('nama_bahan')
+                    ->searchable()
+                    ->label('Nama bahan')
+                    // Gunakan formatStateUsing untuk menampilkan label panjang
+                    ->formatStateUsing(
+                        fn(string $state): string =>
+                        $bahanOptions[$state] ?? $state
+                    ),
+
+                TextColumn::make('jumlah')
+                    ->label('Banyaknya'),
+            ])
+            ->filters([
+                SelectFilter::make('nama_bahan')
+                    ->options($bahanOptions)
+                    ->multiple(),
+            ])
+            ->headerActions([
+                CreateAction::make()
+                    // Hidden jika sudah divalidasi
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
+            ])
+            ->recordActions([
+                EditAction::make()
+                    // Hidden jika sudah divalidasi
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
+
+                DeleteAction::make()
+                    // Hidden jika sudah divalidasi
+                    ->hidden(
+                        fn($livewire) =>
+                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                    ),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
+                        // Hidden jika sudah divalidasi
+                        ->hidden(
+                            fn($livewire) =>
+                            $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
+                        ),
+                ]),
+            ]);
+    }
+}
