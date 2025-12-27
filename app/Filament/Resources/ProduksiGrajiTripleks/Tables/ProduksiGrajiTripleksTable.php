@@ -14,6 +14,9 @@ use Filament\Forms\Components\Textarea;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Notifications\Notification;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Columns\BadgeColumn;
 
 class ProduksiGrajiTripleksTable
 {
@@ -25,7 +28,7 @@ class ProduksiGrajiTripleksTable
                     ->date()
                     ->sortable(),
                 TextColumn::make('status')
-                    ->label('Status')
+                    ->label('Status Produksi')
                     ->formatStateUsing(fn($state) => ucfirst($state)),
                 TextColumn::make('kendala')
                     ->label('Kendala Produksi')
@@ -34,27 +37,28 @@ class ProduksiGrajiTripleksTable
                         ($record->getRawOriginal('kendala') === null || $record->getRawOriginal('kendala') === '')
                         ? 'Tidak ada kendala'
                         : $record->getRawOriginal('kendala')
-                    ),
+                    )
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                // // BadgeColumn::make('validasiTerakhir.status')
-                // //     ->label('Validasi')
-                // //     ->colors([
-                // //         'success' => 'divalidasi',
-                // //         'warning' => 'ditangguhkan',
-                // //         'danger' => 'ditolak',
-                //     ])
-                //     ->icons([
-                //         'heroicon-o-check-circle' => 'divalidasi',
-                //         'heroicon-o-x-circle' => 'ditolak',
-                //         'heroicon-o-exclamation-circle' => 'ditangguhkan',
-                //     ])
-                //     ->sortable()
-                //     ->searchable(),
+                BadgeColumn::make('validasiTerakhir.status')
+                    ->label('Validasi')
+                    ->colors([
+                        'success' => 'divalidasi',
+                        'warning' => 'ditangguhkan',
+                        'danger' => 'ditolak',
+                    ])
+                    ->icons([
+                        'heroicon-o-check-circle' => 'divalidasi',
+                        'heroicon-o-x-circle' => 'ditolak',
+                        'heroicon-o-exclamation-circle' => 'ditangguhkan',
+                    ])
+                    ->sortable()
+                    ->searchable(),
 
                 TextColumn::make('created_at')
                     ->label('Dibuat Pada')
@@ -64,25 +68,42 @@ class ProduksiGrajiTripleksTable
             ])
             ->defaultSort('tanggal_produksi', 'desc')
             ->filters([
-                Filter::make('tanggal_produksi')
-                    ->form([
-                        \Filament\Forms\Components\DatePicker::make('from')
-                            ->placeholder('Dari Tanggal'),
-                        \Filament\Forms\Components\DatePicker::make('until')
-                            ->placeholder('Sampai Tanggal'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['from'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal_produksi', '>=', $date),
-                            )
-                            ->when(
-                                $data['until'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal_produksi', '<=', $date),
-                            );
-                    }),
-            ])
+
+    // 📅 FILTER TANGGAL
+    Filter::make('tanggal_produksi')
+        ->label('Tanggal Produksi')
+        ->form([
+            DatePicker::make('from')
+                ->label('Dari Tanggal')
+                ->native(false),
+
+            DatePicker::make('until')
+                ->label('Sampai Tanggal')
+                ->native(false),
+        ])
+        ->query(function (Builder $query, array $data): Builder {
+            return $query
+                ->when(
+                    filled($data['from'] ?? null),
+                    fn (Builder $query) =>
+                        $query->whereDate('tanggal_produksi', '>=', $data['from'])
+                )
+                ->when(
+                    filled($data['until'] ?? null),
+                    fn (Builder $query) =>
+                        $query->whereDate('tanggal_produksi', '<=', $data['until'])
+                );
+        }),
+
+    // ⚙️ FILTER STATUS
+    SelectFilter::make('status')
+        ->label('Status Produksi')
+        ->options([
+            'graji manual'   => 'Graji Manual',
+            'graji otomatis' => 'Graji Otomatis',
+        ]),
+])
+
             ->recordActions([
                 Action::make('kelola_kendala')
                     ->label(fn($record) => $record->kendala ? 'Perbarui Kendala' : 'Tambah Kendala')

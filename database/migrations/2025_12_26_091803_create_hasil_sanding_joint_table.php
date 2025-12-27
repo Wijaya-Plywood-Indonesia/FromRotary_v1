@@ -27,7 +27,7 @@ return new class extends Migration
                 ->constrained('jenis_kayus')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->integer('kw');
+            $table->string('kw');
             $table->integer('no_palet');
             $table->integer('jumlah');
             $table->timestamps();
