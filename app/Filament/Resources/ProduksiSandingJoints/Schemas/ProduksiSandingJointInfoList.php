@@ -7,13 +7,16 @@ use Filament\Schemas\Schema;
 
 class ProduksiSandingJointInfoList
 {
-    public static function configure(Schema $schema): schema
+    public static function configure(Schema $schema): Schema
     {
         return $schema
             ->components([
                 TextEntry::make('tanggal_produksi')
-                ->date(),
-                TextEntry::make('kendala'),
+                    ->label('Tanggal Produksi')
+                    ->date(),
+
+                TextEntry::make('kendala')
+                    ->label('Kendala'),
             ]);
     }
 }
