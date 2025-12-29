@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\DetailMesins\Tables;
 
 use App\Models\DetailMesin;
+use App\Models\ProduksiPressDryer; // Pastikan import Model Parent
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -18,10 +19,10 @@ class DetailMesinsTable
     {
         return $table
             ->columns([
-                TextColumn::make('mesin.nama_mesin') // Asumsi: relasi 'mesinDryer' & kolom 'nama'
+                TextColumn::make('mesin.nama_mesin')
                     ->label('Mesin Dryer')
                     ->searchable()
-                    ->placeholder('N/A'), // Teks jika mesin tidak dipilih (nullable)
+                    ->placeholder('-'),
 
                 TextColumn::make('jam_kerja_mesin')
                     ->label('Jam Kerja Mesin')
@@ -29,43 +30,64 @@ class DetailMesinsTable
 
                 TextColumn::make('created_at')
                     ->label('Dibuat Pada')
-                    ->dateTime()
+                    ->dateTime('d M Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true), // Sembunyikan by default
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                // Tempat filter jika Anda membutuhkannya
-            ])
+            ->filters([])
             ->headerActions([
-                // Create Action — HILANG jika status sudah divalidasi
                 CreateAction::make()
-                    ->hidden(
-                        fn($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
-            ])
-            ->recordActions([
-                // Edit Action — HILANG jika status sudah divalidasi
-                EditAction::make()
-                    ->hidden(
-                        fn($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+                    ->label('Tambah Detail')
+                    ->hidden(fn($livewire) => $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi')
 
-                // Delete Action — HILANG jika status sudah divalidasi
-                DeleteAction::make()
-                    ->hidden(
-                        fn($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+                    // --- PENYESUAIAN PENTING ---
+                    // Ini adalah "Jaring Pengaman" agar nilai tidak pernah 0.
+                    ->mutateFormDataUsing(function (array $data, $livewire): array {
+                        $shift = '';
+
+                        // Cek 1: Apakah kita di Relation Manager? (Punya ownerRecord)
+                        if (isset($livewire->ownerRecord) && $livewire->ownerRecord instanceof ProduksiPressDryer) {
+                            $shift = $livewire->ownerRecord->shift ?? '';
+                        }
+                        // Cek 2: Apakah user memilih Produksi via Form? (Form Hybrid Anda)
+                        elseif (isset($data['id_produksi_dryer'])) {
+                            $produksi = ProduksiPressDryer::find($data['id_produksi_dryer']);
+                            $shift = $produksi->shift ?? '';
+                        }
+
+                        // Logika Utama: Paksa isi jam kerja
+                        $data['jam_kerja_mesin'] = (strtolower($shift) === 'pagi') ? 11 : 12;
+
+                        return $data;
+                    }),
             ])
-            ->toolbarActions([
+            ->actions([
+                EditAction::make()
+                    ->hidden(fn($livewire) => $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi')
+                    // Opsional: Terapkan juga di Edit agar konsisten
+                    ->mutateFormDataUsing(function (array $data, $livewire): array {
+                        $shift = '';
+                        if (isset($livewire->ownerRecord) && $livewire->ownerRecord instanceof ProduksiPressDryer) {
+                            $shift = $livewire->ownerRecord->shift ?? '';
+                        } elseif (isset($data['id_produksi_dryer'])) {
+                            $produksi = ProduksiPressDryer::find($data['id_produksi_dryer']);
+                            $shift = $produksi->shift ?? '';
+                        }
+
+                        if ($shift) {
+                            $data['jam_kerja_mesin'] = (strtolower($shift) === 'pagi') ? 11 : 12;
+                        }
+                        return $data;
+                    }),
+
+                DeleteAction::make()
+                    ->hidden(fn($livewire) => $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'),
+            ])
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->hidden(
-                            fn($livewire) =>
-                            $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                        ),
+                        ->label('Hapus Terpilih')
+                        ->hidden(fn($livewire) => $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'),
                 ]),
             ]);
     }

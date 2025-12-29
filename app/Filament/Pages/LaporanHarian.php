@@ -273,7 +273,7 @@ class LaporanHarian extends Page implements HasForms
             $tgl = $this->data['tanggal'];
             return Excel::download(
                 new LaporanHarianExport($this->laporanGabungan),
-                "Laporan-Harian-Gabungan-{$tgl}.xlsx"
+                "Laporan-Harian-{$tgl}.xlsx"
             );
         } catch (Exception $e) {
             Notification::make()
