@@ -88,21 +88,11 @@
 
                             <tbody>
                                 @forelse($laporanGabungan as $index => $row)
-                                @php $bgClass = $index % 2 === 0 ? 'bg-white
-                                dark:bg-zinc-900' : 'bg-zinc-50
-                                dark:bg-zinc-800/50'; if
-                                (str_contains($row['hasil'], 'DRYER')) {
-                                $bgClass = 'bg-green-50 dark:bg-green-900/20'; }
-                                elseif (str_contains($row['hasil'], 'ROTARY')) {
-                                $bgClass = 'bg-orange-50 dark:bg-orange-900/20';
-                                } elseif (str_contains($row['hasil'], 'REPAIR')
-                                || str_contains($row['hasil'], 'SANDING')) {
-                                $bgClass = 'bg-blue-50 dark:bg-blue-900/20'; }
-                                @endphp
-
                                 <tr
                                     class="{{
-                                        $bgClass
+                                        $index % 2 === 0
+                                            ? 'bg-white dark:bg-zinc-900'
+                                            : 'bg-zinc-50 dark:bg-zinc-800/50'
                                     }} border-t border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition duration-75"
                                 >
                                     <td
@@ -135,27 +125,40 @@
                                         @if(str_contains($row['hasil'],
                                         'ROTARY'))
                                         <span
-                                            class="text-orange-700 dark:text-orange-400 font-bold"
-                                            >ROTARY</span
+                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
                                         >
+                                            ROTARY
+                                        </span>
                                         @elseif(str_contains($row['hasil'],
                                         'DRYER'))
                                         <span
-                                            class="text-green-700 dark:text-green-400 font-bold"
-                                            >DRYER</span
+                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
                                         >
+                                            DRYER
+                                        </span>
                                         @elseif(str_contains($row['hasil'],
-                                        'REPAIR'))
-                                        <span
-                                            class="text-blue-700 dark:text-blue-400 font-bold"
-                                            >REPAIR</span
-                                        >
-                                        @elseif(str_contains($row['hasil'],
+                                        'REPAIR') || str_contains($row['hasil'],
                                         'SANDING'))
                                         <span
-                                            class="text-blue-700 dark:text-blue-400 font-bold"
-                                            >REPAIR</span
+                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
                                         >
+                                            REPAIR
+                                        </span>
+                                        @elseif(str_contains($row['hasil'],
+                                        'STIK'))
+                                        <span
+                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300"
+                                        >
+                                            STIK
+                                        </span>
+                                        @elseif(str_contains($row['hasil'],
+                                        'KEDI') || str_contains($row['hasil'],
+                                        'PUTTY'))
+                                        <span
+                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
+                                        >
+                                            KEDI
+                                        </span>
                                         @else
                                         <span
                                             class="text-zinc-700 dark:text-zinc-300"

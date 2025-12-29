@@ -5,41 +5,50 @@ namespace App\Filament\Pages\LaporanHarian\Transformers;
 use Carbon\Carbon;
 use App\Models\Target;
 
-class StikWorkerMap
+class KediWorkerMap
 {
     public static function make($collection): array
     {
         $results = [];
 
-        // 1. Ambil Referensi Target STIK (Sekali saja di luar loop agar efisien)
-        $targetRef = Target::where('kode_ukuran', 'STIK')->first();
+        // 1. Ambil Referensi Target KEDI
+        // Pastikan di tabel targets ada data: kode_ukuran = 'KEDI'
+        $targetRef = Target::where('kode_ukuran', 'KEDI')->first();
 
-        // Default value sesuai referensi Anda: 7000 target, 0 potongan
-        $stdTarget = $targetRef->target ?? 7000;
+        $stdTarget = $targetRef->target ?? 0;
         $stdPotHarga = $targetRef->potongan ?? 0;
 
-        foreach ($collection as $item) {
+        foreach ($collection as $produksi) {
 
-            $labelDivisi = "STIK";
+            $labelDivisi = "KEDI / PUTTY";
 
-            // 2. Ambil Hasil Produksi
-            // Sesuai referensi Anda, nilainya ada di kolom 'hasil_produksi' tabel produksi_stiks
-            $totalHasil = $item->hasil_produksi ?? 0;
+            // 2. Hitung Total Hasil Produksi
+            // Logika diambil dari LaporanKedi.php: Cek status atau isi detailnya
+            $totalHasil = 0;
 
-            // 3. Hitung Selisih & Potongan
+            // Jika ada detail bongkar, utamakan itu (Output)
+            if ($produksi->detailBongkarKedi && $produksi->detailBongkarKedi->isNotEmpty()) {
+                $totalHasil = $produksi->detailBongkarKedi->sum('jumlah');
+            }
+            // Jika tidak, cek detail masuk (Input)
+            elseif ($produksi->detailMasukKedi && $produksi->detailMasukKedi->isNotEmpty()) {
+                $totalHasil = $produksi->detailMasukKedi->sum('jumlah');
+            }
+
+            // 3. Hitung Selisih & Potongan (Logika Standar)
             $selisih = $stdTarget - $totalHasil;
             $potonganPerOrang = 0;
 
-            // Jika hasil kurang dari target (selisih positif)
-            if ($selisih > 0 && $stdPotHarga > 0) {
-                $jumlahPekerja = $item->detailPegawaiStik->count();
+            // Jika hasil kurang dari target DAN target/potongan diset
+            if ($selisih > 0 && $stdTarget > 0 && $stdPotHarga > 0) {
+
+                $jumlahPekerja = $produksi->detailPegawaiKedi ? $produksi->detailPegawaiKedi->count() : 0;
 
                 if ($jumlahPekerja > 0) {
                     $totalPot = $selisih * $stdPotHarga;
                     $potonganRaw = $totalPot / $jumlahPekerja;
 
                     // --- RUMUS PEMBULATAN KHUSUS (0, 500, 1000) ---
-                    // Agar format rupiah di Laporan Harian seragam dengan Rotary/Repair
                     $ribuan = floor($potonganRaw / 1000);
                     $ratusan = $potonganRaw % 1000;
 
@@ -54,10 +63,10 @@ class StikWorkerMap
             }
 
             // 4. Mapping Pegawai
-            if ($item->detailPegawaiStik) {
-                foreach ($item->detailPegawaiStik as $dp) {
+            // Pastikan relasi 'detailPegawaiKedi' ada di Model ProduksiKedi
+            if ($produksi->detailPegawaiKedi) {
+                foreach ($produksi->detailPegawaiKedi as $dp) {
 
-                    // Skip jika data master pegawai hilang
                     if (!$dp->pegawai)
                         continue;
 
