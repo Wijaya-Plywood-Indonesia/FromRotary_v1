@@ -36,7 +36,15 @@ class KayuMasukForm
                     ->disk('public')
                     ->directory('kayu_masuk/dokumen')
                     ->preserveFilenames()
-                    ->required(),
+                    ->required()
+                    // --- FITUR KOMPRESI BAWAAN FILAMENT ---
+                    ->image() // Wajib ada agar fitur resize jalan
+                    ->imageResizeMode('contain') // Mode aman agar dokumen tidak terpotong
+                    ->imageResizeTargetWidth('1280') // Resize lebar maks ke 1280px
+                    ->imageResizeTargetHeight('1280') // Resize tinggi maks ke 1280px
+                    ->imageQuality(70) // (Opsional) Turunkan kualitas JPEG/WebP ke 70%
+                    // ->optimize('webp') <--- HAPUS BARIS INI KARENA MENYEBABKAN ERROR
+                    ->imagePreviewHeight('250'),
 
                 DatePicker::make('tgl_kayu_masuk')
                     ->label('Tanggal Kayu Masuk')

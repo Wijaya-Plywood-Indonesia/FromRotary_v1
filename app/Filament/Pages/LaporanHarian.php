@@ -16,15 +16,15 @@ use Maatwebsite\Excel\Facades\Excel;
 use UnitEnum;
 use BackedEnum;
 
-// --- 1. IMPORT MODELS (LANGSUNG KE MODEL, BUKAN QUERY CLASS) ---
+// --- 1. IMPORT MODELS ---
+use App\Models\Pegawai; // <--- WAJIB TAMBAH INI (Master Pegawai)
 use App\Models\ProduksiRotary;
-// Pastikan nama Model Repair Anda benar (misal: ProduksiRepair atau LaporanRepair)
 use App\Models\ProduksiRepair;
 use App\Models\ProduksiPressDryer;
 use App\Models\ProduksiStik;
 use App\Models\ProduksiKedi;
 
-// --- 2. IMPORT TRANSFORMER CLASSES (UNTUK FORMATTING DATA) ---
+// --- 2. IMPORT TRANSFORMER CLASSES ---
 use App\Filament\Pages\LaporanHarian\Transformers\RotaryWorkerMap;
 use App\Filament\Pages\LaporanHarian\Transformers\RepairWorkerMap;
 use App\Filament\Pages\LaporanHarian\Transformers\PressDryerWorkerMap;
@@ -39,7 +39,7 @@ class LaporanHarian extends Page implements HasForms
 
     protected static UnitEnum|string|null $navigationGroup = 'Laporan';
     protected static BackedEnum|string|null $navigationIcon = 'heroicon-o-document-chart-bar';
-    protected static ?string $title = 'Laporan Harian';
+    protected static ?string $title = 'Laporan Harian (Semua Pegawai)';
 
     protected string $view = 'filament.pages.laporan-harian';
 
@@ -57,6 +57,7 @@ class LaporanHarian extends Page implements HasForms
         'dryer' => 0,
         'kedi' => 0,
         'stik' => 0,
+        'libur' => 0, // Tambahan stat untuk yang libur
         'total' => 0,
     ];
 
@@ -83,7 +84,7 @@ class LaporanHarian extends Page implements HasForms
                     ->afterStateUpdated(fn() => $this->loadData())
                     ->suffixIcon('heroicon-o-calendar')
                     ->suffixIconColor('primary')
-                    ->helperText('Memuat gabungan data Rotary, Repair, Dryer, Stik, dan Kedi.'),
+                    ->helperText('Menampilkan status seluruh pegawai (Bekerja & Tidak).'),
             ])
             ->statePath('data')
             ->columns(1);
@@ -110,156 +111,135 @@ class LaporanHarian extends Page implements HasForms
     public function loadData(): void
     {
         $this->isLoading = true;
-
-        // Force format Y-m-d (Bersihkan jam/menit)
         $rawTgl = $this->data['tanggal'] ?? now();
         $tgl = Carbon::parse($rawTgl)->format('Y-m-d');
 
         try {
             Log::info('LaporanHarian: Memuat data untuk tanggal ' . $tgl);
 
-            // Reset
-            $this->statistics = ['rotary' => 0, 'repair' => 0, 'dryer' => 0, 'kedi' => 0, 'stik' => 0, 'total' => 0];
+            // Reset Stats
+            $this->statistics = ['rotary' => 0, 'repair' => 0, 'dryer' => 0, 'kedi' => 0, 'stik' => 0, 'libur' => 0, 'total' => 0];
+
             $listRotary = [];
             $listRepair = [];
             $listDryer = [];
             $listStik = [];
             $listKedi = [];
 
-            // ===========================================
-            // 1. ROTARY (Query Langsung)
-            // ===========================================
-            try {
-                $rawRotary = ProduksiRotary::with([
-                    'mesin',
-                    'detailPegawaiRotary.pegawai',
-                    'detailPaletRotary',
-                    'detailGantiPisauRotary'
-                ])
-                    ->whereDate('tgl_produksi', $tgl) // Kolom di DB: tgl_produksi
-                    ->get();
+            // ---------------------------------------------------------
+            // 1. AMBIL DATA PRODUKSI (YANG BEKERJA)
+            // ---------------------------------------------------------
 
+            // Rotary
+            try {
+                $rawRotary = ProduksiRotary::with(['mesin', 'detailPegawaiRotary.pegawai', 'detailPaletRotary', 'detailGantiPisauRotary'])
+                    ->whereDate('tgl_produksi', $tgl)->get();
                 $listRotary = RotaryWorkerMap::make($rawRotary);
                 $this->statistics['rotary'] = count($listRotary);
             } catch (Exception $e) {
                 Log::error("Rotary Error: " . $e->getMessage());
             }
 
-            // ===========================================
-            // 2. REPAIR (Query Langsung)
-            // ===========================================
+            // Repair
             try {
-                // Pastikan nama Model ini benar (ProduksiRepair atau LaporanRepair)
-                $rawRepair = ProduksiRepair::with([
-                    'modalRepairs.ukuran',
-                    'modalRepairs.jenisKayu',
-                    'rencanaPegawais.pegawai',
-                    'rencanaPegawais.rencanaRepairs.hasilRepairs'
-                ])
-                    ->whereDate('tanggal', $tgl) // Kolom di DB: tanggal
-                    ->get();
-
+                $rawRepair = ProduksiRepair::with(['modalRepairs.ukuran', 'modalRepairs.jenisKayu', 'rencanaPegawais.pegawai', 'rencanaPegawais.rencanaRepairs.hasilRepairs'])
+                    ->whereDate('tanggal', $tgl)->get();
                 $listRepair = RepairWorkerMap::make($rawRepair);
                 $this->statistics['repair'] = count($listRepair);
             } catch (Exception $e) {
                 Log::error("Repair Error: " . $e->getMessage());
             }
 
-            // ===========================================
-            // 3. PRESS DRYER (Query Langsung)
-            // ===========================================
+            // Dryer
             try {
-                $rawDryer = ProduksiPressDryer::with([
-                    'detailPegawais.pegawai',
-                    'detailHasils',
-                    'detailMesins.mesin',
-                    'detailMesins.kategoriMesin',
-                ])
-                    ->whereDate('tanggal_produksi', $tgl) // Kolom di DB: tanggal_produksi
-                    ->orderBy('shift', 'asc')
-                    ->get();
-
+                $rawDryer = ProduksiPressDryer::with(['detailPegawais.pegawai', 'detailHasils', 'detailMesins.mesin', 'detailMesins.kategoriMesin'])
+                    ->whereDate('tanggal_produksi', $tgl)->orderBy('shift', 'asc')->get();
                 $listDryer = PressDryerWorkerMap::make($rawDryer);
                 $this->statistics['dryer'] = count($listDryer);
             } catch (Exception $e) {
                 Log::error("Dryer Error: " . $e->getMessage());
             }
 
-            // ===========================================
-            // 4. STIK (Query Langsung)
-            // ===========================================
+            // Stik
             try {
-                $rawStik = ProduksiStik::with([
-                    'detailPegawaiStik.pegawai:id,kode_pegawai,nama_pegawai',
-                ])
-                    ->whereDate('tanggal_produksi', $tgl) // Kolom di DB: tanggal_produksi
-                    ->get();
-
+                $rawStik = ProduksiStik::with(['detailPegawaiStik.pegawai:id,kode_pegawai,nama_pegawai'])
+                    ->whereDate('tanggal_produksi', $tgl)->get();
                 $listStik = StikWorkerMap::make($rawStik);
                 $this->statistics['stik'] = count($listStik);
             } catch (Exception $e) {
                 Log::error("Stik Error: " . $e->getMessage());
             }
 
-            // ===========================================
-            // 5. KEDI (Query Langsung)
-            // ===========================================
+            // Kedi
             try {
-                $rawKedi = ProduksiKedi::with([
-                    'detailPegawaiKedi.pegawai:id,kode_pegawai,nama_pegawai',
-                    'detailMasukKedi',
-                    'detailBongkarKedi',
-                ])
-                    ->whereDate('tanggal', $tgl) // Kolom di DB: tanggal
-                    ->get();
-
+                $rawKedi = ProduksiKedi::with(['detailPegawaiKedi.pegawai:id,kode_pegawai,nama_pegawai', 'detailMasukKedi', 'detailBongkarKedi'])
+                    ->whereDate('tanggal', $tgl)->get();
                 $listKedi = KediWorkerMap::make($rawKedi);
                 $this->statistics['kedi'] = count($listKedi);
             } catch (Exception $e) {
                 Log::error("Kedi Error: " . $e->getMessage());
             }
 
-            // ===========================================
-            // MERGE & SORT
-            // ===========================================
-            $merged = array_merge(
-                $listRotary,
-                $listRepair,
-                $listDryer,
-                $listStik,
-                $listKedi
-            );
+            // Gabungkan semua yang bekerja
+            $pegawaiBekerja = array_merge($listRotary, $listRepair, $listDryer, $listStik, $listKedi);
 
-            // Sort A-Z
-            usort($merged, function ($a, $b) {
+            // ---------------------------------------------------------
+            // 2. CARI PEGAWAI YANG TIDAK BEKERJA
+            // ---------------------------------------------------------
+
+            // Ambil semua Kode Pegawai yang sudah ada di list kerja
+            // Kita pakai 'kodep' karena itu unik
+            $kodePegawaiKerja = array_column($pegawaiBekerja, 'kodep');
+            $kodePegawaiKerja = array_filter($kodePegawaiKerja, fn($val) => $val !== '-'); // Hapus yang invalid
+
+            // Ambil Data Master Pegawai yang TIDAK ada di list kerja
+            // Sesuaikan query ini jika Anda punya kolom status aktif
+            $pegawaiLibur = Pegawai::whereNotIn('kode_pegawai', $kodePegawaiKerja)
+                // ->where('status', 'aktif') // UNCOMMENT JIKA INGIN HANYA PEGAWAI AKTIF
+                ->orderBy('nama_pegawai', 'asc')
+                ->get();
+
+            $listLibur = [];
+            foreach ($pegawaiLibur as $p) {
+                $listLibur[] = [
+                    'kodep' => $p->kode_pegawai,
+                    'nama' => $p->nama_pegawai,
+                    'masuk' => '-',
+                    'pulang' => '-',
+
+                    // LABEL PEMBEDA UTAMA
+                    'hasil' => '-',
+                    'ijin' => '',
+                    'potongan_targ' => 0,
+                    'keterangan' => '',
+                ];
+            }
+
+            $this->statistics['libur'] = count($listLibur);
+
+            // ---------------------------------------------------------
+            // 3. GABUNGKAN SEMUA & SORTING
+            // ---------------------------------------------------------
+
+            $finalMerge = array_merge($pegawaiBekerja, $listLibur);
+
+            // Sort A-Z berdasarkan Nama
+            usort($finalMerge, function ($a, $b) {
                 return strcmp($a['nama'] ?? '', $b['nama'] ?? '');
             });
 
-            $this->laporanGabungan = $merged;
-            $this->statistics['total'] = count($merged);
+            $this->laporanGabungan = $finalMerge;
+            $this->statistics['total'] = count($finalMerge);
 
-            // Notification Feedback
-            if (empty($merged)) {
-                Notification::make()
-                    ->warning()
-                    ->title('Data Kosong')
-                    ->body('Tidak ditemukan data pegawai untuk tanggal ' . Carbon::parse($tgl)->format('d/m/Y'))
-                    ->send();
+            // Notifikasi
+            if (empty($finalMerge)) {
+                Notification::make()->warning()->title('Data Kosong')->body('Tidak ada data pegawai sama sekali.')->send();
             } else {
-                Notification::make()
-                    ->success()
-                    ->title('Data Berhasil Dimuat')
-                    ->body("Total {$this->statistics['total']} pegawai ditemukan.")
-                    ->send();
+                Notification::make()->success()->title('Data Dimuat')->body("Total {$this->statistics['total']} pegawai (Termasuk yang libur).")->send();
             }
 
         } catch (Exception $e) {
-            Notification::make()
-                ->danger()
-                ->title('Terjadi Kesalahan Global')
-                ->body($e->getMessage())
-                ->send();
-
+            Notification::make()->danger()->title('Error')->body($e->getMessage())->send();
             Log::error('LaporanHarian Critical Error: ' . $e->getMessage());
             $this->laporanGabungan = [];
         } finally {
@@ -273,14 +253,10 @@ class LaporanHarian extends Page implements HasForms
             $tgl = $this->data['tanggal'];
             return Excel::download(
                 new LaporanHarianExport($this->laporanGabungan),
-                "Laporan-Harian-{$tgl}.xlsx"
+                "Laporan-Harian-Full-{$tgl}.xlsx"
             );
         } catch (Exception $e) {
-            Notification::make()
-                ->danger()
-                ->title('Gagal Export')
-                ->body($e->getMessage())
-                ->send();
+            Notification::make()->danger()->title('Gagal Export')->body($e->getMessage())->send();
         }
     }
 
