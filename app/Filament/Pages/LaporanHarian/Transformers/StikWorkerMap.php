@@ -61,8 +61,8 @@ class StikWorkerMap
                     if (!$dp->pegawai)
                         continue;
 
-                    $jamMasuk = $dp->jam_masuk ? Carbon::parse($dp->jam_masuk)->format('H:i') : '';
-                    $jamPulang = $dp->jam_pulang ? Carbon::parse($dp->jam_pulang)->format('H:i') : '';
+                    $jamMasuk = $dp->masuk ? Carbon::parse($dp->masuk)->format('H:i') : '';
+                    $jamPulang = $dp->pulang ? Carbon::parse($dp->pulang)->format('H:i') : '';
 
                     // Prioritas: Input Manual > Rumus
                     $potonganFinal = $dp->potongan ?? $potonganPerOrang;

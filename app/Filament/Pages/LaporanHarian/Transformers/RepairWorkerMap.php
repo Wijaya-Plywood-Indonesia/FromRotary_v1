@@ -4,6 +4,7 @@ namespace App\Filament\Pages\LaporanHarian\Transformers;
 
 use Carbon\Carbon;
 use App\Models\Target;
+use Illuminate\Support\Facades\Log;
 
 class RepairWorkerMap
 {
@@ -21,33 +22,82 @@ class RepairWorkerMap
                 $jenisKayuModel = $modal->jenisKayu;
                 $kw = $modal->kw ?? $modal->kualitas ?? 1;
 
-                // Label untuk kolom 'hasil' di Excel
+                // Label Visual
                 $labelPekerjaan = 'REPAIR';
                 if ($ukuranModel) {
                     $labelPekerjaan .= ' ' . $ukuranModel->panjang . 'x' . $ukuranModel->lebar;
                 }
 
-                // Buat Kode Ukuran untuk cari Target
+                // --- LOGGING STEP 1: DATA MENTAH ---
+                // Kita cek data apa yang masuk dari Modal Repair
+                Log::info("🔍 [REPAIR DEBUG] Memproses Modal ID: {$modal->id}", [
+                    'Panjang' => $ukuranModel->panjang ?? 'NULL',
+                    'Lebar' => $ukuranModel->lebar ?? 'NULL',
+                    'Tebal' => $ukuranModel->tebal ?? 'NULL',
+                    'KW' => $kw,
+                    'Jenis' => $jenisKayuModel->kode_kayu ?? 'NULL',
+                    'ID Mesin' => $produksi->id_mesin
+                ]);
+
+                // Buat Kode Ukuran
                 $kodeUkuran = 'REPAIR-NOT-FOUND';
+
                 if ($ukuranModel && $jenisKayuModel) {
+                    // FORMAT: REPAIR + P + L + T(koma) + KW + JENIS(Upper)
                     $kodeUkuran = 'REPAIR' .
                         $ukuranModel->panjang .
                         $ukuranModel->lebar .
                         str_replace('.', ',', $ukuranModel->tebal) .
                         $kw .
-                        strtolower($jenisKayuModel->kode_kayu);
+                        strtoupper($jenisKayuModel->kode_kayu); // Pastikan Uppercase
                 }
 
+                // --- LOGGING STEP 2: STRING YANG DIHASILKAN ---
+                Log::info("🧩 [REPAIR DEBUG] String Pencarian: '{$kodeUkuran}'");
+
                 // --- B. CARI TARGET ---
-                $targetModel = Target::where('kode_ukuran', $kodeUkuran)
+                $targetModel = null;
+                $levelFound = 0;
+
+                // Level 1: String Persis + Mesin Spesifik
+                $targetLv1 = Target::where('kode_ukuran', $kodeUkuran)
                     ->where('id_mesin', $produksi->id_mesin)
                     ->first();
 
-                if (!$targetModel) {
-                    $targetModel = Target::where('kode_ukuran', $kodeUkuran)->first();
+                if ($targetLv1) {
+                    $targetModel = $targetLv1;
+                    $levelFound = 1;
+                } else {
+                    // Level 2: String Persis (Mesin Umum)
+                    $targetLv2 = Target::where('kode_ukuran', $kodeUkuran)->first();
+                    if ($targetLv2) {
+                        $targetModel = $targetLv2;
+                        $levelFound = 2;
+                    } else {
+                        // Level 3: Fallback ID
+                        $targetLv3 = Target::where([
+                            'id_mesin' => $produksi->id_mesin,
+                            'id_ukuran' => $modal->id_ukuran,
+                            'id_jenis_kayu' => $modal->id_jenis_kayu,
+                        ])->first();
+
+                        if ($targetLv3) {
+                            $targetModel = $targetLv3;
+                            $levelFound = 3;
+                        }
+                    }
                 }
 
-                // Ambil Nilai Target
+                // --- LOGGING STEP 3: HASIL PENCARIAN TARGET ---
+                if ($targetModel) {
+                    Log::info("✅ [REPAIR DEBUG] Target DITEMUKAN di Level {$levelFound}", [
+                        'Target' => $targetModel->target,
+                        'Potongan' => $targetModel->potongan
+                    ]);
+                } else {
+                    Log::warning("❌ [REPAIR DEBUG] Target TIDAK DITEMUKAN untuk '{$kodeUkuran}'");
+                }
+
                 $targetWajib = (int) ($targetModel->target ?? 0);
                 $potonganPerLembar = (int) ($targetModel->potongan ?? 0);
 
@@ -57,21 +107,23 @@ class RepairWorkerMap
                     if (!$rp->pegawai)
                         continue;
 
-                    // 1. Hitung Hasil Individu Pegawai
-                    $hasilIndividu = $rp->rencanaRepairs
-                        ->where('id_modal_repair', $modal->id)
-                        ->flatMap->hasilRepairs
-                        ->sum('jumlah');
+                    // Hitung Hasil
+                    $hasilIndividu = 0;
+                    if ($rp->rencanaRepairs) {
+                        $hasilIndividu = $rp->rencanaRepairs
+                            ->where('id_modal_repair', $modal->id)
+                            ->flatMap->hasilRepairs
+                            ->sum('jumlah');
+                    }
 
-                    // 2. Hitung Potongan
+                    // Hitung Potongan
                     $selisih = $hasilIndividu - $targetWajib;
                     $potonganPerOrang = 0;
 
-                    // Jika hasil kurang dari target, hitung denda
                     if ($selisih < 0 && $targetWajib > 0 && $potonganPerLembar > 0) {
                         $nominalPotongan = abs($selisih) * $potonganPerLembar;
 
-                        // Pembulatan Khusus (0, 500, 1000) agar seragam
+                        // Pembulatan
                         $ribuan = floor($nominalPotongan / 1000);
                         $ratusan = $nominalPotongan % 1000;
 
@@ -84,10 +136,8 @@ class RepairWorkerMap
                         }
                     }
 
-                    // Prioritas: Input Manual > Rumus
                     $potonganFinal = $rp->potongan ?? $potonganPerOrang;
 
-                    // 3. Masukkan ke Array Hasil
                     $results[] = [
                         'kodep' => $rp->pegawai->kode_pegawai ?? '-',
                         'nama' => $rp->pegawai->nama_pegawai ?? 'TANPA NAMA',

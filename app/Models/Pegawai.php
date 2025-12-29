@@ -41,7 +41,12 @@ class Pegawai extends Model
     public function detailPegawaiHp()
     {
         return $this->hasMany(DetailPegawaiHp::class, 'id_pegawai');
-    }   
+    }
+
+    public function detailPegawaiKedi()
+    {
+        return $this->hasMany(DetailPegawaiKedi::class, 'id_pegawai');
+    }
 
     public function rencanaPegawais()
     {
@@ -59,14 +64,14 @@ class Pegawai extends Model
     }
 
     public function detailDempuls()
-{
-    return $this->belongsToMany(
-        DetailDempul::class,
-        'detail_dempul_pegawai',
-        'id_pegawai',
-        'id_detail_dempul'
-    );
-}
+    {
+        return $this->belongsToMany(
+            DetailDempul::class,
+            'detail_dempul_pegawai',
+            'id_pegawai',
+            'id_detail_dempul'
+        );
+    }
 
 
 }

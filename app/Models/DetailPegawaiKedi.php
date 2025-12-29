@@ -17,7 +17,7 @@ class DetailPegawaiKedi extends Model
         'pulang',
         'ijin',
         'ket',
-        
+
     ];
 
     public function mesin()
@@ -30,7 +30,7 @@ class DetailPegawaiKedi extends Model
         return $this->belongsTo(ProduksiKedi::class, 'id_produksi_kedi');
     }
 
-    public function pegawaiKedi()
+    public function pegawai()
     {
         return $this->belongsTo(Pegawai::class, 'id_pegawai');
     }
