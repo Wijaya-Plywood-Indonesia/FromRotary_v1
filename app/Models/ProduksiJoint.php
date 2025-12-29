@@ -28,6 +28,11 @@ class ProduksiJoint extends Model
         return $this->hasMany(HasilJoint::class, 'id_produksi_joint');
     }
 
+    public function bahanProduksi()
+    {
+        return $this->hasMany(BahanProduksi::class, 'id_produksi_joint');
+    }
+
     public function validasiJoint()
     {
         return $this->hasMany(ValidasiJoint::class, 'id_produksi_joint');

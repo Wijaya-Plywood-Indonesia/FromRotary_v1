@@ -26,6 +26,10 @@ class ProduksiDempulResource extends Resource
     protected static ?string $model = ProduksiDempul::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {

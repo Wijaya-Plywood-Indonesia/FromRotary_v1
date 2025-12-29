@@ -17,4 +17,14 @@ class PegawaiJoint extends Model
         'ijin',
         'ket',
     ];
+
+    public function produksiJoint()
+    {
+        return $this->belongsTo(ProduksiJoint::class, 'id_produksi_joint');
+    }
+
+    public function pegawai()
+    {
+        return $this->belongsTo(Pegawai::class, 'id_pegawai');
+    }
 }
