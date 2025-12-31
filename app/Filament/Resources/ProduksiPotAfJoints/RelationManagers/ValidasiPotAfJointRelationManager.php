@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 
 class ValidasiPotAfJointRelationManager extends RelationManager
 {
+    protected static ?string $title = 'Validasi';
     protected static string $relationship = 'ValidasiPotAfJoint';
     public function isReadOnly(): bool
     {
