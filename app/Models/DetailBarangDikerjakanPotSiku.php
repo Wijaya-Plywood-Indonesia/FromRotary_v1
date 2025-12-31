@@ -14,6 +14,7 @@ class DetailBarangDikerjakanPotSiku extends Model
         'id_ukuran',
         'id_jenis_kayu',
         'tinggi',
+        'kw',
         'no_palet',
         'jumlah',
     ];
@@ -25,7 +26,7 @@ class DetailBarangDikerjakanPotSiku extends Model
 
     public function PegawaiPotSiku()
     {
-        return $this->belongsTo(PegawaiPotSiku::class, 'id_produksi_pot_siku');
+        return $this->belongsTo(PegawaiPotSiku::class, 'id_pegawai_pot_siku');
     }
 
     public function ukuran()

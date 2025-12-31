@@ -135,13 +135,11 @@ class LaporanStik extends Page
             if ($produksi->detailPegawaiStik) {
                 foreach ($produksi->detailPegawaiStik as $detail) {
                     $pekerja[] = [
-                        // Menggunakan null-safe operator (?->) untuk pegawai
                         'id' => $detail->pegawai?->kode_pegawai ?? '-',
                         'nama' => $detail->pegawai?->nama_pegawai ?? '-',
                         'jam_masuk' => $detail->masuk ? Carbon::parse($detail->masuk)->format('H:i') : '-',
                         'jam_pulang' => $detail->pulang ? Carbon::parse($detail->pulang)->format('H:i') : '-',
                         'ijin' => $detail->ijin ?? '-',
-                        // Terapkan pembulatan, tampilkan '-' jika 0 atau negatif
                         'pot_target' => $potonganPerOrang > 0
                             ? number_format($this->roundToNearestHundred($potonganPerOrang), 0, '', '.')
                             : '-',
