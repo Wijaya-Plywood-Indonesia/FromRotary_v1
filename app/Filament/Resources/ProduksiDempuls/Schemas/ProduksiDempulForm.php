@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ProduksiDempuls\Schemas;
 
+use App\Models\ProduksiDempul;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\DatePicker;
 
@@ -12,15 +13,23 @@ class ProduksiDempulForm
         return $schema
             ->components([
                 DatePicker::make('tanggal')
-                    ->label('Tanggal')
-                    ->native(false)                    // modern, responsive
-                    ->format('Y-m-d')                     // format penyimpanan
-                    ->displayFormat('d/m/Y')             // tampil di UI
-                    ->live()
-                    ->closeOnDateSelection()
+                    ->label('Tanggal Produksi')
+                    ->default(fn () => now()->addDay())
+                    ->displayFormat('d F Y')
                     ->required()
-                    ->maxDate(now()->addDays(30))
-                    ->default(now()->addDay())
+
+                    // ✅ VALIDASI TANGGAL TIDAK BOLEH SAMA
+                    ->rules([
+                        function () {
+                            return function (string $attribute, $value, $fail) {
+                                $exists = ProduksiDempul::whereDate('tanggal', $value)->exists();
+
+                                if ($exists) {
+                                    $fail('Tanggal ini sudah digunakan. Pilih tanggal lain.');
+                                }
+                            };
+                        },
+                    ])
             ]);
     }
 }

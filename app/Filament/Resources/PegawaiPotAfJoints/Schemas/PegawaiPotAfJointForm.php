@@ -54,13 +54,12 @@ class PegawaiPotAfJointForm
                     ->searchable()
                     ->required()
                     ->options(
-                        Pegawai::query()
-                            ->orderBy('nama_pegawai')
-                            ->get()
-                            ->mapWithKeys(fn ($pegawai) => [
-                                $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
-                            ])
-                    )
+                    Pegawai::query()
+                        ->get()
+                        ->mapWithKeys(fn($pegawai) => [
+                            $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
+                        ])
+                )
                     ->rule(function ($livewire) {
                         return function (string $attribute, $value, $fail) use ($livewire) {
 

@@ -7,6 +7,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\Textarea;
@@ -29,20 +30,20 @@ class ProduksiNyusupsTable
                     ->tooltip(fn(string $state): string => $state)
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                // Tables\Columns\BadgeColumn::make('validasiTerakhir.status')
-                //     ->label('Validasi')
-                //     ->colors([
-                //         'success' => 'divalidasi',
-                //         'warning' => 'ditangguhkan',
-                //         'danger' => 'ditolak',
-                //     ])
-                //     ->icons([
-                //         'heroicon-o-check-circle' => 'divalidasi',
-                //         'heroicon-o-x-circle' => 'ditolak',
-                //         'heroicon-o-exclamation-circle' => 'ditangguhkan',
-                //     ])
-                //     ->sortable()
-                //     ->searchable(),
+                Tables\Columns\BadgeColumn::make('validasiTerakhir.status')
+                    ->label('Validasi')
+                    ->colors([
+                        'success' => 'divalidasi',
+                        'warning' => 'ditangguhkan',
+                        'danger' => 'ditolak',
+                    ])
+                    ->icons([
+                        'heroicon-o-check-circle' => 'divalidasi',
+                        'heroicon-o-x-circle' => 'ditolak',
+                        'heroicon-o-exclamation-circle' => 'ditangguhkan',
+                    ])
+                    ->sortable()
+                    ->searchable(),
 
                 TextColumn::make('created_at')
                     ->label('Dibuat Pada')
@@ -88,13 +89,23 @@ class ProduksiNyusupsTable
 
                     ->modalHeading(fn($record) => $record->kendala ? 'Perbarui Kendala' : 'Tambah Kendala')
                     ->modalSubmitActionLabel('Simpan'),
-                EditAction::make(),
-                DeleteBulkAction::make(),
+                // Hilang jika sudah divalidasi
+                EditAction::make()
+                    ->visible(fn($record) => $record->validasiTerakhir?->status !== 'divalidasi'),
+
+                DeleteAction::make()
+                    ->visible(fn($record) => $record->validasiTerakhir?->status !== 'divalidasi'),
+
+                // View boleh tetap tampil
                 ViewAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->visible(
+                            fn($records) =>
+                            $records->every(fn($r) => $r->validasiTerakhir?->status !== 'divalidasi')
+                        ),
                 ]),
             ]);
     }
