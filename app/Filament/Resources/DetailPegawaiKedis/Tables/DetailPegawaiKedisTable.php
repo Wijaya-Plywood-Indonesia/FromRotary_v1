@@ -5,6 +5,7 @@ namespace App\Filament\Resources\DetailPegawaiKedis\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Actions\Action;
@@ -23,7 +24,7 @@ class DetailPegawaiKedisTable
                     ->searchable()
                     ->placeholder('-'),
 
-                TextColumn::make('pegawaiKedi.nama_pegawai')
+                TextColumn::make('pegawai.nama_pegawai')
                     ->label('Pegawai')
                     ->sortable()
                     ->searchable(),
@@ -69,7 +70,8 @@ class DetailPegawaiKedisTable
                             'ijin' => $data['ijin'],
                             'ket'  => $data['ket'],
                         ]);
-                    })
+                    }),
+                DeleteAction::make()
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

@@ -73,6 +73,8 @@ class DetailPegawaiStikRelationManager extends RelationManager
                     ->required(),
                 TextInput::make('tugas')
                     ->label('Tugas')
+                    ->default('Pegawai Stik')
+                    ->readOnly()
                     ->maxLength(255),
             ]);
     }

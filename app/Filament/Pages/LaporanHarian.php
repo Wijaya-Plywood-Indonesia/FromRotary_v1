@@ -39,7 +39,7 @@ class LaporanHarian extends Page implements HasForms
 
     protected static UnitEnum|string|null $navigationGroup = 'Laporan';
     protected static BackedEnum|string|null $navigationIcon = 'heroicon-o-document-chart-bar';
-    protected static ?string $title = 'Laporan Harian (Semua Pegawai)';
+    protected static ?string $title = 'Laporan Harian';
 
     protected string $view = 'filament.pages.laporan-harian';
 
