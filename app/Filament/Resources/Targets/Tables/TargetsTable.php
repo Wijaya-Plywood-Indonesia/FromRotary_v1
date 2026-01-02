@@ -2,83 +2,97 @@
 
 namespace App\Filament\Resources\Targets\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Forms\Components\Select;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 
 class TargetsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            /* PENTING: Kita paksa defaultSort ke 'id_mesin' atau 'created_at' 
+               agar Filament tidak mencari 'id_target' yang tidak ditemukan di database.
+            */
+            ->defaultSort('created_at', 'desc') 
             ->columns([
-                // Kolom status dengan warna
-
-
-
-
-
-                BadgeColumn::make('status')
+                // Kolom Status menggunakan TextColumn dengan badge()
+                TextColumn::make('status')
                     ->label('Status')
-                    ->icons([
-                        'heroicon-o-x-circle' => 'diajukan',
-                        'heroicon-o-check-circle' => 'disetujui',
-                    ])
-                    ->colors([
-                        'danger' => 'diajukan',  // teks + badge merah
-                        'success' => 'disetujui', // teks + badge hijau
-                    ]),
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'diajukan' => 'danger',
+                        'disetujui' => 'success',
+                        default => 'gray',
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'diajukan' => 'heroicon-o-x-circle',
+                        'disetujui' => 'heroicon-o-check-circle',
+                        default => 'heroicon-o-minus-circle',
+                    }),
 
+                TextColumn::make('mesin.nama_mesin')
+                    ->label('Mesin')
+                    ->searchable(),
 
-                TextColumn::make('mesin.nama_mesin')->label('Mesin'),
-
-
-
-                TextColumn::make('jenisKayu.nama_kayu')->label('Jenis Kayu'),
+                TextColumn::make('jenisKayu.nama_kayu')
+                    ->label('Jenis Kayu')
+                    ->searchable(),
 
                 TextColumn::make('target')
                     ->numeric()
                     ->sortable(),
+
                 TextColumn::make('orang')
                     ->numeric()
                     ->sortable(),
+
                 TextColumn::make('jam')
                     ->numeric()
                     ->sortable(),
+
+                // Kolom Kalkulasi (Hanya sortable jika kolom ini ada di database)
                 TextColumn::make('targetperjam')
-                    ->numeric()
+                    ->label('Tgt/Jam')
+                    ->numeric(decimalPlaces: 2)
                     ->sortable(),
+
                 TextColumn::make('targetperorang')
-                    ->numeric()
+                    ->label('Tgt/Org')
+                    ->numeric(decimalPlaces: 2)
                     ->sortable(),
+
                 TextColumn::make('gaji')
-                    ->numeric()
+                    ->money('IDR') // Format mata uang Rupiah
                     ->sortable(),
+
                 TextColumn::make('potongan')
-                    ->numeric()
+                    ->money('IDR')
                     ->sortable(),
+
                 TextColumn::make('created_at')
+                    ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('updated_at')
+                    ->label('Diperbarui')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                // Tambahkan filter di sini jika diperlukan
             ])
-            ->recordActions([
+            ->actions([
                 ViewAction::make(),
                 EditAction::make(),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),

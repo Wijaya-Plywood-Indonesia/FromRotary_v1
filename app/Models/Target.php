@@ -10,7 +10,7 @@ class Target extends Model
     use HasFactory;
 
     protected $table = 'targets';
-    protected $primaryKey = 'id_target';
+    protected $primaryKey = 'id';
 
     protected $fillable = [
         'id_mesin',
