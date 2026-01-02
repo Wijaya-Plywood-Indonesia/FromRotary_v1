@@ -5,6 +5,7 @@ namespace App\Filament\Resources\PegawaiGrajiTripleks\Schemas;
 use Filament\Schemas\Schema;
 use Carbon\CarbonPeriod;
 use App\Models\Pegawai;
+use App\Models\PegawaiGrajiTriplek;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 
@@ -61,7 +62,26 @@ class PegawaiGrajiTriplekForm
                         ])
                 )
                 ->searchable()
-                ->required(),
+                ->required()
+            ->rule(function ($livewire) {
+                        return function (string $attribute, $value, $fail) use ($livewire) {
+
+                            $produksiId = $livewire->ownerRecord->id ?? null;
+
+                            if (! $produksiId) {
+                                return;
+                            }
+
+                            $exists = PegawaiGrajiTriplek::query()
+                                ->where('id_produksi_graji_triplek', $produksiId)
+                                ->where('id_pegawai', $value)
+                                ->exists();
+
+                            if ($exists) {
+                                $fail('Pegawai ini sudah terdaftar pada produksi joint ini.');
+                            }
+                        };
+                    }),
             ]);
     }
 }

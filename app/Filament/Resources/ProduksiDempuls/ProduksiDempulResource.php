@@ -12,6 +12,7 @@ use App\Filament\Resources\ProduksiDempuls\Schemas\ProduksiDempulInfolist;
 use App\Filament\Resources\ProduksiDempuls\Tables\ProduksiDempulsTable;
 use App\Models\ProduksiDempul;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -26,10 +27,8 @@ class ProduksiDempulResource extends Resource
     protected static ?string $model = ProduksiDempul::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-    public static function shouldRegisterNavigation(): bool
-    {
-        return false;
-    }
+    protected static string|UnitEnum|null $navigationGroup = 'Dempul';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
