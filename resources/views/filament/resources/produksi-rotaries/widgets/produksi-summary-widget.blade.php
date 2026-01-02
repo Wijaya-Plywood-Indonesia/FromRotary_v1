@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 <x-filament::widget>
+=======
+`<x-filament::widget>
+>>>>>>> faris
     <x-filament::card class="w-full space-y-10 dark:bg-gray-900 dark:border-gray-800">
         {{-- ================= TOTAL PRODUKSI ================= --}}
         <div class="text-center py-4">
@@ -126,4 +130,5 @@
             </div>
         </div>
     </x-filament::card>
-</x-filament::widget>
+
+</x-filament::widget>`
