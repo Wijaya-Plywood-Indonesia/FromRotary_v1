@@ -25,6 +25,7 @@ class LaporanKedi extends Page
     protected string $view = 'filament.pages.laporan-kedi';
 
     public $dataKedi = [];
+    public $dataStik = [];
     public $tanggal = null;
     public bool $isLoading = false;
 

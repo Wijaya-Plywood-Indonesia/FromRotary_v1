@@ -13,7 +13,8 @@ use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Utilities\Get; // <--- PERBAIKAN: Menggunakan Get dari Schemas/Utilities
+use Filament\Forms\Components\Textarea; // Tambahkan import Textarea
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
@@ -29,9 +30,7 @@ class GantiPisauRotariesTable
                 // 1. KOLOM KENDALA
                 TextColumn::make('jenis_kendala')
                     ->label('Kendala')
-                    ->description(fn (GantiPisauRotary $record) => 
-                        $record->jenis_kendala === 'Lain-lain' ? $record->keterangan : null
-                    )
+                    // Description dihapus karena jenis_kendala sekarang adalah teks lengkap
                     ->wrap()
                     ->sortable(),
 
@@ -100,38 +99,21 @@ class GantiPisauRotariesTable
                     ->icon('heroicon-o-plus')
                     ->modalHeading('Input Kendala Mesin')
                     ->modalWidth('md')
-                    // Form menggunakan Get yang sudah diperbaiki
                     ->form([
                         Grid::make(1)
                             ->schema([
-                                Select::make('jenis_kendala')
+                                // PERBAIKAN: Menggunakan Textarea langsung
+                                Textarea::make('jenis_kendala')
                                     ->label('Jenis Kendala')
-                                    ->options([
-                                        'Ganti Pisau' => 'Ganti Pisau',
-                                        'Lain-lain'   => 'Lain-lain',
-                                    ])
-                                    ->native(false)
                                     ->required()
-                                    ->live(),
-
-                                // LOGIKA: Muncul hanya jika Lain-lain
-                                TextInput::make('keterangan')
-                                    ->label('Tambahkan Keterangan')
-                                    ->placeholder('Deskripsikan kendala...')
-                                    ->visible(fn (Get $get) => $get('jenis_kendala') === 'Lain-lain')
-                                    ->required(fn (Get $get) => $get('jenis_kendala') === 'Lain-lain'),
+                                    ->rows(3)
+                                    ->placeholder('Deskripsikan kendala...'),
 
                                 Hidden::make('jam_mulai_ganti_pisau')
                                     ->default(now()->format('H:i')),
                             ])
-                    ])
-                    // LOGIKA: Hapus keterangan jika user berubah pikiran jadi Ganti Pisau
-                    ->mutateFormDataUsing(function (array $data): array {
-                        if ($data['jenis_kendala'] === 'Ganti Pisau') {
-                            $data['keterangan'] = null; 
-                        }
-                        return $data;
-                    }),
+                    ]),
+                    // MutateFormDataUsing dihapus karena sudah tidak ada logika reset keterangan
             ])
 
             ->actions([
@@ -148,32 +130,18 @@ class GantiPisauRotariesTable
                         Notification::make()->title('Pekerjaan Selesai')->success()->send();
                     }),
 
-                // EDIT JUGA MENGGUNAKAN LOGIKA YANG SAMA
+                // EDIT JUGA MENGGUNAKAN LOGIKA YANG SAMA (Textarea)
                 EditAction::make()
                     ->form([
                         Grid::make(1)
                             ->schema([
-                                Select::make('jenis_kendala')
-                                    ->options([
-                                        'Ganti Pisau' => 'Ganti Pisau',
-                                        'Lain-lain'   => 'Lain-lain',
-                                    ])
-                                    ->native(false)
+                                Textarea::make('jenis_kendala')
+                                    ->label('Jenis Kendala')
                                     ->required()
-                                    ->live(),
-
-                                TextInput::make('keterangan')
-                                    ->label('Keterangan')
-                                    ->visible(fn (Get $get) => $get('jenis_kendala') === 'Lain-lain')
-                                    ->required(fn (Get $get) => $get('jenis_kendala') === 'Lain-lain'),
+                                    ->rows(3)
+                                    ->placeholder('Deskripsikan kendala...'),
                             ])
-                    ])
-                    ->mutateFormDataUsing(function (array $data): array {
-                        if ($data['jenis_kendala'] === 'Ganti Pisau') {
-                            $data['keterangan'] = null; 
-                        }
-                        return $data;
-                    }),
+                    ]),
                     
                 DeleteAction::make(),
             ])

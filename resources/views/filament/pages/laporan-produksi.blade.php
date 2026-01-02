@@ -30,9 +30,9 @@
         $warna = $selisih >= 0 ? 'text-green-400' : 'text-red-400'; $tanda =
         $selisih >= 0 ? '+' : ''; $jamKerja = $first['jam_kerja'] ?? 0;
         $jamKerjaEfektif = $first['jam_kerja_efektif'] ?? 0; $totalKendalaMenit
-        = $first['total_kendala_menit'] ?? 0; $totalDowntimeFormatted =
-        $first['total_downtime_formatted'] ?? '-'; $kendala = $first['kendala']
-        ?? '-'; $daftarKendala = $first['daftar_kendala'] ?? []; @endphp
+        = $first['total_kendala_menit'] ?? 0; $totalDowntimeFormatted = 
+        $first['total_downtime_formatted'] ?? '-'; $kendala = $first['kendala'] ??
+        '-'; $daftarKendala = $first['daftar_kendala'] ?? []; @endphp
 
         <!-- CARD MESIN -->
         <div
@@ -178,69 +178,37 @@
                                         colspan="7"
                                         class="p-3 text-center text-xs text-zinc-600 dark:text-zinc-400 space-x-3"
                                     >
-                                        <span class="font-medium"
-                                            >Pekerja:</span
-                                        >
+                                        <span class="font-medium">Pekerja:</span>
                                         <strong>{{ $totalPekerja }}</strong>
 
                                         <span class="text-zinc-400">|</span>
 
                                         <span class="font-medium">Target:</span>
-                                        <strong class="font-mono">{{
-                                            number_format($targetNormal)
-                                        }}</strong>
+                                        <strong class="font-mono">{{ number_format($targetNormal) }}</strong>
 
                                         <span class="text-zinc-400">|</span>
 
-                                        <span class="font-medium"
-                                            >Jam Produksi:</span
-                                        >
-                                        <strong class="font-mono"
-                                            >{{
-                                                number_format($jamKerja, 1)
-                                            }}
-                                            jam</strong
-                                        >
+                                        <span class="font-medium">Jam Produksi:</span>
+                                        <strong class="font-mono">{{ number_format($jamKerja, 1) }} jam</strong>
 
                                         <span class="text-zinc-400">|</span>
 
                                         <span class="font-medium">Hasil:</span>
-                                        <strong
-                                            class="font-mono {{ $warna }}"
-                                            >{{ number_format($hasil) }}</strong
-                                        >
+                                        <strong class="font-mono {{ $warna }}">{{ number_format($hasil) }}</strong>
 
                                         <span class="text-zinc-400">|</span>
 
-                                        <span class="font-medium"
-                                            >Selisih:</span
-                                        >
-                                        <strong class="font-mono {{ $warna }}"
-                                            >{{ $tanda
-                                            }}{{
-                                                number_format(abs($selisih))
-                                            }}</strong
-                                        >
+                                        <span class="font-medium">Selisih:</span>
+                                        <strong class="font-mono {{ $warna }}">{{ $tanda }}{{ number_format(abs($selisih)) }}</strong>
 
                                         <span class="text-zinc-400">|</span>
 
-                                        <span class="text-xs"
-                                            >Tanggal:
-                                            {{ $first["tanggal"] }}</span
-                                        >
+                                        <span class="text-xs">Tanggal: {{ $first["tanggal"] }}</span>
 
                                         <span class="text-zinc-400">|</span>
 
-                                        <span class="font-medium"
-                                            >Total Downtime:</span
-                                        >
-                                        <strong
-                                            class="font-mono {{
-                                                $totalKendalaMenit > 0
-                                                    ? 'text-red-600 dark:text-red-400'
-                                                    : ''
-                                            }}"
-                                        >
+                                        <span class="font-medium">Total Downtime:</span>
+                                        <strong class="font-mono {{ $totalKendalaMenit > 0 ? 'text-red-600 dark:text-red-400' : '' }}">
                                             {{ $totalDowntimeFormatted }}
                                         </strong>
                                     </td>
@@ -253,54 +221,24 @@
                                         colspan="7"
                                         class="p-3 text-xs border-t border-zinc-300 dark:border-zinc-600"
                                     >
-                                        <div
-                                            class="flex items-start justify-center gap-2"
-                                        >
-                                            <span
-                                                class="font-medium text-zinc-600 dark:text-zinc-400 whitespace-nowrap"
-                                            >
+                                        <div class="flex items-start justify-center gap-2">
+                                            <span class="font-medium text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
                                                 Kendala:
                                             </span>
                                             <div class="flex-1 max-w-3xl">
                                                 <div class="space-y-1">
-                                                    @foreach($daftarKendala as
-                                                    $k)
-                                                    <div
-                                                        class="text-zinc-700 dark:text-zinc-300"
-                                                    >
-                                                        <span
-                                                            class="font-semibold text-red-600 dark:text-red-400"
-                                                        >
-                                                            {{ $k["kendala"] }}
+                                                    @foreach($daftarKendala as $k)
+                                                    <div class="text-zinc-700 dark:text-zinc-300">
+                                                        <span class="font-semibold text-red-600 dark:text-red-400">
+                                                            {{ $k['kendala'] }}
                                                         </span>
-                                                        <span
-                                                            class="text-zinc-500 dark:text-zinc-400"
-                                                        >
-                                                            —
-                                                            {{
-                                                                $k[
-                                                                    "durasi_menit"
-                                                                ]
-                                                            }}
-                                                            menit ({{
-                                                                $k["jam_mulai"]
-                                                            }}
-                                                            -
-                                                            {{
-                                                                $k[
-                                                                    "jam_selesai"
-                                                                ]
-                                                            }})
+                                                        <span class="text-zinc-500 dark:text-zinc-400">
+                                                            — {{ $k['durasi_menit'] }} menit 
+                                                            ({{ $k['jam_mulai'] }} - {{ $k['jam_selesai'] }})
                                                         </span>
-                                                        @if($k['keterangan'] !==
-                                                        '-')
-                                                        <span
-                                                            class="text-zinc-600 dark:text-zinc-400 italic"
-                                                        >
-                                                            —
-                                                            {{
-                                                                $k["keterangan"]
-                                                            }}
+                                                        @if($k['keterangan'] !== '-')
+                                                        <span class="text-zinc-600 dark:text-zinc-400 italic">
+                                                            — {{ $k['keterangan'] }}
                                                         </span>
                                                         @endif
                                                     </div>

@@ -18,7 +18,6 @@ class HasilRepairsTable
 {
     /**
      * Helper: Mengambil ID Rencana KHUSUS untuk ID Produksi ini saja.
-     * Dipanggil dari RelationManager dengan context $ownerRecord
      */
     protected static function getGroupRencanaIds($record, $idProduksiRepair)
     {
@@ -54,7 +53,6 @@ class HasilRepairsTable
                     ->join('pegawais', 'pegawais.id', '=', 'rencana_pegawais.id_pegawai')
                     ->join('produksi_repairs', 'produksi_repairs.id', '=', 'rencana_repairs.id_produksi_repair')
                     ->leftJoin('hasil_repairs', 'hasil_repairs.id_rencana_repair', '=', 'rencana_repairs.id')
-                    // ✅ FILTER UTAMA: Hanya data dari ProduksiRepair yang sedang dibuka
                     ->where('rencana_repairs.id_produksi_repair', $idProduksiRepair)
                     ->groupBy([
                         'rencana_repairs.id_modal_repair',
@@ -114,28 +112,28 @@ class HasilRepairsTable
                     ->size('xl')
                     ->weight('bold')
                     ->sortable(false)
-                    ->color(fn($state) => $state >= 60 ? 'success' : ($state >= 40 ? 'warning' : 'danger')),
+                    ->color(fn($state) => $state >= 150 ? 'success' : ($state >= 40 ? 'warning' : 'danger')),
 
                 TextColumn::make('keterangan')
                     ->label('Keterangan')
-                    ->limit(20)
-                    ->tooltip(fn($state) => $state)
+                    ->tooltip(fn ($state) => $state)
                     ->icon('heroicon-m-document-text')
                     ->placeholder('-')
                     ->wrap(),
             ])
 
             ->recordActions([
+                // ACTION TAMBAH (Sudah disesuaikan untuk membagi rata inputan)
                 Action::make('tambah')
                     ->label('Tambah')
                     ->icon('heroicon-o-plus-circle')
                     ->color('success')
                     ->schema([
                         TextInput::make('tambah')
-                            ->label('Tambah Berapa Lembar?')
+                            ->label('Tambah Total (Satu Meja)')
+                            ->helperText('Angka ini akan dibagi rata ke semua pekerja di meja ini')
                             ->numeric()
                             ->minValue(1)
-                            ->maxValue(200)
                             ->default(1)
                             ->required()
                             ->prefix('+')
@@ -146,95 +144,109 @@ class HasilRepairsTable
                         $form->fill(['tambah' => 1]);
                     })
                     ->action(function ($record, array $data) use ($idProduksiRepair) {
-                        $tambah = (int) $data['tambah'];
+                        $totalTambah = (int) $data['tambah'];
                         $rencanaIds = self::getGroupRencanaIds($record, $idProduksiRepair);
+                        
+                        // Hitung jumlah pekerja untuk pembagian
+                        $jumlahPekerja = count($rencanaIds);
 
-                        foreach ($rencanaIds as $rencanaId) {
-                            $rencana = RencanaRepair::find($rencanaId);
-                            if (!$rencana)
-                                continue;
+                        if ($jumlahPekerja > 0) {
+                            // Logika Pembagian (Math Logic)
+                            $rataRata = floor($totalTambah / $jumlahPekerja);
+                            $sisa = $totalTambah % $jumlahPekerja;
 
-                            $produksiExists = DB::table('produksi_repairs')->where('id', $rencana->id_produksi_repair)->exists();
-                            if (!$produksiExists)
-                                continue;
+                            foreach ($rencanaIds as $index => $rencanaId) {
+                                // Jika ada sisa pembagian, berikan ke orang-orang pertama dalam urutan
+                                $tambahanPerOrang = $rataRata + ($index < $sisa ? 1 : 0);
 
-                            $hasilExist = HasilRepair::where('id_rencana_repair', $rencanaId)->first();
+                                if ($tambahanPerOrang <= 0) continue;
 
-                            if (!$hasilExist) {
-                                HasilRepair::create([
-                                    'id_rencana_repair' => $rencanaId,
-                                    'id_produksi_repair' => $rencana->id_produksi_repair,
-                                    'jumlah' => $tambah,
-                                ]);
-                            } else {
-                                $hasilExist->increment('jumlah', $tambah);
+                                $rencana = RencanaRepair::find($rencanaId);
+                                if (!$rencana) continue;
+
+                                // Pastikan data produksi valid
+                                $produksiExists = DB::table('produksi_repairs')->where('id', $rencana->id_produksi_repair)->exists();
+                                if (!$produksiExists) continue;
+
+                                $hasilExist = HasilRepair::where('id_rencana_repair', $rencanaId)->first();
+
+                                if (!$hasilExist) {
+                                    HasilRepair::create([
+                                        'id_rencana_repair' => $rencanaId,
+                                        'id_produksi_repair' => $rencana->id_produksi_repair,
+                                        'jumlah' => $tambahanPerOrang,
+                                    ]);
+                                } else {
+                                    $hasilExist->increment('jumlah', $tambahanPerOrang);
+                                }
                             }
                         }
-
-                        Notification::make()
-                            ->success()
-                            ->title("Berhasil menambah {$tambah} lembar")
-                            ->body("Total untuk {$record->jumlah_pekerja} pekerja")
-                            ->send();
                     })
                     ->modalHeading(fn($record) => "Tambah Hasil - Meja {$record->nomor_meja}")
                     ->modalSubmitActionLabel('Tambah Sekarang'),
 
+                // ACTION EDIT (Sudah disesuaikan agar yang diedit adalah Total Meja)
                 Action::make('edit_hasil')
                     ->label('Edit Hasil')
                     ->icon('heroicon-o-pencil-square')
                     ->color('primary')
                     ->schema([
-                        TextInput::make('jumlah_per_pekerja')
-                            ->label('Hasil Per Pekerja')
+                        TextInput::make('total_meja')
+                            ->label('Total Hasil Satu Meja')
+                            ->helperText('Masukkan total gabungan semua pekerja di meja ini')
                             ->numeric()
                             ->minValue(0)
                             ->required()
-                            ->helperText(fn($record) => "Akan disimpan untuk {$record->jumlah_pekerja} pekerja")
                             ->suffix(' lembar'),
                     ])
                     ->mountUsing(function ($form, $record) {
+                        // Pre-fill form dengan TOTAL yang sudah ada (bukan rata-rata)
                         $form->fill([
-                            'jumlah_per_pekerja' => $record->jumlah_pekerja > 0
-                                ? (int) ($record->total_hasil / $record->jumlah_pekerja)
-                                : 0
+                            'total_meja' => $record->total_hasil
                         ]);
                     })
                     ->action(function ($record, array $data) use ($idProduksiRepair) {
-                        $jumlahPerPekerja = (int) $data['jumlah_per_pekerja'];
+                        $totalMejaBaru = (int) $data['total_meja'];
                         $rencanaIds = self::getGroupRencanaIds($record, $idProduksiRepair);
+                        
+                        $jumlahPekerja = count($rencanaIds);
 
-                        foreach ($rencanaIds as $rencanaId) {
-                            $rencana = RencanaRepair::find($rencanaId);
-                            if (!$rencana)
-                                continue;
+                        if ($jumlahPekerja > 0) {
+                            // Logika Pembagian Ulang
+                            $rataRata = floor($totalMejaBaru / $jumlahPekerja);
+                            $sisa = $totalMejaBaru % $jumlahPekerja;
 
-                            $hasilExist = HasilRepair::where('id_rencana_repair', $rencanaId)->first();
+                            foreach ($rencanaIds as $index => $rencanaId) {
+                                $jatahPerOrang = $rataRata + ($index < $sisa ? 1 : 0);
 
-                            if ($hasilExist) {
-                                $hasilExist->update(['jumlah' => $jumlahPerPekerja]);
-                            } else {
-                                $produksiExists = DB::table('produksi_repairs')->where('id', $rencana->id_produksi_repair)->exists();
-                                if (!$produksiExists)
-                                    continue;
+                                $rencana = RencanaRepair::find($rencanaId);
+                                if (!$rencana) continue;
 
-                                HasilRepair::create([
-                                    'id_rencana_repair' => $rencanaId,
-                                    'id_produksi_repair' => $rencana->id_produksi_repair,
-                                    'jumlah' => $jumlahPerPekerja,
-                                ]);
+                                $hasilExist = HasilRepair::where('id_rencana_repair', $rencanaId)->first();
+
+                                if ($hasilExist) {
+                                    $hasilExist->update(['jumlah' => $jatahPerOrang]);
+                                } else {
+                                    // Create jika data lama belum ada tapi user ingin isi nilai
+                                    HasilRepair::create([
+                                        'id_rencana_repair' => $rencanaId,
+                                        'id_produksi_repair' => $rencana->id_produksi_repair,
+                                        'jumlah' => $jatahPerOrang,
+                                    ]);
+                                }
                             }
-                        }
 
-                        Notification::make()
-                            ->success()
-                            ->title('Hasil berhasil diperbarui!')
-                            ->body("Total: " . ($jumlahPerPekerja * count($rencanaIds)) . " lembar")
-                            ->send();
+                            Notification::make()
+                                ->success()
+                                ->title('Hasil diperbarui!')
+                                ->body("Total meja diset menjadi {$totalMejaBaru} lembar")
+                                ->send();
+                        }
                     })
-                    ->modalHeading(fn($record) => "Edit Hasil - Meja {$record->nomor_meja}")
+                    ->modalHeading(fn($record) => "Edit Total Hasil - Meja {$record->nomor_meja}")
                     ->modalSubmitActionLabel('Simpan Perubahan'),
 
+                // ACTION EDIT KETERANGAN (Tidak perlu ubah logic, hanya format)
                 Action::make('edit_keterangan')
                     ->label('Keterangan')
                     ->icon('heroicon-o-chat-bubble-left-ellipsis')
@@ -255,8 +267,7 @@ class HasilRepairsTable
 
                         foreach ($rencanaIds as $rencanaId) {
                             $rencana = RencanaRepair::find($rencanaId);
-                            if (!$rencana)
-                                continue;
+                            if (!$rencana) continue;
 
                             $hasilExist = HasilRepair::where('id_rencana_repair', $rencanaId)->first();
 
@@ -287,12 +298,13 @@ class HasilRepairsTable
                     ->modalHeading(fn($record) => "Edit Keterangan - Meja {$record->nomor_meja}")
                     ->modalSubmitActionLabel('Simpan Catatan'),
 
+                // ACTION DELETE (Hapus per Meja)
                 Action::make('delete_hasil')
                     ->label('Hapus')
                     ->icon('heroicon-o-trash')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->modalDescription(fn($record) => "Hapus hasil untuk Meja {$record->nomor_meja}?")
+                    ->modalDescription(fn($record) => "Hapus semua hasil untuk Meja {$record->nomor_meja}?")
                     ->action(function ($record) use ($idProduksiRepair) {
                         $rencanaIds = self::getGroupRencanaIds($record, $idProduksiRepair);
                         $deleted = HasilRepair::whereIn('id_rencana_repair', $rencanaIds)->delete();
