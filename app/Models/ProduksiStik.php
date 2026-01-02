@@ -37,4 +37,18 @@ class ProduksiStik extends Model
     {
         return $this->hasOne(ValidasiStik::class, 'id_produksi_stik')->latestOfMany();
     }
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            $exists = static::whereDate('tanggal_produksi', $model->tanggal_produksi)->exists();
+
+            if ($exists) {
+                // Melempar pesan error ke UI Filament
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'tanggal_produksi' => 'Gagal simpan! Tanggal ini sudah terdaftar di database.',
+                ]);
+            }
+        });
+    }
 }

@@ -2,21 +2,32 @@
 
 namespace App\Filament\Resources\ProduksiStiks\Schemas;
 
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
+use App\Models\ProduksiStik;
 use Filament\Schemas\Schema;
+use Filament\Forms\Components\DatePicker;
+use Filament\Notifications\Notification;
+use Illuminate\Validation\Rules\Unique;
+use Carbon\Carbon;
 
 class ProduksiStikForm
 {
-    public static function configure(Schema $schema): Schema
+    public static function configure(Schema $schema, $record = null): Schema
     {
         return $schema
             ->components([
                 DatePicker::make('tanggal_produksi')
-                    ->label('Tanggal Produksi')
-                    ->default(fn() => now()->addDay()) // 👈 default besok
-                    ->displayFormat('d F Y') // 👈 tampil seperti: 01 Januari 2025
-                    ->required(),
+                    ->label('Pilih Tanggal Laporan')
+                    ->native(false)
+                    ->displayFormat('d/m/Y')
+                    ->format('Y-m-d')
+                    ->maxDate(now()->addDays(30)) 
+                    ->default(now()->addDay())
+                    ->live()
+                    ->closeOnDateSelection()
+                    ->suffixIcon('heroicon-o-calendar')
+                    ->suffixIconColor('primary')
+                    ->required()
+                    
             ]);
     }
 }

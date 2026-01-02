@@ -42,4 +42,17 @@ class ProduksiRepair extends Model
     {
         return $this->hasMany(ValidasiRepair::class, 'id_produksi_repair');
     }
+
+    protected static function booted()
+{
+    static::creating(function ($model) {
+        $exists = static::whereDate('tanggal', $model->tanggal)->exists();
+        
+        if ($exists) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'tanggal' => 'Data produksi repair untuk tanggal ini sudah ada.',
+            ]);
+        }
+    });
+}
 }

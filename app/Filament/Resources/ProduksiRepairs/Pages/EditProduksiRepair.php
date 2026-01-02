@@ -11,6 +11,19 @@ class EditProduksiRepair extends EditRecord
 {
     protected static string $resource = ProduksiRepairResource::class;
 
+    protected function beforeSave(): void
+    {
+        $exists = \App\Models\ProduksiRepair::whereDate('tanggal', $this->data['tanggal'])
+            ->where('id', '!=', $this->getRecord()->id)
+            ->exists();
+
+        if ($exists) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'data.tanggal' => 'Gagal mengubah! Tanggal ini sudah digunakan oleh laporan lain.',
+            ]);
+        }
+    }
+
     protected function getHeaderActions(): array
     {
         return [

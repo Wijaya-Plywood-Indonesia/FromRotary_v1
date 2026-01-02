@@ -30,9 +30,10 @@ class ProduksiPressDryersTable
                 TextColumn::make('shift')
                     ->label('Shift')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'PAGI' => 'success',
+                    ->color(fn(string $state): string => match (strtoupper($state)) { // Dipaksa jadi HURUF BESAR saat pengecekan
+                        'PAGI'  => 'success',
                         'MALAM' => 'gray',
+                        default => 'primary', // WAJIB: Penyelamat jika ada data yang tidak cocok (misal: 'Siang')
                     })
                     ->searchable(),
 

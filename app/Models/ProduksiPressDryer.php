@@ -54,4 +54,19 @@ class ProduksiPressDryer extends Model
     {
         return $this->tanggal_produksi . ' | ' . $this->shift;
     }
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            $exists = static::where('tanggal_produksi', $model->tanggal_produksi)
+                ->where('shift', $model->shift)
+                ->exists();
+
+            if ($exists) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'tanggal_produksi' => 'Data produksi untuk tanggal dan shift ini sudah ada.',
+                ]);
+            }
+        });
+    }
 }
