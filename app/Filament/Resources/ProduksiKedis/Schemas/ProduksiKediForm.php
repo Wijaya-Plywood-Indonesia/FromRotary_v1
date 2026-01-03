@@ -6,7 +6,6 @@ use App\Models\ProduksiKedi;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
-use Illuminate\Validation\Rule;
 
 class ProduksiKediForm
 {
@@ -18,18 +17,19 @@ class ProduksiKediForm
                 DatePicker::make('tanggal')
                     ->label('Tanggal Produksi')
 
-                    ->default(fn () => now()->addDay())
+                    ->default(fn() => now()->addDay())
                     ->displayFormat('d F Y')
                     ->required()
                     ->rules([
-                        fn ($get, $record) =>
-                            Rule::unique('produksi_kedi', 'tanggal')
-                                ->where('status', $get('status'))
-                                ->ignore($record?->id),
-                    ])
-                    ->validationMessages([
-                        'unique' => 'Produksi dengan tanggal dan status ini sudah ada!',
-                        'required' => 'Tanggal produksi wajib diisi.',
+                        function () {
+                            return function (string $attribute, $value, $fail) {
+                                $exists = ProduksiKedi::whereDate('tanggal', $value)->exists();
+
+                                if ($exists) {
+                                    $fail('Tanggal ini sudah digunakan. Pilih tanggal lain.');
+                                }
+                            };
+                        },
                     ]),
 
                 Select::make('status')
