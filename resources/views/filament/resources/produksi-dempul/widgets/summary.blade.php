@@ -1,6 +1,27 @@
 <x-filament::widget>
     <x-filament::card class="w-full space-y-10 dark:bg-gray-900 dark:border-gray-800">
 
+        {{-- ================================================================= --}}
+        {{-- ⚠️ BAGIAN PENTING: LOGIKA HITUNG DATA (JANGAN DIHAPUS) ⚠️ --}}
+        {{-- ================================================================= --}}
+        @php
+        // 1. Ambil data mentah dari Widget PHP
+        $dataRaw = collect($summary['globalUkuranKw'] ?? []);
+
+        // 2. Hitung Rekap per Grade (KW)
+        $rekapGrade = $dataRaw->groupBy('kw')->map(function ($rows) {
+        return (object) [
+        'kw' => $rows->first()->kw,
+        'total' => $rows->sum('total')
+        ];
+        })->sortKeys();
+
+        // 3. Hitung Rekap per Ukuran
+        $ukuranGrouped = $dataRaw->groupBy('ukuran');
+        @endphp
+        {{-- ================================================================= --}}
+
+
         {{-- ================= SECTION 1: HEADER STATISTIK (PRODUKSI & PEGAWAI) ================= --}}
         <div class="grid grid-cols-2 gap-4 divide-x divide-gray-200 dark:divide-gray-700">
 
@@ -14,21 +35,19 @@
                 </div>
             </div>
 
-            {{-- 👇👇👇 INI BAGIAN TOTAL PEGAWAI 👇👇👇 --}}
             {{-- KANAN: TOTAL PEGAWAI (HEADCOUNT) --}}
             <div class="text-center py-2">
                 <div class="text-4xl font-extrabold text-green-600 dark:text-green-500">
-                    {{-- Mengambil data 'totalPegawai' yang dikirim dari PHP Widget --}}
                     {{ number_format($summary['totalPegawai'] ?? 0) }}
                 </div>
                 <div class="text-sm font-medium text-gray-500 dark:text-gray-400">
                     Total Tenaga Kerja (Org)
                 </div>
             </div>
-            {{-- 👆👆👆 ----------------------- 👆👆👆 --}}
 
         </div>
 
+        {{-- ================= SECTION 2: RINGKASAN PER GRADE (KW) ================= --}}
         <div class="space-y-3">
             <div class="font-semibold text-lg text-gray-900 dark:text-gray-100">Rekap per Grade</div>
 
@@ -43,6 +62,11 @@
                     </div>
                 </div>
                 @endforeach
+
+                {{-- Handle jika kosong --}}
+                @if($rekapGrade->isEmpty())
+                <div class="col-span-full text-center text-gray-400 text-sm italic">Belum ada data grade.</div>
+                @endif
             </div>
         </div>
 
