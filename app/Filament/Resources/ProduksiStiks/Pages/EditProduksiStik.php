@@ -3,17 +3,34 @@
 namespace App\Filament\Resources\ProduksiStiks\Pages;
 
 use App\Filament\Resources\ProduksiStiks\ProduksiStikResource;
-use Filament\Actions\DeleteAction;
+use App\Models\ProduksiStik;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Validation\ValidationException;
 
 class EditProduksiStik extends EditRecord
 {
     protected static string $resource = ProduksiStikResource::class;
 
-    protected function getHeaderActions(): array
+    protected function beforeSave(): void
     {
-        return [
-            DeleteAction::make(),
-        ];
+        $tanggal = $this->data['tanggal_produksi'] ?? null;
+        $recordId = $this->getRecord()->id;
+
+        if ($tanggal) {
+            $exists = ProduksiStik::whereDate('tanggal_produksi', $tanggal)
+                ->where('id', '!=', $recordId)
+                ->exists();
+
+            if ($exists) {
+                throw ValidationException::withMessages([
+                    'data.tanggal_produksi' => 'Gagal mengubah! Tanggal ini sudah digunakan di laporan lain.',
+                ]);
+            }
+        }
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }

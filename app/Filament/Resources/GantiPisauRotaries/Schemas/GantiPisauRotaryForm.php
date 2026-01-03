@@ -24,4 +24,4 @@ class GantiPisauRotaryForm
                     ->default(now()->format('H:i')),
             ]);
     }
-}
+}   

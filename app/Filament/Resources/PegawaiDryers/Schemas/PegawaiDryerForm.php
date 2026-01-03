@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PegawaiDryers\Schemas;
 
 use App\Models\Pegawai;
+use App\Models\DetailPegawai; // Pastikan model DetailPegawai sudah diimport
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Filament\Schemas\Schema;
@@ -14,21 +15,47 @@ use Filament\Forms\Components\DateTimePicker;
 
 class PegawaiDryerForm
 {
-    public static function configure(Schema $schema): Schema
+    public static function configure(Schema $schema, $record = null): Schema
     {
         return $schema->components([
             Select::make('id_pegawai')
                 ->label('Pegawai')
-                ->options(
-                    Pegawai::query()
+                ->options(function ($livewire, $record) {
+                    // Ambil ID produksi dari owner (RelationManager) atau record
+                    $idProduksi = $record?->id_produksi_dryer 
+                        ?? $livewire->getOwnerRecord()?->id;
+
+                    // Ambil ID pegawai yang sudah ditugaskan di produksi ini
+                    $usedPegawaiIds = DetailPegawai::where('id_produksi_dryer', $idProduksi)
+                        ->when($record, fn($q) => $q->where('id', '!=', $record->id))
+                        ->pluck('id_pegawai')
+                        ->toArray();
+
+                    // Hanya tampilkan pegawai yang BELUM digunakan
+                    return Pegawai::query()
+                        ->whereNotIn('id', $usedPegawaiIds)
                         ->get()
                         ->mapWithKeys(fn($pegawai) => [
                             $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
-                        ])
-                )
-                //   ->multiple() // bisa pilih banyak
+                        ]);
+                })
                 ->searchable()
-                ->required(),
+                ->preload()
+                ->required()
+                // Validasi agar tidak bisa simpan jika pegawai sudah ada (back-end check)
+                ->rules([
+                    fn($get, $livewire, $record) => function ($attribute, $value, $fail) use ($get, $livewire, $record) {
+                        $idProduksi = $record?->id_produksi_dryer ?? $livewire->getOwnerRecord()?->id;
+                        $exists = DetailPegawai::where('id_produksi_dryer', $idProduksi)
+                            ->where('id_pegawai', $value)
+                            ->when($record, fn($q) => $q->where('id', '!=', $record->id))
+                            ->exists();
+
+                        if ($exists) {
+                            $fail('Pegawai ini sudah terdaftar dalam laporan ini.');
+                        }
+                    }
+                ]),
 
             TextInput::make('tugas')
                 ->label('Tugas')
@@ -38,15 +65,16 @@ class PegawaiDryerForm
             Select::make('masuk')
                 ->label('Jam Masuk')
                 ->options(self::timeOptions())
-                ->default('06:00') // Default: 06:00 (sore)
+                ->default('06:00')
                 ->required()
                 ->searchable()
                 ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
-                ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null), // Tampilkan hanya HH:MM,
+                ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null),
+
             Select::make('pulang')
                 ->label('Jam Pulang')
                 ->options(self::timeOptions())
-                ->default('17:00') // Default: 17:00 (sore)
+                ->default('17:00')
                 ->required()
                 ->searchable()
                 ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
@@ -61,6 +89,7 @@ class PegawaiDryerForm
                 ->rows(1),
         ]);
     }
+
     public static function timeOptions(): array
     {
         return collect(CarbonPeriod::create('00:00', '1 hour', '23:00')->toArray())

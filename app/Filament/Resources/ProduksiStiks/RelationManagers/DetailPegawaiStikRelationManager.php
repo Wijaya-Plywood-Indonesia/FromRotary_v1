@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\ProduksiStiks\RelationManagers;
 
 use App\Models\Pegawai;
-use App\Models\DetailPegawai;
+use App\Models\DetailPegawaiStik;
 use Carbon\CarbonPeriod;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -46,42 +46,57 @@ class DetailPegawaiStikRelationManager extends RelationManager
                 Select::make('masuk')
                     ->label('Jam Masuk')
                     ->options(self::timeOptions())
-                    ->default('06:00') // Default: 06:00 (sore)
-                    ->required()
-                    ->searchable()
-                    ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
-                    ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null), // Tampilkan hanya HH:MM,
-                Select::make('pulang')
-                    ->label('Jam Pulang')
-                    ->options(self::timeOptions())
-                    ->default('17:00') // Default: 17:00 (sore)
+                    ->default('06:00')
                     ->required()
                     ->searchable()
                     ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
                     ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null),
-                Select::make('id_pegawai')
-                    ->label('Pegawai')
-                    ->options(
-                        Pegawai::query()
-                            ->get()
-                            ->mapWithKeys(fn($pegawai) => [
-                                $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
-                            ])
-                    )
-                    //   ->multiple() // bisa pilih banyak
+
+                Select::make('pulang')
+                    ->label('Jam Pulang')
+                    ->options(self::timeOptions())
+                    ->default('17:00')
+                    ->required()
                     ->searchable()
-                    ->required(),
+                    ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
+                    ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null),
+
                 TextInput::make('tugas')
                     ->label('Tugas')
                     ->default('Pegawai Stik')
                     ->readOnly()
                     ->maxLength(255),
+
+                Select::make('id_pegawai')
+                    ->label('Pegawai')
+                    ->placeholder('Pilih pegawai yang tersedia...')
+                    ->searchable()
+                    ->required()
+                    ->options(function ($record) {
+                        // 1. Ambil ID pegawai yang sudah ada di Produksi Stik ini
+                        $usedPegawaiIds = DetailPegawaiStik::query()
+                            ->where('id_produksi_stik', $this->getOwnerRecord()->id)
+                            // Jika sedang Edit, jangan sembunyikan pegawai yang sedang diedit itu sendiri
+                            ->when($record, fn($q) => $q->where('id', '!=', $record->id))
+                            ->pluck('id_pegawai')
+                            ->toArray();
+
+                        // 2. Tampilkan hanya pegawai yang BELUM dipilih
+                        return Pegawai::query()
+                            ->whereNotIn('id', $usedPegawaiIds)
+                            ->get()
+                            ->mapWithKeys(fn($pegawai) => [
+                                $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
+                            ]);
+                    })
+                    ->live(), // Penting agar state dropdown selalu update
             ]);
     }
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $exists = DetailPegawai::where('id_produksi', $this->ownerRecord->id)
+        // Tetap pertahankan validasi double check di sisi server
+        $exists = DetailPegawaiStik::where('id_produksi_stik', $this->getOwnerRecord()->id)
             ->where('id_pegawai', $data['id_pegawai'])
             ->exists();
 
@@ -124,33 +139,17 @@ class DetailPegawaiStikRelationManager extends RelationManager
                     ->limit(30)
                     ->toggleable(isToggledHiddenByDefault: false),
             ])
-            ->filters([
-                //
-            ])
             ->headerActions([
-                // Create Action — HILANG jika status sudah divalidasi
                 CreateAction::make()
-                    ->hidden(
-                        fn($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+                    ->hidden(fn() => $this->getOwnerRecord()->validasiTerakhir?->status === 'divalidasi'),
             ])
             ->recordActions([
-                // Edit Action — HILANG jika status sudah divalidasi
                 EditAction::make()
-                    ->hidden(
-                        fn($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+                    ->hidden(fn() => $this->getOwnerRecord()->validasiTerakhir?->status === 'divalidasi'),
 
-                // Delete Action — HILANG jika status sudah divalidasi
                 DeleteAction::make()
-                    ->hidden(
-                        fn($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+                    ->hidden(fn() => $this->getOwnerRecord()->validasiTerakhir?->status === 'divalidasi'),
 
-                // ➕ Tambah / Edit Ijin & Keterangan
                 Action::make('aturIjin')
                     ->label(fn($record) => $record->ijin ? 'Edit Ijin' : 'Tambah Ijin')
                     ->icon('heroicon-o-pencil-square')
@@ -164,18 +163,12 @@ class DetailPegawaiStikRelationManager extends RelationManager
                             'ket'  => $data['ket'],
                         ]);
                     })
-                    ->hidden(
-                        fn($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+                    ->hidden(fn() => $this->getOwnerRecord()->validasiTerakhir?->status === 'divalidasi'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->hidden(
-                            fn($livewire) =>
-                            $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                        ),
+                        ->hidden(fn() => $this->getOwnerRecord()->validasiTerakhir?->status === 'divalidasi'),
                 ]),
             ]);
     }

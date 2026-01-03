@@ -21,32 +21,26 @@ use Filament\Tables\Table;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Model;
 
-
-
 class DetailPegawaisRelationManager extends RelationManager
 {
     protected static ?string $title = 'Pegawai';
     protected static string $relationship = 'detailPegawais';
 
-    // Izinkan Relation Manager tampil di halaman View
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
         return true;
     }
 
-    // IZINKAN TOMBOL CREATE MUNCUL DI VIEW
     public static function showTableHeaderActionsInView(): bool
     {
         return true;
     }
 
-    // Izinkan membuat data dari View
     public static function canCreateForRecord(Model $ownerRecord, string $pageClass): bool
     {
         return true;
     }
 
-    // FUNGSI BARU UNTUK MEMUNCULKAN TOMBOL DI HALAMAN VIEW
     public function isReadOnly(): bool
     {
         return false;
@@ -65,35 +59,45 @@ class DetailPegawaisRelationManager extends RelationManager
     {
         return $schema
             ->components([
-
                 Select::make('masuk')
                     ->label('Jam Masuk')
                     ->options(self::timeOptions())
-                    ->default('06:00') // Default: 06:00 (sore)
-                    ->required()
-                    ->searchable()
-                    ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
-                    ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null), // Tampilkan hanya HH:MM,
-                Select::make('pulang')
-                    ->label('Jam Pulang')
-                    ->options(self::timeOptions())
-                    ->default('17:00') // Default: 17:00 (sore)
+                    ->default('06:00')
                     ->required()
                     ->searchable()
                     ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
                     ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null),
-                Select::make('id_pegawai')
+
+                Select::make('pulang')
+                    ->label('Jam Pulang')
+                    ->options(self::timeOptions())
+                    ->default('17:00')
+                    ->required()
+                    ->searchable()
+                    ->dehydrateStateUsing(fn($state) => $state ? $state . ':00' : null)
+                    ->formatStateUsing(fn($state) => $state ? substr($state, 0, 5) : null),
+
+                    Select::make('id_pegawai')
                     ->label('Pegawai')
-                    ->options(
-                        Pegawai::query()
+                    ->options(function ($livewire, $record) {
+                        // Ambil daftar pegawai yang SUDAH ada di produksi ini
+                        $usedPegawaiIds = DetailPegawai::where('id_produksi_dryer', $livewire->ownerRecord->id)
+                            ->when($record, fn($q) => $q->where('id', '!=', $record->id))
+                            ->pluck('id_pegawai')
+                            ->toArray();
+
+                        // Saring: Hanya tampilkan pegawai yang BELUM dipilih
+                        return Pegawai::query()
+                            ->whereNotIn('id', $usedPegawaiIds)
                             ->get()
                             ->mapWithKeys(fn($pegawai) => [
                                 $pegawai->id => "{$pegawai->kode_pegawai} - {$pegawai->nama_pegawai}",
-                            ])
-                    )
-                    //   ->multiple() // bisa pilih banyak
+                            ]);
+                    })
                     ->searchable()
+                    ->preload() // Membantu agar filtering terasa instan
                     ->required(),
+
                 Select::make('tugas')
                     ->label('Tugas')
                     ->options([
@@ -102,32 +106,52 @@ class DetailPegawaisRelationManager extends RelationManager
                         'dll' => 'Dll',
                     ])
                     ->required()
-                    ->native(false)
-                    ->searchable(),
+                    ->native(false),
             ]);
     }
 
+    /**
+     * Validasi Lapis Kedua: Mencegah duplikasi saat tombol simpan ditekan
+     */
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $exists = DetailPegawai::where('id_produksi', $this->ownerRecord->id)
+        $exists = DetailPegawai::where('id_produksi_dryer', $this->ownerRecord->id)
             ->where('id_pegawai', $data['id_pegawai'])
             ->exists();
 
         if ($exists) {
             throw ValidationException::withMessages([
-                'id_pegawai' => 'Pegawai ini sudah tercatat pada produksi yang sama.',
+                'id_pegawai' => 'Pegawai ini sudah terdaftar dalam laporan ini.',
             ]);
         }
 
         return $data;
     }
 
+    /**
+     * Validasi saat Update: Pastikan tidak bentrok dengan data lain
+     */
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $exists = DetailPegawai::where('id_produksi_dryer', $this->ownerRecord->id)
+            ->where('id_pegawai', $data['id_pegawai'])
+            ->where('id', '!=', $this->activeRecord->id) // Abaikan diri sendiri
+            ->exists();
+
+        if ($exists) {
+            throw ValidationException::withMessages([
+                'id_pegawai' => 'Pegawai ini sudah digunakan di baris lain.',
+            ]);
+        }
+
+        return $data;
+    }
 
     public function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('pegawai.nama_pegawai') // Asumsi: relasi 'pegawai' & kolom 'nama'
+                TextColumn::make('pegawai.nama_pegawai')
                     ->label('Pegawai')
                     ->searchable(),
 
@@ -135,49 +159,33 @@ class DetailPegawaisRelationManager extends RelationManager
                     ->searchable(),
 
                 TextColumn::make('masuk')
-                    ->time('H:i'), // Format waktu agar rapi
+                    ->time('H:i'),
 
                 TextColumn::make('pulang')
-                    ->time('H:i'), // Format waktu agar rapi
+                    ->time('H:i'),
 
                 TextColumn::make('ijin')
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(),
 
                 TextColumn::make('ket')
                     ->label('Keterangan')
-                    ->limit(50) // Batasi teks agar tidak terlalu panjang
-                    ->tooltip(fn($record) => $record->ket) // Tampilkan teks penuh saat di-hover
+                    ->limit(50)
+                    ->tooltip(fn($record) => $record->ket)
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: false),
-            ])
-            ->filters([
-                // Tempat filter jika Anda membutuhkannya
+                    ->toggleable(),
             ])
             ->headerActions([
-                // Create Action — HILANG jika status sudah divalidasi
                 CreateAction::make()
-                    ->hidden(
-                        fn($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+                    ->hidden(fn($livewire) => $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'),
             ])
             ->recordActions([
-                // Edit Action — HILANG jika status sudah divalidasi
                 EditAction::make()
-                    ->hidden(
-                        fn($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+                    ->hidden(fn($livewire) => $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'),
 
-                // Delete Action — HILANG jika status sudah divalidasi
                 DeleteAction::make()
-                    ->hidden(
-                        fn($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+                    ->hidden(fn($livewire) => $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'),
 
-                // Atur Ijin — HILANG jika status sudah divalidasi
                 Action::make('aturIjin')
                     ->label(fn($record) => $record->ijin ? 'Edit Ijin' : 'Tambah Ijin')
                     ->icon('heroicon-o-pencil-square')
@@ -191,18 +199,12 @@ class DetailPegawaisRelationManager extends RelationManager
                             'ket' => $data['ket'],
                         ]);
                     })
-                    ->hidden(
-                        fn($livewire) =>
-                        $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                    ),
+                    ->hidden(fn($livewire) => $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->hidden(
-                            fn($livewire) =>
-                            $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'
-                        ),
+                        ->hidden(fn($livewire) => $livewire->ownerRecord?->validasiTerakhir?->status === 'divalidasi'),
                 ]),
             ]);
     }

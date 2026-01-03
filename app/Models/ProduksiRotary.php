@@ -72,6 +72,17 @@ class ProduksiRotary extends Model
                 }
             }
         });
-    }
 
+        static::creating(function ($model) {
+            $exists = static::where('tgl_produksi', $model->tgl_produksi)
+                ->where('id_mesin', $model->id_mesin)
+                ->exists();
+
+            if ($exists) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'id_mesin' => 'Mesin ini sudah memiliki laporan pada tanggal tersebut.',
+                ]);
+            }
+        });
+    }
 }
