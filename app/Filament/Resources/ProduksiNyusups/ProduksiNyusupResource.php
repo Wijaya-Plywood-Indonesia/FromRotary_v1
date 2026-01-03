@@ -25,7 +25,7 @@ class ProduksiNyusupResource extends Resource
     protected static ?string $model = ProduksiNyusup::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-    protected static string|UnitEnum|null $navigationGroup = 'Nyusup';
+    protected static string|UnitEnum|null $navigationGroup = 'Finishing';
     protected static ?int $navigationSort = 1;
 
     protected static ?string $recordTitleAttribute = 'no';
