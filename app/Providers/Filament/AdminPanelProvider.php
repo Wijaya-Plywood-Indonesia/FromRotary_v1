@@ -84,6 +84,14 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
 
                 //Kategori Menu Produksi
+                NavigationGroup::make('Lain Lain')
+                    ->icon('heroicon-o-ellipsis-horizontal-circle'),
+
+                NavigationGroup::make('Finishing')
+                    ->icon('heroicon-o-check-badge'),
+
+                NavigationGroup::make("Sanding Joint")
+                    ->icon('heroicon-o-divide'),
 
                 NavigationGroup::make('BK-BM')
                     ->icon('heroicon-o-adjustments-horizontal'),
@@ -117,6 +125,5 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-lock-closed'),
             ])
         ;
-
     }
 }
